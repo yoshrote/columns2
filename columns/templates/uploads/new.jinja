@@ -1,0 +1,22 @@
+{% if not request.is_xhr %}{% extends "columns:templates/admin.jinja"%}{% endif %}
+{% block content %}
+<div id="new-form">
+{{ h.form(context|resource_url, method="post", enctype="multipart/form-data") }}
+<fieldset>
+	<div class="field-n-label">
+		<label for="upload">File</label>
+		{{ h.file("upload") }}
+	</div>
+	<div class="field-n-label">
+		<label for="title">Alternative Text</label>
+		{{ h.text("title", value=resource.title) }}
+	</div>
+	<div class="field-n-label">
+		<label for="content">Description</label>
+		{{ h.textarea("content", resource.context) }}
+	</div>
+	{{ h.submit("save", value="Save") }}
+</fieldset>
+{{ h.end_form() }}
+</div>
+{% endblock %}

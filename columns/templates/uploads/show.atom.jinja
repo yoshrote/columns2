@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+{%- macro set_if_exists(tag, value) %}
+{% if value != none -%}
+<{{ tag }}>{{ value }}</{{ tag }}>
+{%- endif %}
+{% endmacro -%}
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+	<atom:link href="{{ context|resource_url }}" rel="self" />
+	<atom:link href="{{ context|resource_url('edit') }}" rel="edit" />
+	<atom:link href="{{ context|resource_url('edit') }}" rel="edit-media" />
+	{#
+	<atom:link href="{{ url('edit_article', id=resource.id, qualified=True) }}" rel="enclosure" />
+	<atom:link href="{{ url('atom_service', qualified=True) }}" rel="service" />
+	#}
+	<atom:title>{{ resource.title }}</atom:title>
+	<atom:id>{{ resource.atom_id }}</atom:id>
+	<atom:author>
+		<atom:name>{{ resource.author['name'] }}</atom:name>
+		{{ set_if_exists('atom:email',resource.author['email']) }}
+		{{ set_if_exists('atom:uri',resource.author['uri']) }}
+	</atom:author>
+	{#{ set_if_exists('atom:published',resource.published|rfc3339) }#}
+	<atom:updated>{{ resource.updated|rfc3339 }}</atom:updated>
+	<atom:content src="{{ resource.filepath|static_url }}" />{# a type attribute SHOULD be added here. This info should be stored in the Upload object #}
+	<atom:summary type="html">
+		{{ resource.content }}
+	</atom:summary>
+	{{ set_if_exists('atom:rights',app_settings('site_rights')) }}
+	{%- for tag in resource.tags %}
+	<atom:category term="{{ tag.id }}" label="{{ tag.label }}" scheme="{{ '' }}" />
+	{%- endfor %}
+</atom:entry>

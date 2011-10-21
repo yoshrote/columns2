@@ -1,0 +1,34 @@
+{% if not request.is_xhr %}{% extends "columns:templates/admin.jinja"%}{% endif %}
+{% block content %}
+<div id="new-form">
+{{ h.form(context|resource_url, method="post") }}
+<fieldset>
+	<div class="field-n-label">
+		<label for="name">Name</label>
+		{{ h.text("name", value=resource.name) }}
+	</div>
+	<div class="field-n-label">
+		<label for="type">User Type</label>
+		{{ h.select('type', resource.type, h.get_permissions().items()) }}
+	</div>
+	<div class="field-n-label">
+		<label for="open_id">OpenID URL</label>
+		{{ h.text("open_id", value=resource.open_id) }}
+	</div>
+	<div class="field-n-label">
+		<label for="twitter_id">Twitter ID</label>
+		{{ h.text("twitter_id", value=resource.twitter_id) }}
+	</div>
+	<div class="field-n-label">
+		<label for="fb_id">Facebook ID</label>
+		{{ h.text("fb_id", value=resource.fb_id) }}
+	</div>
+	<div class="field-n-label">
+		<label for="profile">Profile URL</label>
+		{{ h.text("profile", value=resource.profile) }}
+	</div>
+	{{ h.submit("save", value="Save") }}
+</fieldset>
+{{ h.end_form() }}
+</div>
+{% endblock %}

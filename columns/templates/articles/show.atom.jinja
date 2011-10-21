@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+{%- macro set_if_exists(tag, value) %}
+{% if value != none -%}
+<{{ tag }}>{{ value }}</{{ tag }}>
+{%- endif %}
+{% endmacro -%}
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
+	<atom:link href="{{ app_settings('site_link') }}" rel="index" />
+	{#
+	<atom:link href="{{ url('article', id=resource.id, qualified=True) }}" rel="self" />
+	<atom:link href="{{ url('article', id=resource.id, format='html', qualified=True) }}" rel="alternate" />
+	<atom:link href="{{ url('edit_article', id=resource.id, qualified=True) }}" rel="edit" />
+	<atom:link href="{{ url('atom_service', qualified=True) }}" rel="service" />
+	<atom:link href="{{ url('article_comments', article_id=resource.id, qualified=True) }}" rel="replies" />
+	<atom:link href="{{ url('pinkback_service', qualified=True) }}" rel="pingback" />
+	#}
+	<atom:title>{{ resource.title }}</atom:title>
+	<atom:id>{{ resource.atom_id }}</atom:id>
+	<atom:author>
+		<atom:name>{{ resource.author['name'] }}</atom:name>
+		{{ set_if_exists('atom:email',resource.author['email']) }}
+		{{ set_if_exists('atom:uri',resource.author['uri']) }}
+	</atom:author>
+	{% for contrib in resource.contributors %}
+	<atom:contributor>
+		<atom:name>{{ contrib.get('name') }}</atom:name>
+		{{ set_if_exists('atom:email',contrib.get('email')) }}
+		{{ set_if_exists('atom:uri',contrib.get('uri')) }}
+	</atom:contributor>
+	{% endfor %}
+	{{ set_if_exists('atom:published',resource.published|rfc3339) }}
+	<atom:updated>{{ resource.updated|rfc3339 }}</atom:updated>
+	<atom:summary type="html">
+		{{ resource.summary }}
+	</atom:summary>
+	<atom:content type="html">
+		{{ resource.content }}
+	</atom:content>
+	{{ set_if_exists('atom:rights',app_settings('site_rights')) }}
+	{% for tag in resource.tags %}
+	<atom:category term="{{ tag.id }}" label="{{ tag.label }}" scheme="{#{ url('formatted_tag_feed', name=tag.id, format='atom', qualified=True) }#}" />
+	{% endfor %}
+	{#
+	{% if resource.source_attrs != None %}
+		<atom:source>
+			{{ set_if_exists('atom:id',resource.source_attrs.get('id',None)) }}
+			{{ set_if_exists('atom:generator',resource.source_attrs.get('generator',None)) }}
+			{{ set_if_exists('atom:icon',resource.source_attrs.get('icon',None)) }}
+			{{ set_if_exists('atom:rights',resource.source_attrs.get('rights',None)) }}
+			{{ set_if_exists('atom:logo',resource.source_attrs.get('logo',None)) }}
+			{{ set_if_exists('atom:title',resource.source_attrs.get('title',None)) }}
+			{{ set_if_exists('atom:updated',resource.source_attrs.get('updated',None)) }}
+			{% if resource.source_attrs.get('author',None) != None %}
+			{% set s_author = resource.source_attrs.get('author') %}
+			<atom:author>
+				{{ set_if_exists('atom:name',s_author.get('name',None)) }}
+				{{ set_if_exists('atom:email',s_author.get('email',None)) }}
+				{{ set_if_exists('atom:uri',s_author.get('uri',None)) }}
+			</atom:author>
+			{% endif %}
+			{% for contrib in resource.source_attrs.get('contributors',[]) %}
+			<atom:contributor>
+				{{ set_if_exists('atom:name',contrib.get('name',None)) }}
+				{{ set_if_exists('atom:email',contrib.get('email',None)) }}
+				{{ set_if_exists('atom:uri',contrib.get('uri',None)) }}
+			</atom:contributor>
+			{% endfor %}
+			{% for tag in resource.source_attrs.get('categories',[]) %}
+			<atom:category {{tag|xmlattr }} />
+			{% endfor %}
+			{% for link in resource.source_attrs.get('links',[]) %}
+			<atom:link {{link|xmlattr }} />
+			{% endfor %}
+		</atom:source>
+	{% endif %}
+	#}
+	<dc:title>{{ resource.title }}</dc:title>
+	<dc:publisher>{{ app_settings('site_name') }}</dc:publisher>
+	<dc:creator>{{ resource.author_name }}</dc:creator>
+	<dc:language>en</dc:language>
+	{{ set_if_exists('dc:rights',app_settings('site_rights')) }}
+	<dc:date>{{ resource.updated.strftime('%Y-%m-%d') }}</dc:date>
+	<dc:subject>{{ resource.tags | join(', ', attribute='label') }}</dc:subject>	
+</atom:entry>
+

@@ -1,0 +1,223 @@
+@charset "UTF-8";
+/* See Rock City Scheme*/
+/***********************/
+html {
+  background-color: #173f55;
+  color: black; }
+
+label {
+  font-weight: bold; }
+
+/***********************
+ Base Layout CSS 
+***********************/
+#admin-header {
+  position: relative;
+  display: block;
+  width: 940px;
+  min-height: 40px;
+  vertical-align: top;
+  box-sizing: border-box;
+  margin: 20px;
+  border-radius: 5px;
+  border-color: #c1c1c1;
+  border-style: solid;
+  border-width: 1px;
+  box-shadow: #282425 0px 0px 5px 0px;
+  background-color: #EEEEEE;
+  background: -webkit-gradient(linear, left top, left bottom, from(#4c4c4e), to(#282425));
+  background: -moz-linear-gradient(top, #4c4c4e, #282425);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#4C4C4E', endColorstr='#282425');
+  text-align: center; }
+  #admin-header h1 {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: white;
+    line-height: 2em; }
+
+#admin-footer {
+  position: relative;
+  display: block;
+  width: 940px;
+  min-height: 40px;
+  vertical-align: top;
+  box-sizing: border-box;
+  margin: 20px;
+  border-radius: 5px;
+  border-color: #c1c1c1;
+  border-style: solid;
+  border-width: 1px;
+  box-shadow: #282425 0px 0px 5px 0px;
+  background-color: #EEEEEE; }
+  #admin-footer p {
+    line-height: 2em; }
+
+#admin-nav {
+  position: relative;
+  display: inline-block;
+  box-sizing: border-box;
+  width: 130px;
+  margin-left: 20px;
+  margin-right: 15px;
+  vertical-align: top;
+  border-radius: 5px;
+  border-color: #C1C1C1;
+  border-style: solid;
+  border-width: 1px;
+  background-color: #EEEEEE;
+  box-shadow: #282425 0px 0px 5px 0px;
+  line-height: 1.5em;
+  text-align: left;
+  font-weight: bold; }
+  #admin-nav span, #admin-nav a {
+    display: block; }
+
+#admin-nav-top {
+  height: 20px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  background-color: black;
+  background: -webkit-gradient(linear, left top, left bottom, from(#4c4c4e), to(#282425));
+  background: -moz-linear-gradient(top, #4c4c4e, #282425);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#4C4C4E', endColorstr='#282425'); }
+
+#admin-nav-bottom {
+  padding: 5px; }
+
+#admin-content {
+  position: relative;
+  display: inline-block;
+  box-sizing: border-box;
+  margin-right: 20px;
+  width: 790px;
+  vertical-align: top;
+  border-radius: 5px;
+  border-color: #c1c1c1;
+  border-style: solid;
+  border-width: 1px;
+  box-shadow: #282425 0px 0px 5px 0px;
+  background-color: #EEEEEE; }
+
+#admin-content-top {
+  height: 20px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  background-color: black;
+  background: -webkit-gradient(linear, left top, left bottom, from(#4c4c4e), to(#282425));
+  background: -moz-linear-gradient(top, #4c4c4e, #282425);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#4C4C4E', endColorstr='#282425'); }
+
+#admin-content-bottom {
+  padding: 20px; }
+
+/***********************
+ Admin Interface CSS 
+***********************/
+#admin-resource-list {
+  text-align: left;
+  width: 748px;
+  table-layout: fixed;
+  margin-top: 20px;
+  margin-bottom: 20px; }
+  #admin-resource-list th, #admin-resource-list td {
+    padding: 5px;
+    border-color: #C1C1C1;
+    border-style: solid;
+    border-width: 3px; }
+  #admin-resource-list th {
+    font-weight: bold;
+    background: -webkit-gradient(linear, left top, left bottom, from(#4c4c4e), to(#282425));
+    background: -moz-linear-gradient(top, #4c4c4e, #282425);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#4C4C4E', endColorstr='#282425');
+    color: white; }
+  #admin-resource-list .filler-cell {
+    background: -webkit-gradient(linear, left top, left bottom, from(#4c4c4e), to(#282425));
+    background: -moz-linear-gradient(top, #4c4c4e, #282425);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#4C4C4E', endColorstr='#282425');
+    width: 50px; }
+  #admin-resource-list tr .odd {
+    background-color: inherit;
+    color: inherit; }
+  #admin-resource-list tr .even {
+    background-color: #333333;
+    color: inherit; }
+
+#pagination {
+  text-align: left;
+  font-size: large;
+  font-style: italic; }
+  #pagination .prev-page {
+    display: inline-block;
+    float: left; }
+  #pagination .next-page {
+    display: inline-block;
+    float: right; }
+
+.new-link {
+  display: inline-block; }
+
+#new-form, #edit-form {
+  text-align: left;
+  vertical-align: bottom;
+  display: block; }
+  #new-form textarea, #edit-form textarea {
+    background-color: white;
+    color: black; }
+  #new-form input[type=text], #edit-form input[type=text] {
+    width: 410px; }
+  #new-form textarea, #edit-form textarea {
+    width: 100%; }
+  #new-form input[type=submit], #new-form input[type=button], #new-form button, #edit-form input[type=submit], #edit-form input[type=button], #edit-form button {
+    padding: 5px;
+    margin-top: 10px; }
+  #new-form input, #new-form select, #new-form label, #edit-form input, #edit-form select, #edit-form label {
+    display: inline-block; }
+  #new-form label, #edit-form label {
+    text-align: left;
+    width: 150px; }
+  #new-form fieldset, #edit-form fieldset {
+    border: none; }
+  #new-form .field-n-label, #edit-form .field-n-label {
+    width: 580px;
+    margin: 5px;
+    line-height: 1.5em; }
+
+/***********************
+ Image Browser CSS
+***********************/
+#thumb-browser {
+  /*background-color:$background_color;color:black;*/
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: inline-block;
+  box-sizing: border-box;
+  vertical-align: top;
+  border-radius: 5px;
+  border-color: #c1c1c1;
+  border-style: solid;
+  border-width: 1px;
+  box-shadow: #282425 0px 0px 5px 0px;
+  background-color: #EEEEEE;
+  padding: 10px; }
+  #thumb-browser fieldset {
+    border: none; }
+
+.thumb-container {
+  outline: #2b77c4 solid 1px;
+  display: inline-block;
+  width: 130px;
+  height: 130px;
+  margin: 5px; }
+  .thumb-container input {
+    display: block;
+    margin-left: auto;
+    margin-right: auto; }
+
+.thumbnail {
+  display: block;
+  max-width: 100px;
+  max-height: 100px;
+  margin-top: 5px;
+  margin-left: auto;
+  margin-right: auto; }

@@ -1,0 +1,179 @@
+/*@import url("admin.css");*/
+/* See Rock City Scheme*/
+/***********************/
+html {
+  background-color: #173f55;
+  color: black; }
+
+body {
+  padding-top: 20px;
+  padding-left: 100px;
+  width: 1000px; }
+
+label {
+  font-weight: bold; }
+
+/***********************
+ Base Layout CSS 
+***********************/
+#top-header {
+  display: block;
+  box-sizing: border-box;
+  width: 940px;
+  margin: 10px;
+  min-height: 40px;
+  border-radius: 5px;
+  border-color: #c1c1c1;
+  border-style: solid;
+  border-width: 1px;
+  vertical-align: top;
+  box-shadow: #282425 0px 0px 5px 0px;
+  background-color: #EEEEEE;
+  text-align: center; }
+  #top-header h1 {
+    font-size: 2.5em;
+    font-weight: bold;
+    line-height: 2em; }
+
+#top-menu {
+  display: block;
+  box-sizing: border-box;
+  width: 940px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  margin-left: 10px;
+  margin-right: 10px;
+  border-radius: 5px;
+  border-color: #C1C1C1;
+  border-style: solid;
+  border-width: 1px;
+  box-shadow: #282425 0px 0px 5px 0px;
+  background-color: #EEEEEE;
+  vertical-align: top;
+  text-align: left;
+  font-weight: bold;
+  font-size: 1.25em;
+  background: -webkit-gradient(linear, left top, left bottom, from(#4c4c4e), to(#282425));
+  background: -moz-linear-gradient(top, #4c4c4e, #282425);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#4C4C4E', endColorstr='#282425'); }
+  #top-menu a {
+    display: inline-block;
+    color: white;
+    text-decoration: none;
+    padding: 8px; }
+    #top-menu a:hover {
+      background: -webkit-gradient(linear, left top, left bottom, from(#282425), to(#4c4c4e));
+      background: -moz-linear-gradient(top, #282425, #4c4c4e);
+      filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#282425', endColorstr='#4C4C4E'); }
+    #top-menu a:first-of-type {
+      border-top-left-radius: 5px;
+      border-bottom-left-radius: 5px; }
+    #top-menu a:last-of-type {
+      border-top-right-radius: 5px;
+      border-bottom-right-radius: 5px; }
+
+#top-footer {
+  position: relative;
+  display: block;
+  width: 940px;
+  vertical-align: top;
+  box-sizing: border-box;
+  text-align: center;
+  margin: 10px;
+  border-radius: 5px;
+  border-color: #c1c1c1;
+  border-style: solid;
+  border-width: 1px;
+  box-shadow: #282425 0px 0px 5px 0px;
+  background-color: #EEEEEE; }
+  #top-footer p {
+    line-height: 2em; }
+
+#top-sidebar {
+  display: inline-block;
+  width: 170px;
+  height: 200px;
+  box-shadow: #282425 0px 0px 5px 0px;
+  background-color: #EEEEEE;
+  box-sizing: border-box;
+  border-radius: 5px; }
+
+#top-content {
+  vertical-align: top;
+  display: inline-block;
+  width: 750px;
+  margin-left: 10px;
+  margin-right: 10px; }
+
+.story-container {
+  box-shadow: #282425 0px 0px 5px 0px;
+  background-color: #EEEEEE;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  padding: 10px; }
+  .story-container:last-child {
+    margin-bottom: 0; }
+
+.story-title {
+  font-weight: bold;
+  font-size: 1.2em;
+  display: inline-block; }
+
+.story-user {
+  display: inline-block; }
+
+.story-tags-item {
+  display: inline-block; }
+
+.story-content {
+  margin-top: 10px;
+  margin-bottom: 10px; }
+  .story-content strong {
+    font-weight: bold; }
+  .story-content u {
+    text-decoration: underline; }
+  .story-content em {
+    font-style: italic; }
+  .story-content ul {
+    list-style-type: disc; }
+  .story-content ol {
+    list-style-type: decimal; }
+  .story-content a {
+    color: #ff5a00; }
+  .story-content p {
+    text-indent: 2em; }
+  .story-content blockquote {
+    border: #2b77c4 solid 1px;
+    display: block;
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-top: 5px;
+    margin-bottom: 5px; }
+  .story-content img, .story-content object {
+    display: block;
+    max-width: 650px; }
+
+.page-content strong {
+  font-weight: bold; }
+.page-content u {
+  text-decoration: underline; }
+.page-content em {
+  font-style: italic; }
+.page-content ul {
+  list-style-type: disc; }
+.page-content ol {
+  list-style-type: decimal; }
+.page-content a {
+  color: #ff5a00; }
+.page-content p {
+  text-indent: 2em; }
+.page-content blockquote {
+  border: #2b77c4 solid 1px;
+  display: block;
+  margin-left: 20px;
+  margin-right: 20px;
+  margin-top: 5px;
+  margin-bottom: 5px; }
+.page-content img, .page-content object {
+  display: block;
+  max-width: 650px; }

@@ -1,0 +1,249 @@
+@charset "UTF-8";
+/* See Rock City Scheme*/
+$color1: #C1645A;
+$color2: #6F151F;
+$color3: #D6BD7A;
+/***********************/
+$top_level_margin: 20px;
+$sidebar_width: 130px;
+$sidebar_margin: 15px;
+$content_width: 790px;
+$background_color: $color3;
+$outline_color: #2B77C4;
+$base_media_url:'http://media.nerdblerp.com';
+
+@mixin black_gradient_background{
+	background: -webkit-gradient(linear, left top, left bottom, from(#4C4C4E), to(#282425));
+	background: -moz-linear-gradient(top, #4C4C4E,  #282425);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#4C4C4E', endColorstr='#282425');
+}
+
+html{background-color:rgb(23,63,85);color:black;}
+label{font-weight:bold;}
+
+/***********************
+ Base Layout CSS 
+***********************/
+#admin-header{
+	position:relative;
+	display:block;
+	width:$content_width + $sidebar_width + $sidebar_margin + 5px;
+	min-height: 40px;
+	vertical-align:top;
+	box-sizing:border-box;
+	margin: $top_level_margin;
+	border:{
+		radius:5px;
+		color:#c1c1c1;
+		style:solid;
+		width:1px;
+	}
+	box-shadow: #282425 0px 0px 5px 0px;
+	background-color:#EEEEEE;
+	@include black_gradient_background;
+	text-align:center;
+	h1{font-size:2.5em;font-weight:bold;color:white;line-height:2em;}
+}
+#admin-footer{
+	position:relative;
+	display:block;
+	width:$content_width + $sidebar_width + $sidebar_margin + 5px;
+	min-height: 40px;
+	vertical-align:top;
+	box-sizing:border-box;
+	margin: $top_level_margin;
+	border:{
+		radius:5px;
+		color:#c1c1c1;
+		style:solid;
+		width:1px;
+	}
+	box-shadow: #282425 0px 0px 5px 0px;
+	background-color:#EEEEEE;
+	p{line-height:2em;}
+}
+#admin-nav{
+	position:relative;
+	display:inline-block;
+	box-sizing:border-box;
+	width:$sidebar_width;
+	margin:{
+		left:$top_level_margin;
+		right:$sidebar_margin;
+	}
+	vertical-align:top;
+	border:{
+		radius:5px;
+		color:#C1C1C1;
+		style:solid;
+		width:1px;
+	}
+	background-color:#EEEEEE;
+	box-shadow: #282425 0px 0px 5px 0px;
+	span,a{display:block;}
+	
+	line-height:1.5em;
+	text-align:left;
+	font-weight:bold;
+	
+}
+#admin-nav-top{
+	height:20px;
+	border-top-left-radius:5px;
+	border-top-right-radius:5px;
+	background-color:black;
+	@include black_gradient_background;
+}
+#admin-nav-bottom{
+	padding:5px;
+}
+#admin-content{
+	position:relative;
+	display:inline-block;
+	box-sizing:border-box;
+	margin-right:$top_level_margin;
+	width:$content_width;
+	vertical-align:top;
+	border:{
+		radius:5px;
+		color:#c1c1c1;
+		style:solid;
+		width:1px;
+	}
+	box-shadow: #282425 0px 0px 5px 0px;
+	background-color:#EEEEEE;
+}
+#admin-content-top{
+	height:20px;
+	border-top-left-radius:5px;
+	border-top-right-radius:5px;
+	background-color:black;
+	@include black_gradient_background;
+}
+#admin-content-bottom{
+	padding:20px;
+}
+
+/***********************
+ Admin Interface CSS 
+***********************/
+#admin-resource-list{
+	text-align:left;
+	width: 748px;
+	table-layout:fixed;
+	margin-top: 20px;
+	margin-bottom: 20px;
+	th, td{
+		padding:5px;
+		border:{
+			color:#C1C1C1;
+			style:solid;
+			width:3px;
+		}
+	}
+	th{
+		font-weight:bold;
+		@include black_gradient_background;
+		color:white;
+	}
+	.filler-cell{
+		@include black_gradient_background;
+		width: 50px;
+	}
+	tr{
+		.odd{
+			background-color:inherit;
+			color:inherit;
+		}
+		.even{
+			background-color:#333333;
+			color:inherit;
+		}
+	}
+}
+#pagination{
+	text-align:left;
+	font-size:large;
+	font-style:italic;
+	.prev-page{
+		display:inline-block;
+		float:left;
+	}
+	.next-page{
+		display:inline-block;
+		float:right;
+	}
+}
+.new-link{
+	display:inline-block;
+}
+#new-form, #edit-form{
+	text-align:left;
+	vertical-align:bottom;
+	display:block;
+	textarea{
+		background-color:white;
+		color:black;
+	}
+	input[type=text]{
+		width:410px;
+	}
+	textarea{ width:100%;}
+	input[type=submit],input[type=button],button{
+		padding:5px;
+		margin-top:10px;
+	}
+	input, select, label{display:inline-block;}
+	label{text-align:left;width:150px;}
+	fieldset{ border:none;}
+	.field-n-label{
+		width:580px;
+		margin: 5px;
+		line-height:1.5em;
+	}
+}
+
+/***********************
+ Image Browser CSS
+***********************/
+#thumb-browser{
+	/*background-color:$background_color;color:black;*/
+	width:100%;
+	height:100%;
+	fieldset{border:none;}
+	position:relative;
+	display:inline-block;
+	box-sizing:border-box;
+	vertical-align:top;
+	border:{
+		radius:5px;
+		color:#c1c1c1;
+		style:solid;
+		width:1px;
+	}
+	box-shadow: #282425 0px 0px 5px 0px;
+	background-color:#EEEEEE;
+	padding:10px;
+}
+.thumb-container{
+	outline:$outline_color solid 1px;
+	display:inline-block;
+	width:130px;
+	height:130px;
+	margin:5px;
+	input{
+		display:block;
+		margin-left:auto;
+		margin-right:auto;
+	}
+}
+.thumbnail{
+	display:block;
+	max-width:100px;
+	max-height:100px;
+	margin:{
+		top:5px;
+		left:auto;
+		right:auto;
+	}
+}

@@ -1,0 +1,45 @@
+{# encoding: utf-8 #}
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8"></meta>
+{% block more_metadata %}{% endblock %}
+		<meta http-equiv="X-XRDS-Location" content="{{ 'xrds'|route_url }}"></meta>
+		<link rel="shortcut icon" href="{{ 'favicon.ico'|static_url }}" type="image/x-icon" />
+		<link rel="index" title="{{ app_settings('site_name') }}" href="{{ 'blog_main'|route_url }}" />
+		<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.4.1/build/cssreset/cssreset-min.css">
+		<link href="{{ 'stylesheets/styles.css'|static_url }}" media="screen" rel="stylesheet" type="text/css" ></link>
+{% block more_styles %}{% endblock %}
+		<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+		<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
+{% block more_scripts %}{% endblock %}
+		<script type="text/javascript">
+{% block templates_and_resources %}{% endblock %}
+$(document).ready(function(){
+{% block on_ready %}{% endblock %}
+});
+		</script>
+		<title>{% block title %}{{ app_settings('site_name') }}{% endblock %}</title>
+	</head>
+	<body>
+		<header id="top-header">
+			<h1>{{ app_settings('site_name') }}</h1>
+		</header>
+		<div id="top-menu">
+			<a class="main" href="{{ 'blog_main'|route_url }}" title="Main">Main</a>
+			{% for slug, title in h.main_pages() %}
+			<a class="{{ slug }}" href="{{ 'blog_page'|route_url(page=slug) }}" title="{{ title }}">{{ title }}</a>
+			{% endfor %}
+		</div>
+		<section id="top-content">
+			{% block content %}{% endblock %}
+		</section>
+		<section id="top-sidebar">
+		</section>
+		<footer id="top-footer">
+			<p id="site-rights">
+				{{ app_settings('site_rights') }}
+			</p>
+		</footer>
+	</body>
+</html>

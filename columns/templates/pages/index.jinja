@@ -1,0 +1,81 @@
+{% if not request.is_xhr %}{% extends "columns:templates/admin.jinja"%}{% endif %}
+{% set limit = limit|int(20) %}
+{% set offset = offset|int %}
+{% block templates_and_resources %}
+var offset = {{offset|int}};
+var limit = {{limit}};
+{% raw %}
+var row_template = [
+	'<tr>',
+	'<td><a href="{{edit_url}}">Edit</a></td>',
+	'<td>{{title}}{{sticky}}</td>',
+	'<td>{{published}}</td>',
+	'<td>{{author}}</td>',
+	'</tr>'
+].join('\n');
+{% endraw %}
+{% endblock %}
+{% block on_ready %}
+{#
+$("a.previous-page").click(function(){
+	offset += limit;
+	$.getJSON({
+		url:"{{ context|resource_url }}",
+		//data:{start:offset, stop:limit, drafts:showDrafts()},
+		dataType:'json',
+		success:function(data, textStatus, jqXHR){
+			$("tbody").html("");
+			for(item in data.resources){
+				var row = Mustache.to_html(row_template, item);
+				$(row).appendTo("tbody");
+			}
+		}
+	});
+});
+$("a.next-page").click(function(){
+	offset -= limit;
+	if(offset <= 0){
+		offset = 0;
+	}
+	$.getJSON({
+		url:"{{ context|resource_url }}",
+		//data:{start:offset, stop:limit, drafts:showDrafts()},
+		dataType:'json',
+		success:function(data, textStatus, jqXHR){
+			$("tbody").html("");
+			for(item in data.resources){
+				var row = Mustache.to_html(row_template, item);
+				$(row).appendTo("tbody");
+			}
+		}
+	});
+});
+#}
+{% endblock %}
+{% block content %}
+{{ h.link_to("Create New", context|resource_url('new'), class="new-link") }}
+<table id="admin-resource-list">
+	<thead>
+		<tr>
+			<td class="filler-cell">&nbsp;</td>
+			<th>Name</th>
+			<th>Visible</th>
+			<th>In Main Feed</th>
+		</tr>
+	</thead>
+	<tbody>
+	{% for item in resources %}
+	<tr class="{{ loop.cycle('odd', 'even') }}">
+		<td>{{ h.link_to("Edit", item|resource_url('edit')) }}</td>
+		<td>{{ item.title }}</td>
+		<td>{{ 'True' if item.visible else 'False' }}</td>
+		<td>{{ 'True' if item.in_main else 'False' }}</td>
+	</tr>
+	{% endfor %}
+	</tbody>
+</table>
+<div id="pagination">
+	<a href="{{ context|resource_url(query={'offset':[offset-limit,0]|maximum,'limit':limit}) }}" class="previous-page">Previous</button>
+	<a href="{{ context|resource_url(query={'offset':offset+limit,'limit':limit}) }}" class="next-page">Next</button>
+</div>
+{% endblock %}

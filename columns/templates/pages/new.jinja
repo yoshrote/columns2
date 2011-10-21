@@ -1,0 +1,72 @@
+{% if not request.is_xhr %}{% extends "columns:templates/admin.jinja"%}{% endif %}
+{% set styles_list = ['summary','list','none'] %}
+{% block content %}
+<div id="new-form">
+{{ h.form(context|resource_url, method='post') }}
+	<div class="field-n-label">
+		<label for="title">Page Title</label>
+		{{ h.text("title", value=resource.title) }}
+	</div>
+	<div class="field-n-label">
+		<label for="visible">Is Visible</label>
+		{{ h.checkbox("visible", checked=resource.visible) }}
+	</div>
+	<div class="field-n-label">
+		<label for="can_post">Enable Posts</label>
+		{{ h.checkbox("can_post", checked=resource.can_post) }}
+	</div>
+	<div class="field-n-label">
+		<label for="in_menu">Show Page in Menu</label>
+		{{ h.checkbox("in_menu", checked=resource.in_menu) }}
+	</div>
+	<div class="field-n-label">
+		<label for="in_main">Show Posts in Main Stream</label>
+		{{ h.checkbox("in_main", checked=resource.in_main) }}
+	</div>
+	<div class="field-n-label">
+		<label for="stream_comment_style">Stream Comment Style</label>
+		{{ h.select('stream_comment_style', resource.stream_comment_style, styles_list) }}
+	</div>
+	<div class="field-n-label">
+		<label for="story_comment_style">Story Comment Style</label>
+		{{ h.select('story_comment_style', resource.story_comment_style, styles_list) }}
+	</div>
+	<div class="field-n-label">
+		<label for="content">Content</label>
+		{{ h.textarea("context", resource.content, class_="jquery_ckeditor") }}
+	</div>
+	{{ h.submit("save", value="Save") }}
+{{ h.end_form() }}
+</div>
+{% endblock %}
+{% block on_ready %}
+	{{ super() }}
+	var config = {
+		toolbar:
+		[
+			['Source','-','Preview','-',],
+			['Cut','Copy','Paste','PasteText','-','SpellChecker', 'Scayt'],
+			['Undo','Redo','-','Find','Replace'],
+			['TextColor','BGColor','-','Maximize', 'ShowBlocks'],
+			'/',
+			['Bold','Italic','Underline','Strike','-','Subscript','Superscript'],
+			['NumberedList','BulletedList','-','Outdent','Indent','Blockquote'],
+			['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],
+			['Link','Unlink','Anchor'],
+			'/',
+			['Styles','Format','Font','FontSize'],
+			['Image','Flash','Table','HorizontalRule','SpecialChar'],
+		],
+		filebrowserBrowseUrl : '{{ 'browse_images'|route_url }}',
+		filebrowserUploadUrl : '{{ 'quick_image_upload'|route_url }}',
+		flashAddEmbedTag : false,
+		docType : '<!DOCTYPE HTML>',
+		resize_enabled : false,
+		contentsCss : ['http://yui.yahooapis.com/3.4.1/build/cssreset/cssreset-min.css','{{ "stylesheets/styles.css"|static_url }}'],
+		bodyId : 'page-body',
+		width:740,
+	};
+	// Initialize the editor.
+	// Callback function can be passed and executed after full instance creation.
+	ckeditor_instance = $('.jquery_ckeditor').ckeditor(config);
+{% endblock %}

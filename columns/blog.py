@@ -1,0 +1,79 @@
+# encoding: utf-8
+from pyramid.renderers import render_to_response
+from pyramid.httpexceptions import exception_response
+
+import sqlahelper
+from sqlalchemy.exc import InvalidRequestError
+from columns.models import Article
+from columns.models import Page
+from columns.models import Tag
+
+#############################
+## Blog Views 
+#############################
+def page_view(request):
+	Session = sqlahelper.get_session()
+	try:
+		page = Session.query(Page).\
+			filter(Page.slug == request.matchdict.get('page')).\
+			filter(Page.visible == True).\
+			one()
+	except InvalidRequestError:
+		raise exception_response(404)
+	else:
+		return render_to_response(
+			'columns:templates/blog/page.jinja', 
+			{'page': page}
+		)
+
+def story_view(request):
+	Session = sqlahelper.get_session()
+	try:
+		story = Session.query(Article).\
+			filter(
+				Article.permalink==request.matchdict.get('permalink')
+			).\
+			filter(Article.published != None).\
+			one()
+	except InvalidRequestError:
+		raise exception_response(404)
+	else:
+		return render_to_response(
+			'columns:templates/blog/story.jinja', 
+			{'story': story}
+		)
+
+def stream_view(request):
+	Session = sqlahelper.get_session()
+	stream = Session.query(Article).\
+		filter(Article.published != None).\
+		order_by(Article.published.desc()).\
+		all()
+	return render_to_response(
+		'columns:templates/blog/stream.jinja', 
+		{'stream': stream}
+	)
+
+
+#############################
+## Blog Configuration
+#############################
+def includeme(config):
+	config.add_route('blog_main', '/')
+	config.add_view(
+		'columns.blog.stream_view',
+		route_name='blog_main',
+	)
+	
+	config.add_route('blog_page', '/page/:page')
+	config.add_view(
+		'columns.blog.page_view',
+		route_name='blog_page',
+	)
+	
+	config.add_route('blog_story', '/story/:permalink')
+	config.add_view(
+		'columns.blog.story_view',
+		route_name='blog_story',
+	)
+

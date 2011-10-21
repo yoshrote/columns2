@@ -1,0 +1,97 @@
+{% if not request.is_xhr %}{% extends "columns:templates/admin.jinja"%}{% endif %}
+{% block content %}
+<div id="edit-form">
+	<div id="confirm-dialog"></div>
+	{{ h.form(resource|resource_url, method="put") }}
+		<div class="field-n-label">
+			<label for="title">Title</label>
+			{{ h.text("title", value=resource.title) }}
+		</div>
+		<div class="field-n-label">
+			<label for="can_comment">Enable Comments</label>
+			{{ h.checkbox("can_comment", checked=resource.can_comment) }}
+		</div>
+		<div class="field-n-label">
+			<label for="sticky">Make Sticky</label>
+			{{ h.checkbox("sticky", checked=resource.sticky) }}
+		</div>
+		<div class="field-n-label">
+			<label for="content">Content</label>
+			{{ h.textarea("context", resource.content, class_="jquery_ckeditor") }}
+		</div>
+		<div class="field-n-label">
+			<label for="tags">Tags</label>
+			{{ h.text("tags", value=resource.tags|join(', ', attribute='label')) }}
+		</div>
+		{{ h.hidden("published", value=resource.published) }}
+		<input type="button" id="preview_post" value="Preview Post"/>
+		{{ h.submit("save", value='Save As Draft' if resource.published == None else 'Save') }}
+		{% if resource.published == None and 'publish' is allowed %}
+		<input type="button" name="publish" id="published_button" value="Publish"/>
+		{%- endif %}
+	{{ h.end_form() }}
+	{{ h.form(resource|resource_url, method="delete") }}
+	<fieldset>
+		{{ h.submit("save", value="Delete") }}
+	</fieldset>
+	{{ h.end_form() }}
+</div>
+{% endblock %}
+{% block templates_and_resources %}
+{{ super() }}
+var timestamp= function (date) {
+ var pad = function (amount, width) {
+  var padding = "";
+  while (padding.length < width - 1 && amount < Math.pow(10, width - padding.length - 1))
+   padding += "0";
+  return padding + amount.toString();
+ }
+ date = date ? date : new Date();
+ return pad(date.getUTCFullYear(), 4)
+   + "-" + pad(date.getUTCMonth() + 1, 2)
+   + "-" + pad(date.getUTCDate(), 2)
+   + "T" + pad(date.getUTCHours(), 2)
+   + ":" + pad(date.getUTCMinutes(), 2)
+   + ":" + pad(date.getUTCSeconds(), 2)+'Z';
+}
+{% endblock %}
+{% block on_ready %}
+	{{ super() }}
+	var config = {
+		toolbar:
+		[
+			['Source','-','Preview','-',],
+			['Cut','Copy','Paste','PasteText','-','SpellChecker', 'Scayt'],
+			['Undo','Redo','-','Find','Replace'],
+			['TextColor','BGColor','-','Maximize', 'ShowBlocks'],
+			'/',
+			['Bold','Italic','Underline','Strike','-','Subscript','Superscript'],
+			['NumberedList','BulletedList','-','Outdent','Indent','Blockquote'],
+			['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],
+			['Link','Unlink','Anchor'],
+			'/',
+			['Styles','Format','Font','FontSize'],
+			['Image','Flash','Table','HorizontalRule','SpecialChar'],
+		],
+		filebrowserBrowseUrl : '{{ 'browse_images'|route_url }}',
+		filebrowserUploadUrl : '{{ 'quick_image_upload'|route_url }}',
+		flashAddEmbedTag : false,
+		docType : '<!DOCTYPE HTML>',
+		resize_enabled : false,
+		contentsCss : ['http://yui.yahooapis.com/3.4.1/build/cssreset/cssreset-min.css','{{ "stylesheets/styles.css"|static_url }}'],
+		bodyId : 'article-body',
+		width:740,
+	};
+	// Initialize the editor.
+	// Callback function can be passed and executed after full instance creation.
+	ckeditor_instance = $('.jquery_ckeditor').ckeditor(config);
+	$('#published_button').click(function(){
+		$('input[name="published"]').val(timestamp());
+		$('#post_form').submit();
+	});
+	$('#preview_post').click(function(){
+		var editor = $('.jquery_ckeditor').ckeditorGet();
+		editor.execCommand('preview');
+	});
+{% endblock %}
+

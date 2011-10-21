@@ -1,0 +1,176 @@
+/*@import url("admin.css");*/
+/* See Rock City Scheme*/
+$color1: #C1645A;
+$color2: #6F151F;
+$color3: #D6BD7A;
+/***********************/
+$top_level_margin: 10px;
+$sidebar_width: 170px;
+$sidebar_margin: 15px;
+$content_width: 750px;
+$background_color: $color3;
+$outline_color: #2B77C4;
+$base_media_url:'http://media.nerdblerp.com';
+
+@mixin black_gradient_background{
+	background: -webkit-gradient(linear, left top, left bottom, from(#4C4C4E), to(#282425));
+	background: -moz-linear-gradient(top, #4C4C4E,  #282425);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#4C4C4E', endColorstr='#282425');
+}
+@mixin reverse_black_gradient_background{
+	background: -webkit-gradient(linear, left top, left bottom, from(#282425), to(#4C4C4E));
+	background: -moz-linear-gradient(top, #282425,  #4C4C4E);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#282425', endColorstr='#4C4C4E');
+}
+@mixin writing_style{
+	strong{font-weight:bold;}
+	u{text-decoration:underline;}
+	em{font-style:italic;}
+	ul{list-style-type: disc;}
+	ol{list-style-type: decimal;}
+	a{color:rgb(255, 90, 0);}
+	p{text-indent:2em;}
+	blockquote{
+		border:$outline_color solid 1px;
+		display:block;
+		margin:{
+			left:20px;
+			right:20px;
+			top:5px;
+			bottom:5px;
+		}
+	}
+	img, object{
+		display:block;
+		max-width:650px;
+	}
+}
+
+html{background-color:rgb(23,63,85);color:black;}
+body{padding-top: 20px;padding-left:100px;width:1000px;}
+label{font-weight:bold;}
+
+/***********************
+ Base Layout CSS 
+***********************/
+#top-header{
+	display:block;
+	box-sizing:border-box;
+	width:$content_width + $sidebar_width + $sidebar_margin + 5px;
+	margin: $top_level_margin;
+	min-height: 40px;
+	border:{
+		radius:5px;
+		color:#c1c1c1;
+		style:solid;
+		width:1px;
+	}
+	vertical-align:top;
+	box-shadow: #282425 0px 0px 5px 0px;
+	background-color:#EEEEEE;
+	text-align:center;
+	h1{font-size:2.5em;font-weight:bold;line-height:2em;}
+}
+#top-menu{
+	display:block;
+	box-sizing:border-box;
+	width:$content_width + $sidebar_width + $sidebar_margin + 5px;
+	margin:{
+		top:10px;
+		bottom:10px;
+		left:$top_level_margin;
+		right:$top_level_margin;
+	}
+	border:{
+		radius:5px;
+		color:#C1C1C1;
+		style:solid;
+		width:1px;
+	}
+	box-shadow: #282425 0px 0px 5px 0px;
+	background-color:#EEEEEE;
+	
+	vertical-align:top;
+	a{
+		display:inline-block;
+		color:white;
+		text-decoration:none;
+		padding:8px;
+		&:hover{@include reverse_black_gradient_background;}
+		&:first-of-type{
+			border-top-left-radius:5px;
+			border-bottom-left-radius:5px;
+		}
+		&:last-of-type{
+			border-top-right-radius:5px;
+			border-bottom-right-radius:5px;
+		}
+	}
+	text-align:left;
+	font-weight:bold;
+	font-size: 1.25em;
+	
+	@include black_gradient_background;
+}
+#top-footer{
+	position:relative;
+	display:block;
+	width:$content_width + $sidebar_width + $sidebar_margin + 5px;
+	vertical-align:top;
+	box-sizing:border-box;
+	text-align: center;
+	margin: $top_level_margin;
+	border:{
+		radius:5px;
+		color:#c1c1c1;
+		style:solid;
+		width:1px;
+	}
+	box-shadow: #282425 0px 0px 5px 0px;
+	background-color:#EEEEEE;
+	p{line-height:2em;}
+}
+#top-sidebar{
+	display:inline-block;
+	width:$sidebar_width;
+	height:200px;
+	box-shadow: #282425 0px 0px 5px 0px;
+	background-color:#EEEEEE;
+	box-sizing:border-box;
+	border-radius: 5px;
+}
+#top-content{
+	vertical-align:top;
+	display:inline-block;
+	width:$content_width;
+	margin:{
+		left:$top_level_margin;
+		right:$top_level_margin;
+	}
+}
+
+.story-container{
+	box-shadow: #282425 0px 0px 5px 0px;
+	background-color:#EEEEEE;
+	border-radius: 5px;
+	margin-bottom:10px;
+	padding:10px;
+	&:last-child{margin-bottom:0;}
+}
+.story-title{font-weight:bold;font-size:1.2em;display:inline-block;}
+.story-user{display:inline-block;}
+.story-date{}
+.story-edit{}
+.story-tags{}
+.story-tags-item{display:inline-block;}
+.story-content{
+	margin:{
+		top:10px;
+		bottom:10px;
+	}
+	@include writing_style;
+}
+
+.page-content{
+	@include writing_style;
+}
