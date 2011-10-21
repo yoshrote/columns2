@@ -29,5 +29,6 @@ pip-log.txt
 
 #Other
 .DS_Store
-test_upload
+test_uploads
 test_oid
+*.db
