@@ -1,7 +1,7 @@
 # encoding: utf-8
 from pyramid.config import Configurator
 from pyramid_beaker import session_factory_from_settings
-
+from pyramid.static import static_view
 from sqlalchemy import engine_from_config
 import sqlahelper
 
@@ -74,6 +74,11 @@ def main(global_config, **settings):
 	config = Configurator(settings=settings)
 	session_factory = session_factory_from_settings(settings)
 	config.add_static_view('static', settings.get('static_directory'))
+	config.add_route('favicon.ico', 'favicon.ico')
+	config.add_view(
+		static_view(''.join([settings.get('static_directory'),'favicon.ico']), index='', use_subpath=True),
+		route_name='favicon.ico'
+	)
 	config.set_session_factory(session_factory)
 	config.include('columns.lib.view')
 	config.include('columns.blog')

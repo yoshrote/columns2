@@ -102,6 +102,7 @@ class BaseCollectionContext(object):
 		Session = sqlahelper.get_session()
 		saved_resource = Session.merge(resource)
 		Session.commit()
+		saved_resource.__name__ = saved_resource.get_key()
 		return saved_resource
 	
 
