@@ -1,7 +1,7 @@
 import sqlahelper
 from pyramid.httpexceptions import exception_response
 
-from columns.lib.base import EfficientBaseCollectionContext
+from columns.lib.base import SQLACollectionContext
 from columns.lib.base import BaseViews
 from columns.lib.base import InvalidResource
 
@@ -46,7 +46,7 @@ def UserContextFactory(request):
 ########################################
 ## Collection Contexts
 ########################################
-class ArticleCollectionContext(EfficientBaseCollectionContext):
+class ArticleCollectionContext(SQLACollectionContext):
 	__model__ = 'columns.models:Article'
 	__name__ = 'articles'
 	def index(self, offset=None, limit=None):
@@ -82,11 +82,11 @@ class ArticleCollectionContext(EfficientBaseCollectionContext):
 		Session.commit()
 	
 
-class PageCollectionContext(EfficientBaseCollectionContext):
+class PageCollectionContext(SQLACollectionContext):
 	__model__ = 'columns.models:Page'
 	__name__ = 'pages'
 
-class UploadCollectionContext(EfficientBaseCollectionContext):
+class UploadCollectionContext(SQLACollectionContext):
 	__model__ = 'columns.models:Upload'
 	__name__ = 'uploads'
 	
@@ -103,7 +103,7 @@ class UploadCollectionContext(EfficientBaseCollectionContext):
 		os.remove(resource_path)
 	
 
-class UserCollectionContext(EfficientBaseCollectionContext):
+class UserCollectionContext(SQLACollectionContext):
 	__model__ = 'columns.models:User'
 	__name__ = 'users'
 

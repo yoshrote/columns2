@@ -24,7 +24,6 @@ import urlparse
 import sqlahelper
 from sqlalchemy.exc import InvalidRequestError
 from columns.models import User
-from columns.lib.base import BaseCollectionContext
 
 #############################
 ## Authentication Policy 

@@ -2,6 +2,11 @@
 import sqlahelper
 from pyramid.httpexceptions import exception_response
 from pyramid.util import DottedNameResolver
+from columns.lib.interfaces import IMemberContext
+from columns.lib.interfaces import ICollectionContext
+from columns.lib.interfaces import IResourceView
+from zope.interface import implements
+from zope.interface.verify import verifyClass
 
 dotted_resolver = DottedNameResolver(None)
 
@@ -18,7 +23,9 @@ class InvalidResource(Exception):
 		return '\n'.join(err_list)
 	
 
-class BaseCollectionContext(object):
+class SQLACollectionContext(object):
+	implements(ICollectionContext)
+	collection_views = ['', 'index', 'new', 'create']
 	__parent__ = None
 	__name__ = None
 	__model__ = None
@@ -35,7 +42,12 @@ class BaseCollectionContext(object):
 		except (TypeError, ValueError):
 			raise KeyError(key)
 	
+	
 	def __getitem__(self, key):
+		if key in self.collection_views:
+			raise KeyError(key)
+		if isinstance(key, slice):
+			return self.index(offset=key.start, limit=key.stop)
 		id = self._decode_key(key)
 		Session = sqlahelper.get_session()
 		resource = Session.query(
@@ -57,7 +69,14 @@ class BaseCollectionContext(object):
 		Session.delete(resource)
 		Session.commit()
 	
-	'''
+	def __setitem__(self, key, value):
+		Session = sqlahelper.get_session()
+		value = value.set_key(key)
+		saved_resource = Session.merge(value)
+		Session.commit()
+		saved_resource.__name__ = saved_resource.get_key()
+		return saved_resource
+	
 	def __len__(self):
 		Session = sqlahelper.get_session()
 		return Session.query(
@@ -71,7 +90,6 @@ class BaseCollectionContext(object):
 			self.__model__
 		).get(id) is not None
 	
-	'''
 	def get(self, key, default=None):
 		try:
 			item = self.__getitem__(key)
@@ -98,7 +116,7 @@ class BaseCollectionContext(object):
 		resource.__parent__ = self
 		return resource
 	
-	def save(self, resource):
+	def add(self, resource):
 		Session = sqlahelper.get_session()
 		saved_resource = Session.merge(resource)
 		Session.commit()
@@ -106,16 +124,8 @@ class BaseCollectionContext(object):
 		return saved_resource
 	
 
-class EfficientBaseCollectionContext(BaseCollectionContext):
-	"Checks if the key is from a list of views"
-	collection_views = ['', 'index', 'new', 'create']
-	def __getitem__(self, key):
-		if key in self.collection_views:
-			raise KeyError(key)
-		return BaseCollectionContext.__getitem__(self, key)
-	
-
 class BaseViews(object):
+	implements(IResourceView)
 	def __init__(self, context, request):
 		self.request = request
 		self.context = context
@@ -166,7 +176,7 @@ class BaseViews(object):
 		else:
 			new_resource = self.context.new()
 			new_resource = new_resource.build_from_values(values)
-			resource = self.context.save(new_resource)
+			resource = self.context.add(new_resource)
 			raise exception_response(
 				201,
 				location=self.request.resource_url(resource)
@@ -185,7 +195,7 @@ class BaseViews(object):
 		else:
 			new_resource = self.context.new()
 			new_resource = new_resource.build_from_values(values)
-			resource = self.context.save(new_resource)
+			resource = self.context.add(new_resource)
 			raise exception_response(
 				201,
 				location=self.request.resource_url(resource)
@@ -213,11 +223,11 @@ class BaseViews(object):
 			)
 		else:
 			self.context = self.context.update_from_values(values)
-			resource = collection.save(self.context)
+			collection[self.context.__name__] = self.context
 			
 			raise exception_response(
 				200,
-				location=self.request.resource_url(resource)
+				location=self.request.resource_url(self.context)
 			)
 	
 	def update_atom(self):
@@ -233,11 +243,11 @@ class BaseViews(object):
 			raise exception_reponse(501)
 		else:
 			self.context = self.context.update_from_values(values)
-			resource = collection.save(self.context)
+			collection[self.context.__name__] = self.context
 			
 			raise exception_response(
 				200,
-				location=self.request.resource_url(resource)
+				location=self.request.resource_url(self.context)
 			)
 	
 	def delete(self):
@@ -249,13 +259,7 @@ class BaseViews(object):
 
 
 def includeme(config):
-	#def does_accept_atom(context,request):
-	#	return 'atom' in request.accept
-	#
-	#def request_is_atom(context,request):
-	#	return 'atom' in request.content_type
-	
-	def generate_routing(config, collection, view_class, collection_factory, collection_context, member_context):
+	def generate_routing(config, collection, view_class_name, collection_factory, collection_context, member_context):
 		PATH_PREFIX = config.route_prefix
 		def resource_url(self, request, info):
 			return '/'.join([
@@ -266,6 +270,26 @@ def includeme(config):
 		
 		collection_class = dotted_resolver.maybe_resolve(collection_context)
 		member_class = dotted_resolver.maybe_resolve(member_context)
+		view_class = dotted_resolver.maybe_resolve(view_class_name)
+		
+		if not verifyClass(collection_class, ICollectionContext):
+			raise TypeError(
+				"%s does not implement ICollectionContext",
+				 collection_context
+			)
+		
+		if not verifyClass(member_class, IMemberContext):
+			raise TypeError(
+				"%s does not implement IMemberContext",
+				 collection_context
+			)
+		
+		if not verifyClass(view_class, IResourceView):
+			raise TypeError(
+				"%s does not implement IResourceView",
+				 view_class_name
+			)
+		
 		setattr(collection_class,'__resource_url__',resource_url)
 		setattr(member_class,'__resource_url__',resource_url)
 		#base route

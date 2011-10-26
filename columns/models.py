@@ -24,6 +24,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import event
 from pyramid.threadlocal import get_current_request
 from pyramid.security import authenticated_userid
+from zope.interface import implements
+from columns.lib.intrerfaces import IMemberContext
 
 from columns.lib import html
 
@@ -171,7 +173,9 @@ class Tag(Base):
 	
 
 class Article(Base):
+	implements(IMemberContext)
 	__tablename__ = 'article'
+	
 	id = Column(
 		Integer(),
 		nullable=False,
@@ -283,6 +287,7 @@ class Article(Base):
 	
 
 class Upload(Base):
+	implements(IMemberContext)
 	__tablename__ = 'upload'
 	
 	id = Column(
@@ -399,7 +404,9 @@ class Setting(Base):
 	)
 
 class Page(Base):
+	implements(IMemberContext)
 	__tablename__ = 'page'
+	
 	id = Column(
 		Integer(),
 		autoincrement=True,
@@ -481,6 +488,7 @@ class Page(Base):
 	
 
 class User(Base):
+	implements(IMemberContext)
 	__tablename__ = 'user'
 	
 	id = Column(
