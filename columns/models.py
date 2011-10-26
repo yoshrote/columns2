@@ -25,7 +25,7 @@ from sqlalchemy import event
 from pyramid.threadlocal import get_current_request
 from pyramid.security import authenticated_userid
 from zope.interface import implements
-from columns.lib.intrerfaces import IMemberContext
+from columns.lib.interfaces import IMemberContext
 
 from columns.lib import html
 
@@ -273,6 +273,9 @@ class Article(Base):
 	def get_key(self):
 		return unicode(self.id)
 	
+	def set_key(self, key):
+		self.id = int(key)
+	
 	def update_from_values(self, values):
 		tags = set([Tag(slug=slugify(tag), label=tag) for tag in values.pop('tags')])
 			
@@ -354,6 +357,9 @@ class Upload(Base):
 	
 	def get_key(self):
 		return unicode(self.id)
+	
+	def set_key(self, key):
+		self.id = int(key)
 	
 	def update_from_values(self, values):
 		for k,v in values.items():
@@ -476,6 +482,9 @@ class Page(Base):
 	def get_key(self):
 		return unicode(self.id)
 	
+	def set_key(self, key):
+		self.id = int(key)
+	
 	def update_from_values(self, values):
 		for k,v in values.items():
 			if not k.startswith('_') and hasattr(self, k):
@@ -540,6 +549,9 @@ class User(Base):
 	
 	def get_key(self):
 		return unicode(self.id)
+	
+	def set_key(self, key):
+		self.id = int(key)
 	
 	def update_from_values(self, values):
 		for k,v in values.items():

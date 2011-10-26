@@ -46,8 +46,8 @@ class ICollectionContext(zope.interface.Interface):
 		""" Retrieve member resource by ``key``
 		If there are no matches a default value is returned"""
 	
-	def to_format(format):
-		"""Returns the collection in a specified format or raises a
+	def to_json():
+		"""Returns the collection in a JSON formatable form or raises a
 		NotImplementedError"""
 	
 
@@ -56,7 +56,7 @@ class IMemberContext(zope.interface.Interface):
 	def get_key():
 		"""Retrieves the primary key in a form suitable for traversal"""
 	
-	def set_key():
+	def set_key(key):
 		"""Sets the primary key from a form suitable for traversal"""
 	
 	def update_from_values(values):

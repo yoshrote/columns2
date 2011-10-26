@@ -66,6 +66,8 @@ class SQLACollectionContext(object):
 		resource = Session.query(
 			self.__model__
 		).get(id)
+		if resource is None:
+			raise KeyError(key)
 		Session.delete(resource)
 		Session.commit()
 	
@@ -89,6 +91,13 @@ class SQLACollectionContext(object):
 		return Session.query(
 			self.__model__
 		).get(id) is not None
+	
+	remove = __delitem__
+	def discard(self, key):
+		try:
+			self.remove(key)
+		except KeyError:
+			pass
 	
 	def get(self, key, default=None):
 		try:
@@ -122,6 +131,10 @@ class SQLACollectionContext(object):
 		Session.commit()
 		saved_resource.__name__ = saved_resource.get_key()
 		return saved_resource
+	
+	def clear(self):
+		Session = sqlahelper.get_session()
+		query = Session.query(self.__model__).delete()
 	
 
 class BaseViews(object):
@@ -272,19 +285,19 @@ def includeme(config):
 		member_class = dotted_resolver.maybe_resolve(member_context)
 		view_class = dotted_resolver.maybe_resolve(view_class_name)
 		
-		if not verifyClass(collection_class, ICollectionContext):
+		if not verifyClass(ICollectionContext, collection_class):
 			raise TypeError(
 				"%s does not implement ICollectionContext",
 				 collection_context
 			)
 		
-		if not verifyClass(member_class, IMemberContext):
+		if not verifyClass(IMemberContext, member_class):
 			raise TypeError(
 				"%s does not implement IMemberContext",
 				 collection_context
 			)
 		
-		if not verifyClass(view_class, IResourceView):
+		if not verifyClass(IResourceView, view_class):
 			raise TypeError(
 				"%s does not implement IResourceView",
 				 view_class_name

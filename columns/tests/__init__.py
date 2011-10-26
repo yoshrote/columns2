@@ -114,7 +114,7 @@ class DummyCollection(testing.DummyResource):
 	def new(self):
 		return DummyMember(parent=self)
 	
-	def save(self, resource):
+	def add(self, resource):
 		self.subs[resource.__name__] = resource
 		return resource
 	
@@ -188,14 +188,14 @@ class TestArticleCollection(unittest.TestCase):
 		del root['1']
 		self.assertRaises(KeyError, root.__getitem__, '1')
 	
-	def test_save(self):
+	def test_add(self):
 		from columns.models import Article
 		root = self._makeOne()
 		model = Article(
 			title='test_article2',
 			content='<p>blah2</p>',
 		)
-		root.save(model)
+		root.add(model)
 		second = root['2']
 		self.assertEqual(second.__class__, Article)
 		self.assertEqual(second.__parent__, root)
@@ -267,7 +267,7 @@ class TestUserCollection(unittest.TestCase):
 		del root['1']
 		self.assertRaises(KeyError, root.__getitem__, '1')
 	
-	def test_save(self):
+	def test_add(self):
 		from columns.models import User
 		root = self._makeOne()
 		model = User(
@@ -275,7 +275,7 @@ class TestUserCollection(unittest.TestCase):
 			type=1,
 			open_id='http://openid.example.com',
 		)
-		root.save(model)
+		root.add(model)
 		second = root['2']
 		self.assertEqual(second.__class__, User)
 		self.assertEqual(second.__parent__, root)
@@ -363,14 +363,14 @@ class TestUploadCollection(unittest.TestCase):
 		del root['1']
 		self.assertRaises(KeyError, root.__getitem__, '1')
 	
-	def test_save(self):
+	def test_add(self):
 		from columns.models import Upload
 		root = self._makeOne()
 		model = Upload(
 			title='test_upload2',
 			filepath='/test/upload2.file'
 		)
-		root.save(model)
+		root.add(model)
 		second = root['2']
 		self.assertEqual(second.__class__, Upload)
 		self.assertEqual(second.__parent__, root)
@@ -442,13 +442,13 @@ class TestPageCollection(unittest.TestCase):
 		del root['1']
 		self.assertRaises(KeyError, root.__getitem__, '1')
 	
-	def test_save(self):
+	def test_add(self):
 		from columns.models import Page
 		root = self._makeOne()
 		model = Page(
 			title='test_page2'
 		)
-		root.save(model)
+		root.add(model)
 		second = root['2']
 		self.assertEqual(second.__class__, Page)
 		self.assertEqual(second.__parent__, root)
@@ -486,6 +486,7 @@ class TestArticleMember(unittest.TestCase):
 		new_member = member.build_from_values(dict(
 			title='test_article2',
 			content='<p>blah2</p>',
+			tags=[]
 		))
 	
 	def test_update_from_values(self):
@@ -493,6 +494,7 @@ class TestArticleMember(unittest.TestCase):
 		mod_member = member.update_from_values(dict(
 			title='test_article2',
 			content='<p>blah2</p>',
+			tags=[]
 		))
 		self.session.commit()
 	
