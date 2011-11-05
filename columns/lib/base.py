@@ -355,8 +355,20 @@ def includeme(config):
 			name='new',
 			view=view_class,
 			attr='new',
+			accept='text/html',
 			request_method='GET',
 			renderer='columns:templates/{0}/new.jinja'.format(collection)
+		)
+		#new (json)
+		config.add_view(
+			route_name=collection,
+			context=collection_context,
+			name='new',
+			view=view_class,
+			attr='new',
+			accept='application/json',
+			request_method='GET',
+			renderer='json'
 		)
 		
 		#show (html)

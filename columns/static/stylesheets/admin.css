@@ -68,7 +68,8 @@ label {
   box-shadow: #282425 0px 0px 5px 0px;
   line-height: 1.5em;
   text-align: left;
-  font-weight: bold; }
+  font-weight: bold;
+  padding: 5px; }
   #admin-nav span, #admin-nav a {
     display: block; }
 
@@ -96,7 +97,8 @@ label {
   border-style: solid;
   border-width: 1px;
   box-shadow: #282425 0px 0px 5px 0px;
-  background-color: #EEEEEE; }
+  background-color: #EEEEEE;
+  padding: 20px; }
 
 #admin-content-top {
   height: 20px;

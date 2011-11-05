@@ -3,45 +3,49 @@
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
 	<head>
 		<meta http-equiv="Content-Type" content="text/html;charset=utf-8"></meta>
-{% block more_metadata %}{% endblock %}
-		{#<meta http-equiv="X-XRDS-Location" content="{{ 'xrds'|route_url }}"></meta>#}
 		<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.4.1/build/cssreset/cssreset-min.css">
 		<link href="{{ "stylesheets/admin.css"|static_url }}" media="screen" rel="stylesheet" type="text/css" ></link>
 		<link href="{{ "stylesheets/absolution/jquery.ui.all.css"|static_url }}" media="screen" rel="stylesheet" type="text/css" ></link>
-{% block more_styles %}{% endblock %}
+		<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/labjs/2.0.3/LAB.min.js"></script>
+		<!--
 		<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
 		<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
-		<script type="text/javascript" src="http://cachedcommons.org/cache/jquery-uniform/1.7.3/javascripts/jquery-uniform-min.js"></script>
-		<script src="{{ "scripts/ckeditor/ckeditor.js"|static_url }}" type="text/javascript"></script>
-		<script src="{{ "scripts/ckeditor/adapters/jquery.js"|static_url }}" type="text/javascript"></script>
-{% block more_scripts %}{% endblock %}
+		-->
 		<script type="text/javascript">
-{% block templates_and_resources %}
-{% endblock %}
-$(document).ready(function(){
-{% block on_ready %}
-	$("select, input:checkbox, input:radio, input:file").uniform();
-{% endblock %}
-});
+			$LAB
+			.script('http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.1.7/underscore-min.js').wait()
+			.script('http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js').wait()
+			.script('http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js')
+			.script('http://cdnjs.cloudflare.com/ajax/libs/backbone.js/0.5.3/backbone-min.js')
+			.script('http://cachedcommons.org/cache/jquery-uniform/1.7.3/javascripts/jquery-uniform-min.js')
+			.script('http://ajax.cdnjs.com/ajax/libs/mustache.js/0.3.0/mustache.min.js')
+			.script('{{ "scripts/ckeditor/ckeditor.js"|static_url }}')
+			.script('{{ "scripts/ckeditor/adapters/jquery.js"|static_url }}')
+			.script('{{ "scripts/articles.js"|static_url }}')
+			.script('{{ "scripts/pages.js"|static_url }}')
+			.script('{{ "scripts/users.js"|static_url }}')
+			.script('{{ "scripts/uploads.js"|static_url }}')
+			.wait(function(){
+				$(document).ready(function(){
+					articles_app.initialize();
+					pages_app.initialize();
+					users_app.initialize();
+					uploads_app.initialize();
+					Backbone.history.start({root: "/admin/#"});
+				});
+			});
 		</script>
 		<title>{% block title %}{{ app_settings('site_name') }}{% endblock %}</title>
 	</head>
 	<body>
 		<header id="admin-header"><h1>{{ app_settings('site_name') }} Management</h1></header>
 		<nav id="admin-nav">
-			<div id="admin-nav-top"></div>
-			<div id="admin-nav-bottom">
-			<a href="{{'articles'|route_url(traverse='')}}" data-nav-name="articles" class="nav-link" title="Articles">Articles</a>
-			<a href="{{'pages'|route_url(traverse='')}}" data-nav-name="pages" class="nav-link" title="Pages">Pages</a>
-			<a href="{{'uploads'|route_url(traverse='')}}" data-nav-name="uploads" class="nav-link" title="Uploads">Uploads</a>
-			<a href="{{'users'|route_url(traverse='')}}" data-nav-name="users" class="nav-link" title="Users">Users</a>
-			</div>
+			<a href="#/articles/" data-nav-name="articles" class="nav-link" title="Articles">Articles</a>
+			<a href="#/pages/" data-nav-name="pages" class="nav-link" title="Pages">Pages</a>
+			<a href="#/uploads/" data-nav-name="uploads" class="nav-link" title="Uploads">Uploads</a>
+			<a href="#/users/" data-nav-name="users" class="nav-link" title="Users">Users</a>
 		</nav>
 		<section id="admin-content">
-			<div id="admin-content-top"></div>
-			<div id="admin-content-bottom">
-			{% block content %}{% endblock %}
-			</div>
 		</section>
 		<footer id="admin-footer"></footer>
 	</body>

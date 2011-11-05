@@ -37,7 +37,7 @@ def setup_resource_routes(config):
 	)
 
 def setup_admin_routes(config):
-	config.add_route('admin', '/admin')
+	config.add_route('admin', '/admin/')
 	config.add_view(
 		'columns.views.admin_view',
 		route_name='admin',
