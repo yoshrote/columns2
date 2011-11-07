@@ -49,6 +49,8 @@ class HTMLString(colander.String):
 		if cstruct is colander.null:
 			return cstruct
 		text = super(HTMLString, self).deserialize(node, cstruct)
+		if not isinstance(text, basestring):
+			return text
 		try:
 			soup = etree.fromstring(u"<div>%s</div>" % text)
 			return etree.tostring(soup, encoding=unicode)[5:-6]

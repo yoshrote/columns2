@@ -117,10 +117,12 @@ class ArticleViews(BaseViews):
 			self.request, 
 			schema=CreateArticle()
 		)
+		params = self.request.json_body if 'json' in self.request.content_type else None
 		
-		if create_form.validate(force_validate=True):
+		if create_form.validate(params=params, force_validate=True):
 			return create_form.data
 		else:
+			print create_form
 			raise InvalidResource(create_form)
 	
 	def _update_values_from_request(self):
@@ -129,7 +131,9 @@ class ArticleViews(BaseViews):
 			schema=UpdateArticle(), 
 		)
 		
-		if update_form.validate(force_validate=True):
+		params = self.request.json_body if 'json' in self.request.content_type else None
+		
+		if update_form.validate(params=params, force_validate=True):
 			return update_form.data
 		else:
 			raise InvalidResource(update_form)
@@ -230,7 +234,9 @@ class PageViews(BaseViews):
 			schema=CreatePage()
 		)
 		
-		if create_form.validate(force_validate=True):
+		params = self.request.json_body if 'json' in self.request.content_type else None
+		
+		if create_form.validate(params=params, force_validate=True):
 			return create_form.data
 		else:
 			raise InvalidResource(create_form)
@@ -241,7 +247,9 @@ class PageViews(BaseViews):
 			schema=UpdatePage(), 
 		)
 		
-		if update_form.validate(force_validate=True):
+		params = self.request.json_body if 'json' in self.request.content_type else None
+		
+		if update_form.validate(params=params, force_validate=True):
 			return update_form.data
 		else:
 			raise InvalidResource(update_form)
@@ -260,7 +268,9 @@ class UploadViews(BaseViews):
 			schema=CreateUpload()
 		)
 		
-		if create_form.validate(force_validate=True):
+		params = self.request.json_body if 'json' in self.request.content_type else None
+		
+		if create_form.validate(params=params, force_validate=True):
 			return create_form.data
 		else:
 			raise InvalidResource(create_form)
@@ -271,7 +281,9 @@ class UploadViews(BaseViews):
 			schema=UpdateUpload(), 
 		)
 		
-		if update_form.validate(force_validate=True):
+		params = self.request.json_body if 'json' in self.request.content_type else None
+		
+		if update_form.validate(params=params, force_validate=True):
 			return update_form.data
 		else:
 			raise InvalidResource(update_form)
@@ -290,7 +302,9 @@ class UserViews(BaseViews):
 			schema=CreateUser()
 		)
 		
-		if create_form.validate(force_validate=True):
+		params = self.request.json_body if 'json' in self.request.content_type else None
+		
+		if create_form.validate(params=params, force_validate=True):
 			return create_form.data
 		else:
 			raise InvalidResource(create_form)
@@ -301,7 +315,9 @@ class UserViews(BaseViews):
 			schema=UpdateUser(), 
 		)
 		
-		if update_form.validate(force_validate=True):
+		params = self.request.json_body if 'json' in self.request.content_type else None
+		
+		if update_form.validate(params=params, force_validate=True):
 			return update_form.data
 		else:
 			raise InvalidResource(update_form)

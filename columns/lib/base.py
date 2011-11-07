@@ -2,6 +2,7 @@
 import sqlahelper
 from pyramid.httpexceptions import exception_response
 from pyramid.util import DottedNameResolver
+from pyramid.compat import json
 from columns.lib.interfaces import IMemberContext
 from columns.lib.interfaces import ICollectionContext
 from columns.lib.interfaces import IResourceView
@@ -15,12 +16,7 @@ class InvalidResource(Exception):
 		self.form = form
 	
 	def __str__(self):
-		err_list = [
-			': '.join([k,';'.join(self.form.errors_for(k))]) 
-			for k in self.form.errors
-		]
-			
-		return '\n'.join(err_list)
+		return json.dumps(self.form.errors)
 	
 
 class SQLACollectionContext(object):
@@ -73,11 +69,16 @@ class SQLACollectionContext(object):
 	
 	def __setitem__(self, key, value):
 		Session = sqlahelper.get_session()
-		value = value.set_key(key)
-		saved_resource = Session.merge(value)
-		Session.commit()
-		saved_resource.__name__ = saved_resource.get_key()
-		return saved_resource
+		value.set_key(key)
+		try:
+			saved_resource = Session.merge(value)
+			Session.commit()
+		except Exception, ex:
+			Session.rollback()
+			raise ex
+		else:
+			saved_resource.__name__ = saved_resource.get_key()
+			return saved_resource
 	
 	def __len__(self):
 		Session = sqlahelper.get_session()
@@ -182,7 +183,7 @@ class BaseViews(object):
 		except InvalidResource, ex:
 			raise exception_response(
 				400,
-				detail=str(ex)
+				body=unicode(ex),
 			)
 		except NotImplementedError: # pragma: no cover
 			raise exception_reponse(501)
@@ -232,10 +233,10 @@ class BaseViews(object):
 		except InvalidResource, ex:
 			raise exception_response(
 				400,
-				detail=unicode(ex)
+				body=unicode(ex)
 			)
 		else:
-			self.context = self.context.update_from_values(values)
+			self.context.update_from_values(values)
 			collection[self.context.__name__] = self.context
 			
 			raise exception_response(
@@ -494,21 +495,3 @@ def includeme(config):
 	
 	config.add_directive('add_resource', generate_routing)
 
-
-"""
-class BaseMemberContext(object):
-	def get_key(self):
-		return unicode(self.id)
-	
-	def update_from_values(self, values):
-		for k,v in values.items():
-			if not k.startswith('_') and hasattr(self, k):
-				setattr(self, k, v)
-		
-		return self
-	
-	def build_from_values(self, values):
-		return self.update_from_values(values)
-	
-
-"""

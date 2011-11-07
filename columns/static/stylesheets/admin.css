@@ -158,28 +158,28 @@ label {
 .new-link {
   display: inline-block; }
 
-#new-form, #edit-form {
+#save-form {
   text-align: left;
   vertical-align: bottom;
   display: block; }
-  #new-form textarea, #edit-form textarea {
+  #save-form textarea {
     background-color: white;
     color: black; }
-  #new-form input[type=text], #edit-form input[type=text] {
+  #save-form input[type=text] {
     width: 410px; }
-  #new-form textarea, #edit-form textarea {
+  #save-form textarea {
     width: 100%; }
-  #new-form input[type=submit], #new-form input[type=button], #new-form button, #edit-form input[type=submit], #edit-form input[type=button], #edit-form button {
+  #save-form input[type=submit], #save-form input[type=button], #save-form button {
     padding: 5px;
     margin-top: 10px; }
-  #new-form input, #new-form select, #new-form label, #edit-form input, #edit-form select, #edit-form label {
+  #save-form input, #save-form select, #save-form label {
     display: inline-block; }
-  #new-form label, #edit-form label {
+  #save-form label {
     text-align: left;
     width: 150px; }
-  #new-form fieldset, #edit-form fieldset {
+  #save-form fieldset {
     border: none; }
-  #new-form .field-n-label, #edit-form .field-n-label {
+  #save-form .field-n-label {
     width: 580px;
     margin: 5px;
     line-height: 1.5em; }
@@ -223,3 +223,7 @@ label {
   margin-top: 5px;
   margin-left: auto;
   margin-right: auto; }
+
+.error {
+  font-weight: normal;
+  color: red; }

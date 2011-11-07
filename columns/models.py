@@ -277,7 +277,7 @@ class Article(Base):
 		self.id = int(key)
 	
 	def update_from_values(self, values):
-		tags = set([Tag(slug=slugify(tag), label=tag) for tag in values.pop('tags')])
+		tags = set([Tag(slug=slugify(tag), label=tag) for tag in values.pop('tags',[])])
 			
 		for k,v in values.items():
 			if not k.startswith('_') and hasattr(self, k):

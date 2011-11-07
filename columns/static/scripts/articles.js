@@ -1,21 +1,29 @@
-
 var Article = Backbone.Model.extend({
-	url: function(){
-		return '/api/articles/' + this.id;
-	},
 	defaults: {
 		title: '',
 		content: ''
 	},
+	url: function(){
+		if (this.isNew()){
+			return '/api/articles/';
+		} else {
+			return '/api/articles/' + this.id;
+		}
+	},
 	parse: function(resp, xhr) {
-		console.log(resp);
 		return resp.resource;
 	}
 }); 
-     
+
 var ArticleList = Backbone.Collection.extend({
 	model: Article,
-	url: '/api/articles/',
+	url: function(){
+		if (this.drafts == true){
+			return '/api/articles/?drafts=1';
+		} else {
+			return '/api/articles/';
+		}
+	},
     parse : function(resp, xhr) {
       return resp.resources;
     }
@@ -23,8 +31,7 @@ var ArticleList = Backbone.Collection.extend({
 
 var ArticleView = Backbone.View.extend({ 
 	el: $('section#admin-content'), // attaches `this.el` to an existing element.
-	events: {
-	},
+	events: {},
 	initialize: function(){
 		_.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
 	},
@@ -65,8 +72,7 @@ var ArticleView = Backbone.View.extend({
 
 var ArticleIndexView = Backbone.View.extend({ 
 	el: $('section#admin-content'), // attaches `this.el` to an existing element.
-	events: {
-	},
+	events: {},
 	initialize: function(){
 		_.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
 	},
@@ -74,7 +80,7 @@ var ArticleIndexView = Backbone.View.extend({
 		var tmpl = '\
 		<div>\
 			<a href="#/articles/" class="new-link">Show Posts</a> | \
-			<a href="#/articles/?drafts=1" class="new-link">Show Drafts</a>\
+			<a href="#/articles/drafts" class="new-link">Show Drafts</a>\
 		</div>\
 		<a href="#/articles/new" class="new-link">Create New</a>\
 		<table id="admin-resource-list">\
@@ -99,7 +105,6 @@ var ArticleIndexView = Backbone.View.extend({
 		</table>\
 		';
 		var template_vars = this.collection.toJSON();
-		console.log(template_vars);
 		for(var i=0;i < template_vars.length; i++){
 			template_vars[i].author_name = template_vars[i].author.name;
 		}
@@ -120,17 +125,21 @@ var ArticleIndexView = Backbone.View.extend({
 	}
 });
 
-var ArticleNewFormView = Backbone.View.extend({
-	el: $('section#admin-content'), // attaches `this.el` to an existing element.
+var ArticleFormView = Backbone.View.extend({
+	el: $('section#admin-content'),
 	events: {
+		'submit #save-form': 'save_form',
+		'submit #delete-form': 'delete_form'
 	},
 	initialize: function(options){
-		_.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
+		_.bindAll(this, 'render', 'save_form', 'delete_form'); // fixes loss of context for 'this' within methods
+		this.router = options.router;
 	},
 	render: function(){
 		var template_vars = this.model.toJSON();
+		template_vars.is_new = this.model.isNew();
 		var tmpl = '\
-		<form id="new-form">\
+		<form id="save-form">\
 			<div class="field-n-label">\
 				<label for="title">Title</label>\
 				<input type="text" name="title" value="{{title}}" />\
@@ -155,62 +164,84 @@ var ArticleNewFormView = Backbone.View.extend({
 			<input type="button" id="preview_post" value="Preview Post" />\
 			<input type="submit" name="save" value="Save{{^published}} As Draft{{/published}}" />\
 		</form>\
-		';
-		$(this.el).html(Mustache.to_html(tmpl, template_vars));
-		$("select, input:checkbox, input:radio, input:file").uniform();
-	}
-});
-
-var ArticleEditFormView = Backbone.View.extend({
-	el: $('section#admin-content'), // attaches `this.el` to an existing element.
-	events: {
-	},
-	initialize: function(options){
-		_.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
-	},
-	render: function(){
-		var template_vars = this.model.toJSON();
-		var tmpl = '\
-		<form id="edit-form">\
-			<div class="field-n-label">\
-				<label for="title">Title</label>\
-				<input type="text" name="title" value="{{title}}" />\
-			</div>\
-			<div class="field-n-label">\
-				<label for="can_comment">Enable Comments</label>\
-				<input type="checkbox" name="can_comment" value="1"{{#can_comment}} checked="checked"{{/can_comment}} />\
-			</div>\
-			<div class="field-n-label">\
-				<label for="sticky">Make Sticky</label>\
-				<input type="checkbox" name="sticky" value="1"{{#sticky}} checked="checked"{{/sticky}} />\
-			</div>\
-			<div class="field-n-label">\
-				<label for="content">Content</label>\
-				<textarea name="content" class="jquery_ckeditor">{{{content}}}</textarea>\
-			</div>\
-			<div class="field-n-label">\
-				<label for="tags">Tags</label>\
-				<input type="text" name="tags" value="{{#tags}}{{label}}, {{/tags}}" />\
-			</div>\
-			<input type="hidden" name="published" value="{{published}}" />\
-			<input type="button" id="preview_post" value="Preview Post" />\
-			<input type="submit" name="save" value="Save{{^published}} As Draft{{/published}}" />\
-		</form>\
+		{{^is_new}}\
 		<form id="delete-form">\
 			<fieldset>\
 				<input type="submit" value="Delete" />\
 			</fieldset>\
 		</form>\
+		{{/is_new}}\
 		';
 		$(this.el).html(Mustache.to_html(tmpl, template_vars));
-		$("select, input:checkbox, input:radio, input:file").uniform();
+		//$("select, input:checkbox, input:radio, input:file").uniform();
+	},
+	save_form: function(){
+		var router = this.router;
+		var model = this.model;
+		var field_names = ['title', 'can_comment', 'sticky', 'content', 'tags'];
+		model.save({
+			title: this.$('input[name="title"]').val(),
+			can_comment: this.$('input[name="can_comment"]:checked').val(),
+			sticky: this.$('input[name="sticky"]:checked').val(),
+			content: this.$('textarea[name="content"]').val(),
+			tags: this.$('input[name="tags"]').val(),
+			published: this.$('input[name="published"]').val()
+		},
+		{
+			success: function(model, response){
+				console.log(response);
+				console.log(model);
+				router.navigate('/articles/', true);
+			},
+			error: function(model, response){
+				console.log(response);
+				console.log(model);
+				if (response.status == 200 || response.status == 201){
+					router.navigate('/articles/', true);
+				} else if (response.status == 400) {
+					var errors = JSON.parse(response.responseText);
+					for(var i = 0; i < field_names.length; i++){
+						var field = field_names[i]
+						var field_error = errors[ field ];
+						if (field_error === undefined){
+						// clear error field if there is no error
+							this.$('label[for="' + field + '"] span.error').html('');
+						} else {
+							var error_label = this.$('label[for="' + field + '"] span.error');
+							if (error_label.length == 0){
+							// build span.error if it did not exist
+								this.$('label[for="' + field + '"]').append(
+									' <span class="error">*' + errors[field] + '</span>'
+								);
+							} else {
+							// update the existing span.error
+								error_label.html('*' + errors[field]);
+							}
+						}
+					}
+				}
+			}
+		});
+		return false;
+	},
+	delete_form: function(){
+		var router = this.router;
+		this.model.destroy({
+			success: function(model, response){
+				router.navigate('/articles/', true);
+			},
+			error: function(model, response){
+				console.log(response);
+			}
+		});
+		return false;
 	}
 });
 
 var ArticleCtrl = Backbone.Router.extend({
 	routes: {
 		"/articles/":			"index",	// #/
-		"/articles/index":		"index",	// #/index
+		"/articles/drafts":		"drafts",	// #/drafts
 		"/articles/new":		"new",		// #/new
 		"/articles/:id":		"show",		// #/13
 		"/articles/:id/edit":	"edit"		// #/13/edit
@@ -228,9 +259,24 @@ var ArticleCtrl = Backbone.Router.extend({
 			}
 		});
 	},
+	drafts: function() {
+		var collection = new ArticleList();
+		var router = this;
+		collection.drafts = true;
+		collection.fetch({
+			success: function(model, resp){
+				var view = new ArticleIndexView({collection: collection});
+				view.render();
+			},
+			error: function(model, options){
+				alert('Something went wrong');
+				router.navigate('', true);
+			}
+		});
+	},
 	new: function() {
 		var model = new Article();
-		var view = new ArticleNewFormView({model: model});
+		var view = new ArticleFormView({model: model, router: this});
 		view.render();
 	},
 	show: function(id) {
@@ -254,7 +300,7 @@ var ArticleCtrl = Backbone.Router.extend({
 		model.set({id: id});
 		model.fetch({
 			success: function(model, resp){
-				var view = new ArticleNewFormView({model: model});
+				var view = new ArticleFormView({model: model, router: ctrl});
 				view.render();
 			},
 			error: function(model, options){
@@ -266,4 +312,3 @@ var ArticleCtrl = Backbone.Router.extend({
 });
 
 var articles_app = new ArticleCtrl();
-

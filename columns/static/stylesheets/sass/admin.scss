@@ -179,7 +179,7 @@ label{font-weight:bold;}
 .new-link{
 	display:inline-block;
 }
-#new-form, #edit-form{
+#save-form{
 	text-align:left;
 	vertical-align:bottom;
 	display:block;
@@ -248,4 +248,8 @@ label{font-weight:bold;}
 		left:auto;
 		right:auto;
 	}
+}
+.error{
+	font-weight:normal;
+	color:red;
 }
