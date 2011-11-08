@@ -1,13 +1,20 @@
-
 var Upload = Backbone.Model.extend({
 	defaults: {
 		title: '',
 		content: ''
 	},
+	url: function(){
+		if (this.isNew()){
+			return '/api/uploads/';
+		} else {
+			return '/api/uploads/' + this.id;
+		}
+	},
 	parse : function(resp, xhr) {
 		return resp.resource;
 	}
-});      
+});
+     
 var UploadList = Backbone.Collection.extend({
 	model: Upload,
 	url: '/api/uploads/',
@@ -85,21 +92,27 @@ var UploadIndexView = Backbone.View.extend({
 	}
 });
 
-var UploadNewFormView = Backbone.View.extend({
+var UploadFormView = Backbone.View.extend({
 	el: $('section#admin-content'), // attaches `this.el` to an existing element.
 	events: {
+		'submit #save-form': 'save_form',
+		'submit #delete-form': 'delete_form'
 	},
 	initialize: function(options){
-		_.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
+		_.bindAll(this, 'render', 'save_form', 'delete_form'); // fixes loss of context for 'this' within methods
+		this.router = options.router;
 	},
 	render: function(){
 		var template_vars = this.model.toJSON();
+		template_vars.is_new = this.model.isNew();
 		var tmpl = '\
-		<form id="new-form">\
+		<form id="save-form">\
+			{{#is_new}}\
 			<div class="field-n-label">\
 				<label for="upload">File</label>\
 				<input type="file" name="upload" />\
 			</div>\
+			{{/is_new}}\
 			<div class="field-n-label">\
 				<label for="title">Alternative Text</label>\
 				<input type="text" name="title" value="{{title}}" />\
@@ -110,53 +123,89 @@ var UploadNewFormView = Backbone.View.extend({
 			</div>\
 			<input type="submit" name="save" value="Save" />\
 		</form>\
-		';
-		$(this.el).html(Mustache.to_html(tmpl, template_vars));
-		$("select, input:checkbox, input:radio, input:file").uniform();
-	}
-});
-
-var UploadEditFormView = Backbone.View.extend({
-	el: $('section#admin-content'), // attaches `this.el` to an existing element.
-	events: {
-	},
-	initialize: function(options){
-		_.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
-	},
-	render: function(){
-		var template_vars = this.model.toJSON();
-		var tmpl = '\
-		<form id="edit-form">\
-			<div class="field-n-label">\
-				<label for="title">Alternative Text</label>\
-				<input type="text" name="title" value="{{title}}" />\
-			</div>\
-			<div class="field-n-label">\
-				<label for="content">Description</label>\
-				<textarea name="content">{{content}}</textarea>\
-			</div>\
-			<input type="submit" name="save" value="Save" />\
-		</form>\
+		{{^is_new}}\
 		<form id="delete-form">\
 			<fieldset>\
 				<input type="submit" value="Delete" />\
 			</fieldset>\
 		</form>\
+		{{/is_new}}\
 		';
 		$(this.el).html(Mustache.to_html(tmpl, template_vars));
 		$("select, input:checkbox, input:radio, input:file").uniform();
+	},
+	save_form: function(){
+		var router = this.router;
+		var model = this.model;
+		var field_names = ['title', 'content'];
+		model.save({
+			title: this.$('input[name="title"]').val(),
+			content: this.$('textarea[name="content"]').val(),
+		},
+		{
+			success: function(model, response){
+				console.log(response);
+				console.log(model);
+				router.navigate('/uploads/', true);
+			},
+			error: function(model, response){
+				console.log(response);
+				console.log(model);
+				if (response.status == 200 || response.status == 201){
+					router.navigate('/uploads/', true);
+				} else if (response.status == 400) {
+					var errors = JSON.parse(response.responseText);
+					for(var i = 0; i < field_names.length; i++){
+						var field = field_names[i]
+						var field_error = errors[ field ];
+						if (field_error === undefined){
+						// clear error field if there is no error
+							this.$('label[for="' + field + '"] span.error').html('');
+						} else {
+							var error_label = this.$('label[for="' + field + '"] span.error');
+							if (error_label.length == 0){
+							// build span.error if it did not exist
+								this.$('label[for="' + field + '"]').append(
+									' <span class="error">*' + errors[field] + '</span>'
+								);
+							} else {
+							// update the existing span.error
+								error_label.html('*' + errors[field]);
+							}
+						}
+					}
+				}
+			}
+		});
+		return false;
+	},
+	delete_form: function(){
+		var router = this.router;
+		this.model.destroy({
+			success: function(model, response){
+				router.navigate('/uploads/', true);
+			},
+			error: function(model, response){
+				console.log(response);
+			}
+		});
+		return false;
 	}
 });
+
 
 var UploadCtrl = Backbone.Router.extend({
 	routes: {
 		"/uploads/":			"index",	// #/
-		"/uploads/index":		"index",	// #/index
 		"/uploads/new":			"new",		// #/new
 		"/uploads/:id":			"show",		// #/13
 		"/uploads/:id/edit":	"edit"		// #/13/edit
 	},
+	initialize: function(options){
+		_.bindAll(this, 'index', 'edit', 'new', 'show'); // fixes loss of context for 'this' within methods
+	},
 	index: function() {
+		var ctrl = this;
 		var collection = new UploadList();
 		collection.fetch({
 			success: function(model, resp){
@@ -170,8 +219,9 @@ var UploadCtrl = Backbone.Router.extend({
 		});
 	},
 	new: function() {
+		var ctrl = this;
 		var model = new Upload();
-		var view = new UploadNewFormView({model: model});
+		var view = new UploadFormView({model: model, router: ctrl});
 		view.render();
 	},
 	show: function(id) {
@@ -195,7 +245,7 @@ var UploadCtrl = Backbone.Router.extend({
 		model.set({id: id});
 		model.fetch({
 			success: function(model, resp){
-				var view = new UploadNewFormView({model: model});
+				var view = new UploadFormView({model: model, router: ctrl});
 				view.render();
 			},
 			error: function(model, options){

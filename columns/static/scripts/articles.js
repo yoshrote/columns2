@@ -246,6 +246,9 @@ var ArticleCtrl = Backbone.Router.extend({
 		"/articles/:id":		"show",		// #/13
 		"/articles/:id/edit":	"edit"		// #/13/edit
 	},
+	initialize: function(options){
+		_.bindAll(this, 'index', 'edit', 'new', 'show', 'drafts'); // fixes loss of context for 'this' within methods
+	},
 	index: function() {
 		var collection = new ArticleList();
 		collection.fetch({
@@ -275,8 +278,9 @@ var ArticleCtrl = Backbone.Router.extend({
 		});
 	},
 	new: function() {
+		var ctrl = this;
 		var model = new Article();
-		var view = new ArticleFormView({model: model, router: this});
+		var view = new ArticleFormView({model: model, router: ctrl});
 		view.render();
 	},
 	show: function(id) {
