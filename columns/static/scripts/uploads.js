@@ -121,13 +121,13 @@ var UploadFormView = Backbone.View.extend({
 				<label for="content">Description</label>\
 				<textarea name="content">{{content}}</textarea>\
 			</div>\
-			<input type="submit" name="save" value="Save" />\
+			<input type="submit" name="save" value="Save" class="form-submit-left"/>\
 		</form>\
 		{{^is_new}}\
 		<form id="delete-form">\
-			<fieldset>\
-				<input type="submit" value="Delete" />\
-			</fieldset>\
+			<div>\
+				<input type="submit" value="Delete" class="form-submit-right"/>\
+			</div>\
 		</form>\
 		{{/is_new}}\
 		';

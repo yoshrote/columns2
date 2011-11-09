@@ -184,6 +184,20 @@ label {
     margin: 5px;
     line-height: 1.5em; }
 
+#delete-form input[type=submit], #delete-form input[type=button], #delete-form button {
+  padding: 5px;
+  margin-top: 10px; }
+
+.form-submit-left {
+  float: left;
+  vertical-align: bottom;
+  margin-right: 10px; }
+
+.form-submit-right {
+  float: right;
+  vertical-align: bottom;
+  margin-left: 10px; }
+
 /***********************
  Image Browser CSS
 ***********************/

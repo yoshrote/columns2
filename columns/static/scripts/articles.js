@@ -161,14 +161,14 @@ var ArticleFormView = Backbone.View.extend({
 				<input type="text" name="tags" value="{{#tags}}{{label}}, {{/tags}}" />\
 			</div>\
 			<input type="hidden" name="published" value="{{published}}" />\
-			<input type="button" id="preview_post" value="Preview Post" />\
-			<input type="submit" name="save" value="Save{{^published}} As Draft{{/published}}" />\
+			<input type="button" id="preview_post" value="Preview Post" class="form-submit-left"/>\
+			<input type="submit" name="save" value="Save{{^published}} As Draft{{/published}}"  class="form-submit-left"/>\
 		</form>\
 		{{^is_new}}\
 		<form id="delete-form">\
-			<fieldset>\
-				<input type="submit" value="Delete" />\
-			</fieldset>\
+			<div>\
+				<input type="submit" value="Delete" class="form-submit-right"/>\
+			</div>\
 		</form>\
 		{{/is_new}}\
 		';
