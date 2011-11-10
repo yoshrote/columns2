@@ -183,6 +183,16 @@ label {
     width: 580px;
     margin: 5px;
     line-height: 1.5em; }
+  #save-form .field-n-wide-label {
+    width: 580px;
+    margin: 5px;
+    margin-top: 15px;
+    line-height: 1.5em; }
+    #save-form .field-n-wide-label label {
+      display: block;
+      width: 580px; }
+    #save-form .field-n-wide-label:first {
+      margin-top: 5px; }
 
 #delete-form input[type=submit], #delete-form input[type=button], #delete-form button {
   padding: 5px;

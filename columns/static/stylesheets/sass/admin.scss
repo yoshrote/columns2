@@ -199,9 +199,22 @@ label{font-weight:bold;}
 	label{text-align:left;width:150px;}
 	fieldset{ border:none;}
 	.field-n-label{
-		width:580px;
+		width: 580px;
 		margin: 5px;
-		line-height:1.5em;
+		line-height: 1.5em;
+	}
+	.field-n-wide-label{
+		width: 580px;
+		margin: 5px;
+		margin-top: 15px;
+		line-height: 1.5em;
+		label{
+			display: block;
+			width: 580px;
+		}
+		&:first{
+			margin-top: 5px;
+		}
 	}
 }
 #delete-form{

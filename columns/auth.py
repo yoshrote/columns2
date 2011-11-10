@@ -312,6 +312,7 @@ def is_author(context):
 POLICY_MAP = {
 	None: {
 		'default': set([DEFAULT_PERMISSION]),
+		'settings': [minimum_permission('super')],
 	},
 	'article': {
 		'index': [set([Everyone])],

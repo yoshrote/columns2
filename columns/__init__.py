@@ -44,9 +44,28 @@ def setup_admin_routes(config):
 	)
 	config.add_route('admin_no_slash', '/admin')
 	config.add_view(
-		'columns.views.admin_view',
+		'columns.views.admin_no_slash_view',
 		route_name='admin_no_slash',
 	)
+	
+	config.add_route('settings', '/admin/settings')
+	config.add_view(
+		'columns.views.settings_view',
+		route_name='settings',
+	)
+	
+	config.add_route('settings_edit', '/admin/settings/:module/edit')
+	config.add_view(
+		'columns.views.settings_edit_view',
+		request_method='GET',
+		route_name='settings_edit',
+	)
+	config.add_view(
+		'columns.views.settings_save',
+		request_method='POST',
+		route_name='settings_edit',
+	)
+	
 	
 	config.add_route('browse_images', '/admin/browse_images')
 	config.add_view(

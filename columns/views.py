@@ -13,6 +13,43 @@ from columns.models import Setting
 def admin_view(request):
 	return render_to_response('columns:templates/admin.jinja', {})
 
+def admin_no_slash_view(request):
+	raise exception_response(
+		302,
+		location=request.route_url('admin')
+	)
+
+def settings_view(request):
+	Session = sqlahelper.get_session()
+	settings = Session.query(Setting).\
+		order_by(Setting.module).\
+		all()
+	return render_to_response('columns:templates/settings/index.jinja', {'resources': settings})
+
+def settings_edit_view(request):
+	module = request.matchdict.get('module')
+	Session = sqlahelper.get_session()
+	setting = Session.query(Setting).get(module)
+	return render_to_response('columns:templates/settings/edit.jinja', {'resource': setting})
+
+def settings_save(request):
+	module = request.matchdict.get('module')
+	Session = sqlahelper.get_session()
+	setting = Session.query(Setting).get(module)
+	# Need to fix JSONUnicode to detect changes to avoid this hack of a loop
+	new_settings = {}
+	for k,v in request.POST.items():
+		if k == 'save':
+			continue
+		new_settings[k] = v
+	setting.values = new_settings
+	Session.merge(setting)
+	Session.commit()
+	raise exception_response(
+		302,
+		location=request.route_url('settings')
+	)
+
 def browse_images_view(request):
 	ckedit_num = request.GET.get('CKEditorFuncNum',None)
 	return render_to_response(

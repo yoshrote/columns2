@@ -1,0 +1,17 @@
+{% if not request.is_xhr %}{% extends "columns:templates/admin.jinja"%}{% endif %}
+{% block content %}
+{{ h.form('settings_edit'|route_url(module=resource.module), method='post',  id='save-form') }}
+	<div class="field-n-label">
+		<label for="name">Module</label>
+		<span>{{resource.module}}</span>
+	</div>
+	{% for k,v in resource.values.items() %}
+	<div class="field-n-wide-label">
+		<label for="{{ k }}">{{ k }}</label>
+		<input type="text" name="{{ k }}" value="{{ v }}" />
+	</div>
+	{% endfor %}
+	<input type="submit" name="save" value="Save" class="form-submit-left"/>
+</form>
+{% endblock %}
+

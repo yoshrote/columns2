@@ -1,0 +1,20 @@
+{% if not request.is_xhr %}{% extends "columns:templates/admin.jinja"%}{% endif %}
+{% block content %}
+<table id="admin-resource-list">
+	<thead>
+		<tr>
+			<td class="filler-cell">&nbsp;</td>
+			<th>Module</th>
+		</tr>
+	</thead>
+	<tbody>
+	{% for resource in resources %}
+		<tr class="{{ loop.cycle('odd', 'even') }}">
+			<td><a href="{{ 'settings_edit'|route_url(module=resource.module) }}">Edit</a></td>
+			<td>{{ resource.module }}</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+{% endblock %}
+

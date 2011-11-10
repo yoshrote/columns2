@@ -20,8 +20,8 @@
 			.script('http://cdnjs.cloudflare.com/ajax/libs/backbone.js/0.5.3/backbone-min.js')
 			.script('http://cachedcommons.org/cache/jquery-uniform/1.7.3/javascripts/jquery-uniform-min.js')
 			.script('http://ajax.cdnjs.com/ajax/libs/mustache.js/0.3.0/mustache.min.js')
-			.script('{{ "scripts/ckeditor/ckeditor.js"|static_url }}')
-			.script('{{ "scripts/ckeditor/adapters/jquery.js"|static_url }}')
+			//.script('{{ "scripts/ckeditor/ckeditor.js"|static_url }}')
+			//.script('{{ "scripts/ckeditor/adapters/jquery.js"|static_url }}')
 			.script('{{ "scripts/articles.js"|static_url }}')
 			.script('{{ "scripts/pages.js"|static_url }}')
 			.script('{{ "scripts/users.js"|static_url }}')
@@ -45,10 +45,16 @@
 			<a href="#/pages/" data-nav-name="pages" class="nav-link" title="Pages">Pages</a>
 			<a href="#/uploads/" data-nav-name="uploads" class="nav-link" title="Uploads">Uploads</a>
 			<a href="#/users/" data-nav-name="users" class="nav-link" title="Users">Users</a>
+			{#% if 'settings' is allowed -%#}
+			<a href="{{ 'settings'|route_url }}" data-nav-name="settings" class="nav-link" title="Settings">Settings</a>
+			{#%- endif %#}
 		</nav>
 		<section id="admin-content">
+		{% block content %}{% endblock %}
 		</section>
-		<footer id="admin-footer"></footer>
+		<footer id="admin-footer">
+		{% block footer %}{% endblock %}
+		</footer>
 	</body>
 </html>
 
