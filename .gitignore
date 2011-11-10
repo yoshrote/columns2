@@ -32,3 +32,4 @@ pip-log.txt
 test_uploads
 test_oid
 *.db
+.sass-cache

@@ -36,13 +36,10 @@ def settings_save(request):
 	module = request.matchdict.get('module')
 	Session = sqlahelper.get_session()
 	setting = Session.query(Setting).get(module)
-	# Need to fix JSONUnicode to detect changes to avoid this hack of a loop
-	new_settings = {}
 	for k,v in request.POST.items():
 		if k == 'save':
 			continue
-		new_settings[k] = v
-	setting.values = new_settings
+		setting.values[k] = v
 	Session.merge(setting)
 	Session.commit()
 	raise exception_response(

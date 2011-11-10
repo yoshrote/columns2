@@ -8,6 +8,7 @@ import os.path
 import shutil
 import time
 
+from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.exc import StatementError
 from sqlalchemy.types import TypeDecorator
@@ -53,6 +54,39 @@ class AlwaysUnicodeText(TypeDecorator):
 	
 	def copy(self):
 		return AlwaysUnicodeText(self.impl.length)
+	
+
+class MutationDict(Mutable, dict):
+	@classmethod
+	def coerce(cls, key, value):
+		"Convert plain dictionaries to MutationDict."
+
+		if not isinstance(value, MutationDict):
+			if isinstance(value, dict):
+				return MutationDict(value)
+
+			# this call will raise ValueError
+			return Mutable.coerce(key, value)
+		else:
+			return value
+	
+	def __setitem__(self, key, value):
+		"Detect dictionary set events and emit change events."
+
+		dict.__setitem__(self, key, value)
+		self.changed()
+	
+	def __delitem__(self, key):
+		"Detect dictionary del events and emit change events."
+
+		dict.__delitem__(self, key)
+		self.changed()
+	
+	def __getstate__(self):
+		return dict(self)
+	
+	def __setstate__(self, state):
+		self.update(state)
 	
 
 class JSONUnicode(TypeDecorator):
@@ -205,12 +239,12 @@ class Article(Base):
 		default=get_author_id
 	)
 	author_meta = Column(
-		JSONUnicode(),
+		MutationDict.as_mutable(JSONUnicode),
 		nullable=False,
 		default=get_author_data_from_user
 	)
 	contributors = Column(
-		JSONUnicode(),
+		MutationDict.as_mutable(JSONUnicode),
 		nullable=False,
 		default=list
 	)
@@ -322,7 +356,7 @@ class Upload(Base):
 		default=get_author_id
 	)
 	author_meta = Column(
-		JSONUnicode(),
+		MutationDict.as_mutable(JSONUnicode),
 		nullable=False,
 		default=get_author_data_from_user
 	)
@@ -405,7 +439,7 @@ class Setting(Base):
 		primary_key=True
 	)
 	values = Column(
-		JSONUnicode(),
+		MutationDict.as_mutable(JSONUnicode),
 		nullable=False
 	)
 
