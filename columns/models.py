@@ -56,15 +56,44 @@ class AlwaysUnicodeText(TypeDecorator):
 		return AlwaysUnicodeText(self.impl.length)
 	
 
+class MutationList(Mutable, list):
+	@classmethod
+	def coerce(cls, key, value):
+		"Convert plain dictionaries to MutationDict."
+		if not isinstance(value, MutationList):
+			if isinstance(value, list):
+				return MutationList(value)
+			# this call will raise ValueError
+			return Mutable.coerce(key, value)
+		else:
+			return value
+	
+	def __setitem__(self, key, value):
+		list.__setitem__(self, key, value)
+		self.changed()
+	
+	def __delitem__(self, key):
+		list.__delitem__(self, key)
+		self.changed()
+	
+	def __getstate__(self):
+		return list(self)
+	
+	def __setstate__(self, state):
+		self.extend(state)
+	
+	def append(self, value):
+		list.append(self, value)
+		self.changed()
+	
+
 class MutationDict(Mutable, dict):
 	@classmethod
 	def coerce(cls, key, value):
 		"Convert plain dictionaries to MutationDict."
-
 		if not isinstance(value, MutationDict):
 			if isinstance(value, dict):
 				return MutationDict(value)
-
 			# this call will raise ValueError
 			return Mutable.coerce(key, value)
 		else:
@@ -72,13 +101,11 @@ class MutationDict(Mutable, dict):
 	
 	def __setitem__(self, key, value):
 		"Detect dictionary set events and emit change events."
-
 		dict.__setitem__(self, key, value)
 		self.changed()
 	
 	def __delitem__(self, key):
 		"Detect dictionary del events and emit change events."
-
 		dict.__delitem__(self, key)
 		self.changed()
 	
@@ -244,7 +271,7 @@ class Article(Base):
 		default=get_author_data_from_user
 	)
 	contributors = Column(
-		MutationDict.as_mutable(JSONUnicode),
+		MutationList.as_mutable(JSONUnicode),
 		nullable=False,
 		default=list
 	)

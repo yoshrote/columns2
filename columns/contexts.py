@@ -78,6 +78,8 @@ class ArticleCollectionContext(SQLACollectionContext):
 		resource = Session.query(
 			Article
 		).get(id)
+		if resource is None:
+			raise KeyError(key)
 		Session.delete(resource)
 		Session.commit()
 	
@@ -96,6 +98,8 @@ class UploadCollectionContext(SQLACollectionContext):
 		resource = Session.query(
 			self.__model__
 		).get(id)
+		if resource is None:
+			raise KeyError(key)
 		basepath = self.request.registry.settings.get('upload_basepath')
 		resource_path = os.path.join(basepath,resource.filepath)
 		Session.delete(resource)
@@ -122,7 +126,6 @@ class ArticleViews(BaseViews):
 		if create_form.validate(params=params, force_validate=True):
 			return create_form.data
 		else:
-			print create_form
 			raise InvalidResource(create_form)
 	
 	def _update_values_from_request(self):

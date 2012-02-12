@@ -13,7 +13,7 @@ from columns.models import Setting
 def admin_view(request):
 	return render_to_response('columns:templates/admin.jinja', {})
 
-def admin_no_slash_view(request):
+def admin_no_slash_view(request): # pragma: no cover
 	raise exception_response(
 		302,
 		location=request.route_url('admin')

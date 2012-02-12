@@ -43,6 +43,18 @@ class SQLACollectionContext(object):
 		if key in self.collection_views:
 			raise KeyError(key)
 		if isinstance(key, slice):
+			def is_negative(value):
+				return value is not None and value < 0
+			
+			def offset_negative(lenth, value):
+				try:
+					return length + value if int(value) <= 0 else value
+				except TypeError:
+					return None
+			
+			if is_negative(key.start) or is_negative(key.stop):
+				length = len(self)
+				key = slice(offset_negative(length, key.start), offset_negative(length, key.stop))
 			return self.index(offset=key.start, limit=key.stop)
 		id = self._decode_key(key)
 		Session = sqlahelper.get_session()
@@ -73,7 +85,7 @@ class SQLACollectionContext(object):
 		try:
 			saved_resource = Session.merge(value)
 			Session.commit()
-		except Exception, ex:
+		except Exception, ex: # pragma: no cover
 			Session.rollback()
 			raise ex
 		else:
@@ -135,7 +147,8 @@ class SQLACollectionContext(object):
 	
 	def clear(self):
 		Session = sqlahelper.get_session()
-		query = Session.query(self.__model__).delete()
+		Session.query(self.__model__).delete()
+		Session.commit()
 	
 
 class BaseViews(object):
@@ -286,19 +299,19 @@ def includeme(config):
 		member_class = dotted_resolver.maybe_resolve(member_context)
 		view_class = dotted_resolver.maybe_resolve(view_class_name)
 		
-		if not verifyClass(ICollectionContext, collection_class):
+		if not verifyClass(ICollectionContext, collection_class): # pragma: no cover
 			raise TypeError(
 				"%s does not implement ICollectionContext",
 				 collection_context
 			)
 		
-		if not verifyClass(IMemberContext, member_class):
+		if not verifyClass(IMemberContext, member_class): # pragma: no cover
 			raise TypeError(
 				"%s does not implement IMemberContext",
 				 collection_context
 			)
 		
-		if not verifyClass(IResourceView, view_class):
+		if not verifyClass(IResourceView, view_class): # pragma: no cover
 			raise TypeError(
 				"%s does not implement IResourceView",
 				 view_class_name

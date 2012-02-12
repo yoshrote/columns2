@@ -8,7 +8,10 @@ from pyramid.httpexceptions import HTTPOk
 from pyramid.httpexceptions import HTTPNotImplemented
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPClientError
-
+# SQLACollectionContext.__setitem__
+# SQLACollectionContext.__getitem__ w/ slice
+# generate_routing w/ bad collection, member or view
+# settings_view, settings_edit_view, settings_save
 import os
 import os.path
 import datetime
@@ -53,7 +56,7 @@ def _populateDB():
 	article.author = user
 	article.tags.add(tag1)
 	article.tags.add(tag2)
-	page = Page(title='test_page',slug='test_page',visible=True)
+	page = Page(title='test_page', slug='test_page', visible=True)
 	upload = Upload(
 		title='test_upload',
 		filepath='test/dir/upload.txt'
@@ -109,7 +112,7 @@ class DummyMember(object):
 
 class DummyCollection(testing.DummyResource):
 	def index(self, offset=None, limit=None):
-		return dict(self.subs.items()[slice(offset,limit)])
+		return dict(self.subs.items()[slice(offset, limit)])
 	
 	def new(self):
 		return DummyMember(parent=self)
@@ -119,6 +122,8 @@ class DummyCollection(testing.DummyResource):
 		return resource
 	
 
+class DummyRequest(testing.DummyRequest):
+	content_type = 'application/x-form-urlencoded'
 
 ########################################
 ## Context Collection Tests
@@ -134,7 +139,7 @@ class TestArticleCollection(unittest.TestCase):
 	
 	def _makeOne(self):
 		from columns.contexts import ArticleCollectionContext
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		return ArticleCollectionContext(request)
 	
 	def test___getitem__hit(self):
@@ -152,6 +157,23 @@ class TestArticleCollection(unittest.TestCase):
 	def test___getitem__notint(self):
 		root = self._makeOne()
 		self.assertRaises(KeyError, root.__getitem__, 'notint')
+	
+	def test_getslice_hit(self):
+		from columns.models import Article
+		root = self._makeOne()
+		result = root[:2]
+		self.assertEquals(len(result), 1)
+		first = result[0]
+		last = root[-1:][0]
+		self.assertEqual(first.__class__, Article)
+		self.assertEqual(first.__parent__, root)
+		self.assertEqual(first.__name__, '1')
+		self.assertEquals(first.__name__, last.__name__)
+	
+	def test_getslice_miss(self):
+		root = self._makeOne()
+		result = root[5:6]
+		self.assertEquals(len(result), 0)
 	
 	def test_get_hit(self):
 		from columns.models import Article
@@ -182,11 +204,36 @@ class TestArticleCollection(unittest.TestCase):
 		self.assertEqual(model.__parent__, root)
 	
 	def test___delitem__hit(self):
-		from columns.models import Article
 		root = self._makeOne()
-		model = root['1']
 		del root['1']
 		self.assertRaises(KeyError, root.__getitem__, '1')
+	
+	def test___delitem__miss(self):
+		root = self._makeOne()
+		self.assertRaises(KeyError, root.__delitem__, '10000')
+	
+	def test_discard(self):
+		root = self._makeOne()
+		root.discard('1')
+		self.assertRaises(KeyError, root.__getitem__, '1')
+		root.discard('1')
+	
+	def test___contains__hit(self):
+		root = self._makeOne()
+		self.assertTrue(root.__contains__('1'))
+	
+	def test___contains__miss(self):
+		root = self._makeOne()
+		self.assertFalse(root.__contains__('10000'))
+	
+	def test___len__(self):
+		root = self._makeOne()
+		self.assertEquals(root.__len__(), 1)
+	
+	def test_clear(self):
+		root = self._makeOne()
+		root.clear()
+		self.assertEquals(root.__len__(), 0)
 	
 	def test_add(self):
 		from columns.models import Article
@@ -213,7 +260,7 @@ class TestUserCollection(unittest.TestCase):
 	
 	def _makeOne(self):
 		from columns.contexts import UserCollectionContext
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		return UserCollectionContext(request)
 	
 	def test___getitem__hit(self):
@@ -231,6 +278,24 @@ class TestUserCollection(unittest.TestCase):
 	def test___getitem__notint(self):
 		root = self._makeOne()
 		self.assertRaises(KeyError, root.__getitem__, 'notint')
+	
+	def test_getslice_hit(self):
+		from columns.models import User
+		root = self._makeOne()
+		result = root[:2]
+		self.assertEquals(len(result), 2)
+		first = result[0]
+		second = result[1]
+		last = root[-1:][0]
+		self.assertEqual(first.__class__, User)
+		self.assertEqual(first.__parent__, root)
+		self.assertEqual(first.__name__, '1')
+		self.assertEquals(second.__name__, last.__name__)
+	
+	def test_getslice_miss(self):
+		root = self._makeOne()
+		result = root[5:6]
+		self.assertEquals(len(result), 0)
 	
 	def test_get_hit(self):
 		from columns.models import User
@@ -261,11 +326,36 @@ class TestUserCollection(unittest.TestCase):
 		self.assertEqual(model.__parent__, root)
 	
 	def test___delitem__hit(self):
-		from columns.models import User
 		root = self._makeOne()
-		model = root['1']
 		del root['1']
 		self.assertRaises(KeyError, root.__getitem__, '1')
+	
+	def test___delitem__miss(self):
+		root = self._makeOne()
+		self.assertRaises(KeyError, root.__delitem__, '10000')
+	
+	def test_discard(self):
+		root = self._makeOne()
+		root.discard('1')
+		self.assertRaises(KeyError, root.__getitem__, '1')
+		root.discard('1')
+	
+	def test___contains__hit(self):
+		root = self._makeOne()
+		self.assertTrue(root.__contains__('1'))
+	
+	def test___contains__miss(self):
+		root = self._makeOne()
+		self.assertFalse(root.__contains__('10000'))
+	
+	def test___len__(self):
+		root = self._makeOne()
+		self.assertEquals(root.__len__(), 2)
+	
+	def test_clear(self):
+		root = self._makeOne()
+		root.clear()
+		self.assertEquals(root.__len__(), 0)
 	
 	def test_add(self):
 		from columns.models import User
@@ -309,7 +399,7 @@ class TestUploadCollection(unittest.TestCase):
 	
 	def _makeOne(self):
 		from columns.contexts import UploadCollectionContext
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		return UploadCollectionContext(request)
 	
 	def test___getitem__hit(self):
@@ -327,6 +417,23 @@ class TestUploadCollection(unittest.TestCase):
 	def test___getitem__notint(self):
 		root = self._makeOne()
 		self.assertRaises(KeyError, root.__getitem__, 'notint')
+	
+	def test_getslice_hit(self):
+		from columns.models import Upload
+		root = self._makeOne()
+		result = root[:2]
+		self.assertEquals(len(result), 1)
+		first = result[0]
+		last = root[-1:][0]
+		self.assertEqual(first.__class__, Upload)
+		self.assertEqual(first.__parent__, root)
+		self.assertEqual(first.__name__, '1')
+		self.assertEquals(first.__name__, last.__name__)
+	
+	def test_getslice_miss(self):
+		root = self._makeOne()
+		result = root[5:6]
+		self.assertEquals(len(result), 0)
 	
 	def test_get_hit(self):
 		from columns.models import Upload
@@ -357,11 +464,36 @@ class TestUploadCollection(unittest.TestCase):
 		self.assertEqual(model.__parent__, root)
 	
 	def test___delitem__hit(self):
-		from columns.models import Upload
 		root = self._makeOne()
-		model = root['1']
 		del root['1']
 		self.assertRaises(KeyError, root.__getitem__, '1')
+	
+	def test___delitem__miss(self):
+		root = self._makeOne()
+		self.assertRaises(KeyError, root.__delitem__, '10000')
+	
+	def test_discard(self):
+		root = self._makeOne()
+		root.discard('1')
+		self.assertRaises(KeyError, root.__getitem__, '1')
+		root.discard('1')
+	
+	def test___contains__hit(self):
+		root = self._makeOne()
+		self.assertTrue(root.__contains__('1'))
+	
+	def test___contains__miss(self):
+		root = self._makeOne()
+		self.assertFalse(root.__contains__('10000'))
+	
+	def test___len__(self):
+		root = self._makeOne()
+		self.assertEquals(root.__len__(), 1)
+	
+	def test_clear(self):
+		root = self._makeOne()
+		root.clear()
+		self.assertEquals(root.__len__(), 0)
 	
 	def test_add(self):
 		from columns.models import Upload
@@ -388,7 +520,7 @@ class TestPageCollection(unittest.TestCase):
 	
 	def _makeOne(self):
 		from columns.contexts import PageCollectionContext
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		return PageCollectionContext(request)
 	
 	def test___getitem__hit(self):
@@ -406,6 +538,23 @@ class TestPageCollection(unittest.TestCase):
 	def test___getitem__notint(self):
 		root = self._makeOne()
 		self.assertRaises(KeyError, root.__getitem__, 'notint')
+	
+	def test_getslice_hit(self):
+		from columns.models import Page
+		root = self._makeOne()
+		result = root[:2]
+		self.assertEquals(len(result), 1)
+		first = result[0]
+		last = root[-1:][0]
+		self.assertEqual(first.__class__, Page)
+		self.assertEqual(first.__parent__, root)
+		self.assertEqual(first.__name__, '1')
+		self.assertEquals(first.__name__, last.__name__)
+	
+	def test_getslice_miss(self):
+		root = self._makeOne()
+		result = root[5:6]
+		self.assertEquals(len(result), 0)
 	
 	def test_get_hit(self):
 		from columns.models import Page
@@ -436,11 +585,36 @@ class TestPageCollection(unittest.TestCase):
 		self.assertEqual(model.__parent__, root)
 	
 	def test___delitem__hit(self):
-		from columns.models import Page
 		root = self._makeOne()
-		model = root['1']
 		del root['1']
 		self.assertRaises(KeyError, root.__getitem__, '1')
+	
+	def test___delitem__miss(self):
+		root = self._makeOne()
+		self.assertRaises(KeyError, root.__delitem__, '10000')
+	
+	def test_discard(self):
+		root = self._makeOne()
+		root.discard('1')
+		self.assertRaises(KeyError, root.__getitem__, '1')
+		root.discard('1')
+	
+	def test___contains__hit(self):
+		root = self._makeOne()
+		self.assertTrue(root.__contains__('1'))
+	
+	def test___contains__miss(self):
+		root = self._makeOne()
+		self.assertFalse(root.__contains__('10000'))
+	
+	def test___len__(self):
+		root = self._makeOne()
+		self.assertEquals(root.__len__(), 1)
+	
+	def test_clear(self):
+		root = self._makeOne()
+		root.clear()
+		self.assertEquals(root.__len__(), 0)
 	
 	def test_add(self):
 		from columns.models import Page
@@ -461,7 +635,7 @@ class TestPageCollection(unittest.TestCase):
 ########################################
 class TestArticleMember(unittest.TestCase):
 	def setUp(self):
-		self.request = testing.DummyRequest()
+		self.request = DummyRequest()
 		self.config = testing.setUp(request=self.request)
 		self.config.testing_securitypolicy(userid=2)
 		self.session = _initTestingDB()
@@ -511,7 +685,7 @@ class TestUserMember(unittest.TestCase):
 	def _makeOne(self):
 		from columns.contexts import UserCollectionContext
 		from columns.models import User
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		collection = UserCollectionContext(request)
 		return collection.index()[0]
 	
@@ -564,7 +738,7 @@ class TestUploadMember(unittest.TestCase):
 	def _makeOne(self):
 		from columns.contexts import UploadCollectionContext
 		from columns.models import Upload
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		collection = UploadCollectionContext(request)
 		return collection.index()[0]
 	
@@ -603,7 +777,7 @@ class TestPageMember(unittest.TestCase):
 	def _makeOne(self):
 		from columns.contexts import PageCollectionContext
 		from columns.models import Page
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		collection = PageCollectionContext(request)
 		return collection.index()[0]
 	
@@ -689,14 +863,14 @@ class TestArticleView(unittest.TestCase):
 	
 	def test_index(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		context = DummyCollection()
 		viewer = viewer_cls(context, request)
 		response = viewer.index()
 	
 	def test_show(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		collection = DummyCollection()
 		context = DummyMember(name='1',parent=collection)
 		collection['1'] = DummyMember()
@@ -705,14 +879,14 @@ class TestArticleView(unittest.TestCase):
 	
 	def test_new(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		context = DummyCollection()
 		viewer = viewer_cls(context, request)
 		response = viewer.show()
 	
 	def test_create(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest(post={
+		request = DummyRequest(post={
 			'title': 'next_story',
 			'content': '<p>test data</p>',
 			'tags': 'tag1, tag2, tag3',
@@ -723,14 +897,14 @@ class TestArticleView(unittest.TestCase):
 	
 	def test_create_invalid(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		context = DummyCollection()
 		viewer = viewer_cls(context, request)
 		self.assertRaises(HTTPClientError, viewer.create)
 	
 	def test_create_atom(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		request.body = self._makeCreateAtom()
 		context = DummyCollection()
 		viewer = viewer_cls(context, request)
@@ -738,7 +912,7 @@ class TestArticleView(unittest.TestCase):
 	
 	def test_create_atom_invalid(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		request.body = self._makeInvalidCreateAtom()
 		context = DummyCollection()
 		viewer = viewer_cls(context, request)
@@ -749,7 +923,7 @@ class TestArticleView(unittest.TestCase):
 		collection = DummyCollection()
 		context = DummyMember(name='1',parent=collection)
 		collection['1'] = DummyMember()
-		request = testing.DummyRequest(post={
+		request = DummyRequest(post={
 			'title': 'next_story',
 			'content': '<p>test data</p>',
 		})
@@ -764,7 +938,7 @@ class TestArticleView(unittest.TestCase):
 		collection = DummyCollection()
 		context = DummyMember(name='1',parent=collection)
 		collection['1'] = DummyMember()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		viewer = viewer_cls(context, request)
 		self.assertRaises(
 		 	HTTPClientError,
@@ -776,7 +950,7 @@ class TestArticleView(unittest.TestCase):
 		collection = DummyCollection()
 		context = DummyMember(name='1',parent=collection)
 		collection['1'] = DummyMember()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		request.body = self._makeUpdateAtom()
 		viewer = viewer_cls(context, request)
 		self.assertRaises(HTTPOk, viewer.update_atom)
@@ -786,18 +960,18 @@ class TestArticleView(unittest.TestCase):
 		collection = DummyCollection()
 		context = DummyMember(name='1',parent=collection)
 		collection['1'] = DummyMember()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		request.body = self._makeInvalidUpdateAtom()
 		viewer = viewer_cls(context, request)
 		self.assertRaises(HTTPClientError, viewer.update_atom)
 	
 	def test_delete(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		collection = DummyCollection()
 		context = DummyMember(name='1',parent=collection)
 		collection['1'] = DummyMember()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		viewer = viewer_cls(context, request)
 		self.assertRaises(
 		 	HTTPOk,
@@ -818,14 +992,14 @@ class TestUserView(unittest.TestCase):
 	
 	def test_index(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		context = DummyCollection()
 		viewer = viewer_cls(context, request)
 		response = viewer.index()
 	
 	def test_show(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		collection = DummyCollection()
 		context = DummyMember(name='1',parent=collection)
 		collection['1'] = DummyMember()
@@ -834,14 +1008,14 @@ class TestUserView(unittest.TestCase):
 	
 	def test_new(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		context = DummyCollection()
 		viewer = viewer_cls(context, request)
 		response = viewer.show()
 	
 	def test_create(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest(post={
+		request = DummyRequest(post={
 			'name': 'new_user',
 			'type': 9,
 		})
@@ -851,14 +1025,14 @@ class TestUserView(unittest.TestCase):
 	
 	def test_create_invalid(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		context = DummyCollection()
 		viewer = viewer_cls(context, request)
 		self.assertRaises(HTTPClientError, viewer.create)
 	
 	def test_create_atom(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		context = DummyCollection()
 		viewer = viewer_cls(context, request)
 		self.assertRaises(HTTPNotImplemented, viewer.create_atom)
@@ -868,7 +1042,7 @@ class TestUserView(unittest.TestCase):
 		collection = DummyCollection()
 		context = DummyMember(name='1',parent=collection)
 		collection['1'] = DummyMember()
-		request = testing.DummyRequest({
+		request = DummyRequest({
 			'name': 'old_user',
 			'type': '1',
 		})
@@ -883,7 +1057,7 @@ class TestUserView(unittest.TestCase):
 		collection = DummyCollection()
 		context = DummyMember(name='1',parent=collection)
 		collection['1'] = DummyMember()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		viewer = viewer_cls(context, request)
 		self.assertRaises(
 		 	HTTPClientError,
@@ -895,17 +1069,17 @@ class TestUserView(unittest.TestCase):
 		collection = DummyCollection()
 		context = DummyMember(name='1',parent=collection)
 		collection['1'] = DummyMember()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		viewer = viewer_cls(context, request)
 		self.assertRaises(HTTPNotImplemented, viewer.update_atom)
 	
 	def test_delete(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		collection = DummyCollection()
 		context = DummyMember(name='1',parent=collection)
 		collection['1'] = DummyMember()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		viewer = viewer_cls(context, request)
 		self.assertRaises(
 		 	HTTPOk,
@@ -915,7 +1089,7 @@ class TestUserView(unittest.TestCase):
 
 class TestUploadView(unittest.TestCase):
 	def setUp(self):
-		self.request = testing.DummyRequest()
+		self.request = DummyRequest()
 		self.config = testing.setUp()
 	
 	def tearDown(self):
@@ -927,7 +1101,7 @@ class TestUploadView(unittest.TestCase):
 	
 	def test_index(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		context = DummyCollection()
 		viewer = viewer_cls(context, request)
 		response = viewer.index()
@@ -942,7 +1116,7 @@ class TestUploadView(unittest.TestCase):
 	
 	def test_new(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		context = DummyCollection()
 		viewer = viewer_cls(context, request)
 		response = viewer.show()
@@ -952,7 +1126,7 @@ class TestUploadView(unittest.TestCase):
 		test_file = FieldStorage()
 		test_file.filename = 'example.txt'
 		test_file.file = StringIO('12345')
-		request = testing.DummyRequest(post={
+		request = DummyRequest(post={
 			'title': 'test_create_upload',
 			'file': test_file,
 		})
@@ -963,7 +1137,7 @@ class TestUploadView(unittest.TestCase):
 	def test_create_invalid(self):
 		viewer_cls = self._makeOne()
 		test_file = FieldStorage()
-		request = testing.DummyRequest(post={
+		request = DummyRequest(post={
 			'title': 'whatever',
 			'file': test_file,
 		})
@@ -971,7 +1145,7 @@ class TestUploadView(unittest.TestCase):
 		viewer = viewer_cls(context, request)
 		self.assertRaises(HTTPClientError, viewer.create)
 		
-		request = testing.DummyRequest(post={
+		request = DummyRequest(post={
 			'title': 'whatever',
 		})
 		viewer = viewer_cls(context, request)
@@ -979,14 +1153,14 @@ class TestUploadView(unittest.TestCase):
 	
 	def test_create_atom(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		context = DummyCollection()
 		viewer = viewer_cls(context, request)
 		self.assertRaises(HTTPNotImplemented, viewer.create_atom)
 	
 	def test_update(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest(post={
+		request = DummyRequest(post={
 			'title': 'test_update_upload',
 		})
 		collection = DummyCollection()
@@ -1003,7 +1177,7 @@ class TestUploadView(unittest.TestCase):
 		collection = DummyCollection()
 		context = DummyMember(name='1',parent=collection)
 		collection['1'] = DummyMember()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		viewer = viewer_cls(context, request)
 		self.assertRaises(
 		 	HTTPClientError,
@@ -1015,13 +1189,13 @@ class TestUploadView(unittest.TestCase):
 		collection = DummyCollection()
 		context = DummyMember(name='1',parent=collection)
 		collection['1'] = DummyMember()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		viewer = viewer_cls(context, request)
 		self.assertRaises(HTTPNotImplemented, viewer.update_atom)
 	
 	def test_delete(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		collection = DummyCollection()
 		context = DummyMember(name='1',parent=collection)
 		collection['1'] = DummyMember()
@@ -1045,14 +1219,14 @@ class TestPageView(unittest.TestCase):
 	
 	def test_index(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		context = DummyCollection()
 		viewer = viewer_cls(context, request)
 		response = viewer.index()
 	
 	def test_show(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		collection = DummyCollection()
 		context = DummyMember(name='1',parent=collection)
 		collection['1'] = DummyMember()
@@ -1061,14 +1235,14 @@ class TestPageView(unittest.TestCase):
 	
 	def test_new(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		context = DummyCollection()
 		viewer = viewer_cls(context, request)
 		response = viewer.show()
 	
 	def test_create(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest(post={
+		request = DummyRequest(post={
 			'title': 'next_page',
 			'content': '<p>test data</p>',
 			'stream_comment_style': 'summary',
@@ -1080,21 +1254,21 @@ class TestPageView(unittest.TestCase):
 	
 	def test_create_invalid(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		context = DummyCollection()
 		viewer = viewer_cls(context, request)
 		self.assertRaises(HTTPClientError, viewer.create)
 	
 	def test_create_atom(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		context = DummyCollection()
 		viewer = viewer_cls(context, request)
 		self.assertRaises(HTTPNotImplemented, viewer.create_atom)
 	
 	def test_update(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest(post={
+		request = DummyRequest(post={
 			'title': 'next_page',
 			'content': '<p>test data</p>',
 			'stream_comment_style': 'summary',
@@ -1114,7 +1288,7 @@ class TestPageView(unittest.TestCase):
 		collection = DummyCollection()
 		context = DummyMember(name='1',parent=collection)
 		collection['1'] = DummyMember()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		viewer = viewer_cls(context, request)
 		self.assertRaises(
 		 	HTTPClientError,
@@ -1126,13 +1300,13 @@ class TestPageView(unittest.TestCase):
 		collection = DummyCollection()
 		context = DummyMember(name='1',parent=collection)
 		collection['1'] = DummyMember()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		viewer = viewer_cls(context, request)
 		self.assertRaises(HTTPNotImplemented, viewer.update_atom)
 	
 	def test_delete(self):
 		viewer_cls = self._makeOne()
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		collection = DummyCollection()
 		context = DummyMember(name='1',parent=collection)
 		collection['1'] = DummyMember()
@@ -1149,7 +1323,7 @@ class TestAuthViews(unittest.TestCase):
 			'static_directory':'columns:static',
 			'upload_basepath':'test_uploads'
 		}
-		self.request = testing.DummyRequest()
+		self.request = DummyRequest()
 		self.config = testing.setUp(
 			request=self.request,
 			settings=settings
@@ -1157,6 +1331,7 @@ class TestAuthViews(unittest.TestCase):
 		self.config.include('columns.lib.view')
 		self.config.include('columns.auth')
 		self.config.include('columns.setup_resource_routes')
+		self.config.include('columns.setup_admin_routes')
 		self.config.add_static_view(
 			'static', 
 			settings.get('static_directory')
@@ -1191,7 +1366,7 @@ class TestQuickUploadViews(unittest.TestCase):
 			'static_directory':'columns:static',
 			'upload_basepath':'test_uploads'
 		}
-		self.request = testing.DummyRequest()
+		self.request = DummyRequest()
 		self.config = testing.setUp(
 			request=self.request,
 			settings=settings
@@ -1213,12 +1388,12 @@ class TestQuickUploadViews(unittest.TestCase):
 	
 	def test_browse_images(self):
 		from columns.views import browse_images_view
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		response = browse_images_view(request)
 	
 	def test_browse_images_ajax(self):
 		from columns.views import browse_images_ajax
-		request = testing.DummyRequest()
+		request = DummyRequest()
 		response = browse_images_ajax(request)
 	
 	def test_quick_image_upload(self):
@@ -1239,7 +1414,7 @@ class TestBlogViews(unittest.TestCase):
 		settings = {
 			'static_directory':'columns:static',
 		}
-		self.request = testing.DummyRequest()
+		self.request = DummyRequest()
 		self.config = testing.setUp(
 			request=self.request,
 			settings=settings
@@ -1551,7 +1726,7 @@ class TestFunctionalPage(unittest.TestCase):
 ########################################
 class TestAuthenticationPolicy(unittest.TestCase):
 	def setUp(self):
-		self.request = testing.DummyRequest()
+		self.request = DummyRequest()
 		self.config = testing.setUp(request=self.request)
 		self.session = _initTestingDB()
 	
@@ -1674,7 +1849,7 @@ class TestAuthenticationPolicy(unittest.TestCase):
 		from columns.auth import twitter_login_view
 		self.config.include('columns.blog')
 		self.config.include('columns.auth')
-		self.request = testing.DummyRequest()
+		self.request = DummyRequest()
 		self.request.session.update({
 			'twitter_access_token': '123124',
 			'twitter_access_token_secret': '123124',
@@ -1726,7 +1901,7 @@ class TestAuthenticationPolicy(unittest.TestCase):
 
 class TestAuthorizationPolicy(unittest.TestCase):
 	def setUp(self):
-		self.request = testing.DummyRequest()
+		self.request = DummyRequest()
 		self.config = testing.setUp(request=self.request)
 		self.config.include('columns.lib.view')
 		self.config.include('columns.auth')
@@ -1817,7 +1992,7 @@ class TestAuthorizationPolicy(unittest.TestCase):
 
 class TestJinjaFuncs(unittest.TestCase):
 	def setUp(self):
-		self.request = testing.DummyRequest()
+		self.request = DummyRequest()
 		self.config = testing.setUp(request=self.request)
 		self.config.testing_securitypolicy(userid='1', permissive=True)
 	
