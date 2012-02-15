@@ -64,7 +64,7 @@ class MutationList(Mutable, list):
 			if isinstance(value, list):
 				return MutationList(value)
 			# this call will raise ValueError
-			return Mutable.coerce(key, value)
+			return Mutable.coerce(key, value) # pragma: no cover
 		else:
 			return value
 	
@@ -95,7 +95,7 @@ class MutationDict(Mutable, dict):
 			if isinstance(value, dict):
 				return MutationDict(value)
 			# this call will raise ValueError
-			return Mutable.coerce(key, value)
+			return Mutable.coerce(key, value) # pragma: no cover
 		else:
 			return value
 	

@@ -3,8 +3,9 @@ import unittest
 from pyramid import testing
 from pyramid.request import Request
 from webtest import TestApp
-from pyramid.httpexceptions import HTTPCreated
 from pyramid.httpexceptions import HTTPOk
+from pyramid.httpexceptions import HTTPCreated
+from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPNotImplemented
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPClientError
@@ -238,6 +239,8 @@ class TestArticleCollection(unittest.TestCase):
 	def test_add(self):
 		from columns.models import Article
 		root = self._makeOne()
+		first = root['1']
+		
 		model = Article(
 			title='test_article2',
 			content='<p>blah2</p>',
@@ -247,6 +250,21 @@ class TestArticleCollection(unittest.TestCase):
 		self.assertEqual(second.__class__, Article)
 		self.assertEqual(second.__parent__, root)
 		self.assertEqual(second.__name__, '2')
+	
+	def test___setitem__(self):
+		from columns.models import Article
+		root = self._makeOne()
+		first = root['1']
+		first.title = 'test_article2'
+		first.content = '<p>blah2</p>'
+		root['1'] = first
+		
+		first_repeat = root['1']
+		self.assertEqual(first_repeat.__class__, Article)
+		self.assertEqual(first_repeat.__parent__, root)
+		self.assertEqual(first_repeat.__name__, '1')
+		self.assertEqual(first_repeat.title, 'test_article2')
+		self.assertEqual(first_repeat.content, '<p>blah2</p>')
 	
 
 class TestUserCollection(unittest.TestCase):
@@ -370,6 +388,21 @@ class TestUserCollection(unittest.TestCase):
 		self.assertEqual(second.__class__, User)
 		self.assertEqual(second.__parent__, root)
 		self.assertEqual(second.__name__, '2')
+	
+	def test___setitem__(self):
+		from columns.models import User
+		root = self._makeOne()
+		first = root['1']
+		first.name = 'test_user3'
+		first.type = 8
+		root['1'] = first
+		
+		first_repeat = root['1']
+		self.assertEqual(first_repeat.__class__, User)
+		self.assertEqual(first_repeat.__parent__, root)
+		self.assertEqual(first_repeat.__name__, '1')
+		self.assertEqual(first_repeat.name, 'test_user3')
+		self.assertEqual(first_repeat.type, 8)
 	
 
 class TestUploadCollection(unittest.TestCase):
@@ -508,6 +541,19 @@ class TestUploadCollection(unittest.TestCase):
 		self.assertEqual(second.__parent__, root)
 		self.assertEqual(second.__name__, '2')
 	
+	def test___setitem__(self):
+		from columns.models import Upload
+		root = self._makeOne()
+		first = root['1']
+		first.title = 'test_upload2'
+		root['1'] = first
+		
+		first_repeat = root['1']
+		self.assertEqual(first_repeat.__class__, Upload)
+		self.assertEqual(first_repeat.__parent__, root)
+		self.assertEqual(first_repeat.__name__, '1')
+		self.assertEqual(first_repeat.title, 'test_upload2')
+	
 
 class TestPageCollection(unittest.TestCase):
 	def setUp(self):
@@ -627,6 +673,21 @@ class TestPageCollection(unittest.TestCase):
 		self.assertEqual(second.__class__, Page)
 		self.assertEqual(second.__parent__, root)
 		self.assertEqual(second.__name__, '2')
+	
+	def test___setitem__(self):
+		from columns.models import Page
+		root = self._makeOne()
+		first = root['1']
+		first.title = 'test_page2'
+		first.slug='test_page2'
+		root['1'] = first
+		
+		first_repeat = root['1']
+		self.assertEqual(first_repeat.__class__, Page)
+		self.assertEqual(first_repeat.__parent__, root)
+		self.assertEqual(first_repeat.__name__, '1')
+		self.assertEqual(first_repeat.title, 'test_page2')
+		self.assertEqual(first_repeat.slug, 'test_page2')
 	
 
 
@@ -1457,6 +1518,58 @@ class TestBlogViews(unittest.TestCase):
 	def test_stream_view(self):
 		from columns.blog import stream_view
 		response = stream_view(self.request)
+	
+
+class TestSettingsViews(unittest.TestCase):
+	def setUp(self):
+		settings = {
+			'static_directory':'columns:static',
+		}
+		self.request = DummyRequest()
+		self.config = testing.setUp(
+			request=self.request,
+			settings=settings
+		)
+		self.config.include('columns.lib.view')
+		self.config.include('columns.auth')
+		self.config.include('columns.blog')
+		self.config.include('columns.setup_admin_routes')
+		self.config.add_static_view(
+			'static', 
+			settings.get('static_directory')
+		)
+		self.request.registry = self.config.registry
+		self.session = _initTestingDB()
+	
+	def tearDown(self):
+		self.session.remove()
+		testing.tearDown()
+	
+	def test_settings_view(self):
+		from columns.views import settings_view
+		response = settings_view(self.request)
+	
+	def test_settings_edit_view(self):
+		from columns.views import settings_edit_view
+		self.request.matchdict = {'module': 'dummy'}
+		_populateSettings({'dummy':{
+			'test_field': 'qwerty',
+		}})
+		response = settings_edit_view(self.request)
+	
+	def test_settings_save(self):
+		from columns.views import settings_save
+		self.request.matchdict = {'module': 'dummy'}
+		_populateSettings({'dummy':{
+			'test_field': 'qwerty',
+		}})
+		self.request.method = 'POST'
+		self.request.POST = {
+			'save': '1',
+			'test_field': 'qwertyuiop',
+			'new_field': 'blah blah',
+		}
+		self.assertRaises(HTTPFound, settings_save, self.request)
 	
 
 
