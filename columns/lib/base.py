@@ -119,11 +119,13 @@ class SQLACollectionContext(object):
 			item = default
 		return item
 	
-	def index(self, offset=None, limit=None):
+	def index(self, offset=None, limit=None, query_spec=None):
 		Session = sqlahelper.get_session()
-		query = Session.query(self.__model__).\
-			offset(offset).\
-			limit(limit)
+		query = Session.query(self.__model__)
+		if query_spec is not None:
+			query = self.build_query(query, query_spec)
+		
+		query = query.offset(offset).limit(limit)
 		
 		results = []
 		for item in query:
@@ -150,6 +152,10 @@ class SQLACollectionContext(object):
 		Session.query(self.__model__).delete()
 		Session.commit()
 	
+	def build_query(self, query, specs):
+		"parses a specs dictionary (formatted like a mongo query) into a SQLAlchemy query"
+		return query
+		
 
 class BaseViews(object):
 	implements(IResourceView)

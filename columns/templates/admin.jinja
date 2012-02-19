@@ -10,24 +10,29 @@
 		<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/labjs/2.0.3/LAB.min.js"></script>
 		<script type="text/javascript">
 			$LAB
-			.script('http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.1.7/underscore-min.js').wait()
-			.script('http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js').wait()
-			.script('http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js')
-			.script('http://cdnjs.cloudflare.com/ajax/libs/backbone.js/0.5.3/backbone-min.js')
+			.script('http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.3.1/underscore-min.js')
+			.script('http://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.1/jquery.min.js')
+			.wait()
+			.script('http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js')
+			.script('http://cdnjs.cloudflare.com/ajax/libs/backbone.js/0.9.0/backbone-min.js')
+			.script('http://cdnjs.cloudflare.com/ajax/libs/modernizr/2.0.6/modernizr.min.js')
+			.script('http://cdnjs.cloudflare.com/ajax/libs/mustache.js/0.3.0/mustache.min.js')
+			.wait()
 			.script('http://cachedcommons.org/cache/jquery-uniform/1.7.3/javascripts/jquery-uniform-min.js')
-			.script('http://ajax.cdnjs.com/ajax/libs/mustache.js/0.3.0/mustache.min.js')
-			//.script('{{ "scripts/ckeditor/ckeditor.js"|static_url }}')
-			//.script('{{ "scripts/ckeditor/adapters/jquery.js"|static_url }}')
+			.script('{{ "scripts/moment.min.js"|static_url }}')
+			.wait()
 			.script('{{ "scripts/articles.js"|static_url }}')
 			.script('{{ "scripts/pages.js"|static_url }}')
 			.script('{{ "scripts/users.js"|static_url }}')
 			.script('{{ "scripts/uploads.js"|static_url }}')
+			{% if 'settings' is allowed -%}.script('{{ "scripts/settings.js"|static_url }}'){%- endif %}
 			.wait(function(){
 				$(document).ready(function(){
 					articles_app.initialize();
 					pages_app.initialize();
 					users_app.initialize();
 					uploads_app.initialize();
+					{% if 'settings' is allowed -%}settings_app.initialize();{%- endif %}
 					Backbone.history.start({root: "/admin/#"});
 				});
 			});
@@ -41,9 +46,9 @@
 			<a href="#/pages/" data-nav-name="pages" class="nav-link" title="Pages">Pages</a>
 			<a href="#/uploads/" data-nav-name="uploads" class="nav-link" title="Uploads">Uploads</a>
 			<a href="#/users/" data-nav-name="users" class="nav-link" title="Users">Users</a>
-			{#% if 'settings' is allowed -%#}
+			{% if 'settings' is allowed -%}
 			<a href="{{ 'settings'|route_url }}" data-nav-name="settings" class="nav-link" title="Settings">Settings</a>
-			{#%- endif %#}
+			{%- endif %}
 		</nav>
 		<section id="admin-content">
 		{% block content %}{% endblock %}

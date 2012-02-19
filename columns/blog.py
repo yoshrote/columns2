@@ -44,11 +44,21 @@ def story_view(request):
 		)
 
 def stream_view(request):
+	tag = request.GET.get('tag')
+	user = request.GET.get('user')
+	
 	Session = sqlahelper.get_session()
-	stream = Session.query(Article).\
+	query = Session.query(Article)
+	if tag:
+		query = query.filter(Article.tags.any(Tag.slug == tag))
+	if user:
+		query = query.filter(Article.author.has(User.name == user))
+	
+	stream = query.\
 		filter(Article.published != None).\
 		order_by(Article.published.desc()).\
 		all()
+	
 	return render_to_response(
 		'columns:templates/blog/stream.jinja', 
 		{'stream': stream}

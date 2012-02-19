@@ -11,7 +11,7 @@
 	</div>
 	<div class="story-date published">
 		<abbr title="{{ story.published|rfc3339 }}" class="date-container">
-			{{ story.published }}
+			{{ story.published|rfc3339 }}
 		</abbr>
 	</div>
 	{#% if story|story_url('edit') is allowed %}
@@ -28,8 +28,7 @@
 		<ul class="story-tags-list">
 			{% for tag in story.tags %}
 			<li class="story-tags-item">
-				{{ tag.label }}
-				{#<a href="{{ url("tag_feed", name=tag.id) }}" title="View articles with tag {{ tag.label }}" rel="tag">{{ tag.label }}</a>#}
+				<a href="{{ 'blog_main'|route_url(_query={'tag':tag.slug}) }}" title="View articles with tag {{ tag.label }}" rel="tag">{{ tag.label }}</a>
 			</li>
 			{% endfor %}
 		</ul>
@@ -70,9 +69,9 @@
 #}
 {% endblock %}
 {% block on_ready %}
+{{ super() }}
 $(".date-container").html(function(idx, txt){
-	var dt = new Date(txt);
-	return dt.toLocaleDateString() +" "+ dt.toLocaleTimeString();
+	return moment(txt, 'YYYY-MM-DDTHH:mm:sszz').format("LLLL");
 });
 {% endblock %}
 

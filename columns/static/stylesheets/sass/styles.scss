@@ -173,4 +173,8 @@ label{font-weight:bold;}
 
 .page-content{
 	@include writing_style;
+	box-shadow: #282425 0px 0px 5px 0px;
+	background-color:#EEEEEE;
+	border-radius: 5px;
+	padding:10px;
 }
