@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+# encoding: utf-8
 from BeautifulSoup import BeautifulSoup
 from lxml import etree
 from lxml import html

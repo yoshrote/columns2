@@ -19,7 +19,7 @@ from pyramid.security import effective_principals
 from pyramid.security import unauthenticated_userid
 from pyramid.security import authenticated_userid
 
-from columns.auth import get_permissions
+from .auth import get_permissions
 
 #############################
 ## Blog Helpers

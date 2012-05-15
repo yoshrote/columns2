@@ -1,3 +1,4 @@
+# encoding: utf-8
 import zope.interface
 
 class ICollectionContext(zope.interface.Interface):

@@ -4,9 +4,9 @@ from pyramid.httpexceptions import exception_response
 
 import sqlahelper
 from sqlalchemy.exc import InvalidRequestError
-from columns.models import Article
-from columns.models import Page
-from columns.models import Tag
+from .models import Article
+from .models import Page
+from .models import Tag
 
 #############################
 ## Blog Views 

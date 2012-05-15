@@ -4,8 +4,8 @@ from pyramid.httpexceptions import exception_response
 from pyramid.response import Response
 
 import sqlahelper
-from columns.models import Upload
-from columns.models import Setting
+from .models import Upload
+from .models import Setting
 
 #############################
 ## Other Views 

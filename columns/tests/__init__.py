@@ -21,11 +21,11 @@ from StringIO import StringIO
 
 def _populateDB():
 	import sqlahelper
-	from columns.models import Article
-	from columns.models import Page
-	from columns.models import Upload
-	from columns.models import User
-	from columns.models import Tag
+	from ..models import Article
+	from ..models import Page
+	from ..models import Upload
+	from ..models import User
+	from ..models import Tag
 	from sqlalchemy.exc import IntegrityError
 	Session = sqlahelper.get_session()
 	today = datetime.datetime.utcnow()
@@ -77,7 +77,7 @@ def _populateDB():
 
 def _populateSettings(settings_dict):
 	import sqlahelper
-	from columns.models import Setting
+	from ..models import Setting
 	Session = sqlahelper.get_session()
 	for k, v in settings_dict.items():
 		Session.add(Setting(module=k, values=v))
@@ -88,11 +88,11 @@ def _initTestingDB():
 	import sqlahelper
 	from sqlalchemy import create_engine
 	from sqlalchemy.exc import IntegrityError
-	from columns.models import initialize_database
+	from ..models import initialize_models
 	sqlahelper.add_engine(create_engine('sqlite://'))
 	sqlahelper.get_session().configure(extension=None)
 	session = sqlahelper.get_session()
-	initialize_database()
+	initialize_models({'hostname':'localhost'})
 	_populateDB()
 	return session
 
@@ -112,7 +112,7 @@ class DummyMember(object):
 	
 
 class DummyCollection(testing.DummyResource):
-	def index(self, offset=None, limit=None):
+	def index(self, offset=None, limit=None, query_spec=None):
 		return dict(self.subs.items()[slice(offset, limit)])
 	
 	def new(self):
@@ -135,16 +135,18 @@ class TestArticleCollection(unittest.TestCase):
 		self.session = _initTestingDB()
 	
 	def tearDown(self):
+		import sqlahelper
 		self.session.remove()
+		sqlahelper.reset()
 		testing.tearDown()
 	
 	def _makeOne(self):
-		from columns.contexts import ArticleCollectionContext
+		from ..contexts import ArticleCollectionContext
 		request = DummyRequest()
 		return ArticleCollectionContext(request)
 	
 	def test___getitem__hit(self):
-		from columns.models import Article
+		from ..models import Article
 		root = self._makeOne()
 		first = root['1']
 		self.assertEqual(first.__class__, Article)
@@ -160,7 +162,7 @@ class TestArticleCollection(unittest.TestCase):
 		self.assertRaises(KeyError, root.__getitem__, 'notint')
 	
 	def test_getslice_hit(self):
-		from columns.models import Article
+		from ..models import Article
 		root = self._makeOne()
 		result = root[:2]
 		self.assertEquals(len(result), 1)
@@ -177,7 +179,7 @@ class TestArticleCollection(unittest.TestCase):
 		self.assertEquals(len(result), 0)
 	
 	def test_get_hit(self):
-		from columns.models import Article
+		from ..models import Article
 		root = self._makeOne()
 		first = root.get('1')
 		self.assertEqual(first.__class__, Article)
@@ -198,7 +200,7 @@ class TestArticleCollection(unittest.TestCase):
 		self.assertEqual(model.id, 1)
 	
 	def test_new(self):
-		from columns.models import Article
+		from ..models import Article
 		root = self._makeOne()
 		model = root.new()
 		self.assertEqual(model.__class__, Article)
@@ -237,7 +239,7 @@ class TestArticleCollection(unittest.TestCase):
 		self.assertEquals(root.__len__(), 0)
 	
 	def test_add(self):
-		from columns.models import Article
+		from ..models import Article
 		root = self._makeOne()
 		first = root['1']
 		
@@ -252,7 +254,7 @@ class TestArticleCollection(unittest.TestCase):
 		self.assertEqual(second.__name__, '2')
 	
 	def test___setitem__(self):
-		from columns.models import Article
+		from ..models import Article
 		root = self._makeOne()
 		first = root['1']
 		first.title = 'test_article2'
@@ -273,16 +275,18 @@ class TestUserCollection(unittest.TestCase):
 		self.session = _initTestingDB()
 	
 	def tearDown(self):
+		import sqlahelper
 		self.session.remove()
+		sqlahelper.reset()
 		testing.tearDown()
 	
 	def _makeOne(self):
-		from columns.contexts import UserCollectionContext
+		from ..contexts import UserCollectionContext
 		request = DummyRequest()
 		return UserCollectionContext(request)
 	
 	def test___getitem__hit(self):
-		from columns.models import User
+		from ..models import User
 		root = self._makeOne()
 		first = root['1']
 		self.assertEqual(first.__class__, User)
@@ -298,7 +302,7 @@ class TestUserCollection(unittest.TestCase):
 		self.assertRaises(KeyError, root.__getitem__, 'notint')
 	
 	def test_getslice_hit(self):
-		from columns.models import User
+		from ..models import User
 		root = self._makeOne()
 		result = root[:2]
 		self.assertEquals(len(result), 2)
@@ -316,7 +320,7 @@ class TestUserCollection(unittest.TestCase):
 		self.assertEquals(len(result), 0)
 	
 	def test_get_hit(self):
-		from columns.models import User
+		from ..models import User
 		root = self._makeOne()
 		first = root.get('1')
 		self.assertEqual(first.__class__, User)
@@ -337,7 +341,7 @@ class TestUserCollection(unittest.TestCase):
 		self.assertEqual(model.id, 1)
 	
 	def test_new(self):
-		from columns.models import User
+		from ..models import User
 		root = self._makeOne()
 		model = root.new()
 		self.assertEqual(model.__class__, User)
@@ -376,7 +380,7 @@ class TestUserCollection(unittest.TestCase):
 		self.assertEquals(root.__len__(), 0)
 	
 	def test_add(self):
-		from columns.models import User
+		from ..models import User
 		root = self._makeOne()
 		model = User(
 			name='test_user3',
@@ -390,7 +394,7 @@ class TestUserCollection(unittest.TestCase):
 		self.assertEqual(second.__name__, '2')
 	
 	def test___setitem__(self):
-		from columns.models import User
+		from ..models import User
 		root = self._makeOne()
 		first = root['1']
 		first.name = 'test_user3'
@@ -425,18 +429,20 @@ class TestUploadCollection(unittest.TestCase):
 		upload.close()
 	
 	def tearDown(self):
+		import sqlahelper
 		self.session.remove()
+		sqlahelper.reset()
 		testing.tearDown()
 		if os.path.exists(self.upload_path):
 			os.remove(self.upload_path)
 	
 	def _makeOne(self):
-		from columns.contexts import UploadCollectionContext
+		from ..contexts import UploadCollectionContext
 		request = DummyRequest()
 		return UploadCollectionContext(request)
 	
 	def test___getitem__hit(self):
-		from columns.models import Upload
+		from ..models import Upload
 		root = self._makeOne()
 		first = root['1']
 		self.assertEqual(first.__class__, Upload)
@@ -452,7 +458,7 @@ class TestUploadCollection(unittest.TestCase):
 		self.assertRaises(KeyError, root.__getitem__, 'notint')
 	
 	def test_getslice_hit(self):
-		from columns.models import Upload
+		from ..models import Upload
 		root = self._makeOne()
 		result = root[:2]
 		self.assertEquals(len(result), 1)
@@ -469,7 +475,7 @@ class TestUploadCollection(unittest.TestCase):
 		self.assertEquals(len(result), 0)
 	
 	def test_get_hit(self):
-		from columns.models import Upload
+		from ..models import Upload
 		root = self._makeOne()
 		first = root.get('1')
 		self.assertEqual(first.__class__, Upload)
@@ -490,7 +496,7 @@ class TestUploadCollection(unittest.TestCase):
 		self.assertEqual(model.id, 1)
 	
 	def test_new(self):
-		from columns.models import Upload
+		from ..models import Upload
 		root = self._makeOne()
 		model = root.new()
 		self.assertEqual(model.__class__, Upload)
@@ -529,7 +535,7 @@ class TestUploadCollection(unittest.TestCase):
 		self.assertEquals(root.__len__(), 0)
 	
 	def test_add(self):
-		from columns.models import Upload
+		from ..models import Upload
 		root = self._makeOne()
 		model = Upload(
 			title='test_upload2',
@@ -542,7 +548,7 @@ class TestUploadCollection(unittest.TestCase):
 		self.assertEqual(second.__name__, '2')
 	
 	def test___setitem__(self):
-		from columns.models import Upload
+		from ..models import Upload
 		root = self._makeOne()
 		first = root['1']
 		first.title = 'test_upload2'
@@ -561,16 +567,18 @@ class TestPageCollection(unittest.TestCase):
 		self.session = _initTestingDB()
 	
 	def tearDown(self):
+		import sqlahelper
 		self.session.remove()
+		sqlahelper.reset()
 		testing.tearDown()
 	
 	def _makeOne(self):
-		from columns.contexts import PageCollectionContext
+		from ..contexts import PageCollectionContext
 		request = DummyRequest()
 		return PageCollectionContext(request)
 	
 	def test___getitem__hit(self):
-		from columns.models import Page
+		from ..models import Page
 		root = self._makeOne()
 		first = root['1']
 		self.assertEqual(first.__class__, Page)
@@ -586,7 +594,7 @@ class TestPageCollection(unittest.TestCase):
 		self.assertRaises(KeyError, root.__getitem__, 'notint')
 	
 	def test_getslice_hit(self):
-		from columns.models import Page
+		from ..models import Page
 		root = self._makeOne()
 		result = root[:2]
 		self.assertEquals(len(result), 1)
@@ -603,7 +611,7 @@ class TestPageCollection(unittest.TestCase):
 		self.assertEquals(len(result), 0)
 	
 	def test_get_hit(self):
-		from columns.models import Page
+		from ..models import Page
 		root = self._makeOne()
 		first = root.get('1')
 		self.assertEqual(first.__class__, Page)
@@ -624,7 +632,7 @@ class TestPageCollection(unittest.TestCase):
 		self.assertEqual(model.id, 1)
 	
 	def test_new(self):
-		from columns.models import Page
+		from ..models import Page
 		root = self._makeOne()
 		model = root.new()
 		self.assertEqual(model.__class__, Page)
@@ -663,7 +671,7 @@ class TestPageCollection(unittest.TestCase):
 		self.assertEquals(root.__len__(), 0)
 	
 	def test_add(self):
-		from columns.models import Page
+		from ..models import Page
 		root = self._makeOne()
 		model = Page(
 			title='test_page2'
@@ -675,7 +683,7 @@ class TestPageCollection(unittest.TestCase):
 		self.assertEqual(second.__name__, '2')
 	
 	def test___setitem__(self):
-		from columns.models import Page
+		from ..models import Page
 		root = self._makeOne()
 		first = root['1']
 		first.title = 'test_page2'
@@ -706,8 +714,8 @@ class TestArticleMember(unittest.TestCase):
 		testing.tearDown()
 	
 	def _makeOne(self):
-		from columns.contexts import ArticleCollectionContext
-		from columns.models import Article
+		from ..contexts import ArticleCollectionContext
+		from ..models import Article
 		
 		collection = ArticleCollectionContext(self.request)
 		return collection.index()[0]
@@ -744,8 +752,8 @@ class TestUserMember(unittest.TestCase):
 		testing.tearDown()
 	
 	def _makeOne(self):
-		from columns.contexts import UserCollectionContext
-		from columns.models import User
+		from ..contexts import UserCollectionContext
+		from ..models import User
 		request = DummyRequest()
 		collection = UserCollectionContext(request)
 		return collection.index()[0]
@@ -797,8 +805,8 @@ class TestUploadMember(unittest.TestCase):
 			os.remove(self.upload_path)
 	
 	def _makeOne(self):
-		from columns.contexts import UploadCollectionContext
-		from columns.models import Upload
+		from ..contexts import UploadCollectionContext
+		from ..models import Upload
 		request = DummyRequest()
 		collection = UploadCollectionContext(request)
 		return collection.index()[0]
@@ -836,8 +844,8 @@ class TestPageMember(unittest.TestCase):
 		testing.tearDown()
 	
 	def _makeOne(self):
-		from columns.contexts import PageCollectionContext
-		from columns.models import Page
+		from ..contexts import PageCollectionContext
+		from ..models import Page
 		request = DummyRequest()
 		collection = PageCollectionContext(request)
 		return collection.index()[0]
@@ -871,7 +879,7 @@ class TestArticleView(unittest.TestCase):
 		testing.tearDown()
 	
 	def _makeOne(self):
-		from columns.contexts import ArticleViews
+		from ..contexts import ArticleViews
 		return ArticleViews
 	
 	def _makeCreateAtom(self):
@@ -1048,7 +1056,7 @@ class TestUserView(unittest.TestCase):
 		testing.tearDown()
 	
 	def _makeOne(self):
-		from columns.contexts import UserViews
+		from ..contexts import UserViews
 		return UserViews
 	
 	def test_index(self):
@@ -1157,7 +1165,7 @@ class TestUploadView(unittest.TestCase):
 		testing.tearDown()
 	
 	def _makeOne(self):
-		from columns.contexts import UploadViews
+		from ..contexts import UploadViews
 		return UploadViews
 	
 	def test_index(self):
@@ -1275,7 +1283,7 @@ class TestPageView(unittest.TestCase):
 		testing.tearDown()
 	
 	def _makeOne(self):
-		from columns.contexts import PageViews
+		from ..contexts import PageViews
 		return PageViews
 	
 	def test_index(self):
@@ -1381,7 +1389,7 @@ class TestPageView(unittest.TestCase):
 class TestAuthViews(unittest.TestCase):
 	def setUp(self):
 		settings = {
-			'static_directory':'columns:static',
+			'static_directory':'.:static',
 			'upload_basepath':'test_uploads'
 		}
 		self.request = DummyRequest()
@@ -1405,26 +1413,26 @@ class TestAuthViews(unittest.TestCase):
 		testing.tearDown()
 	
 	def test_login_view(self):
-		from columns.auth import login_view
+		from ..auth import login_view
 		response = login_view(self.request)
 	
 	def test_logout_view(self):
-		from columns.auth import logout_view
+		from ..auth import logout_view
 		response = logout_view(self.request)
 	
 	def test_admin_view(self):
-		from columns.views import admin_view
+		from ..views import admin_view
 		response = admin_view(self.request)
 	
 	def test_xrds_view(self):
-		from columns.auth import xrds_view
+		from ..auth import xrds_view
 		response = xrds_view(self.request)
 	
 
 class TestQuickUploadViews(unittest.TestCase):
 	def setUp(self):
 		settings = {
-			'static_directory':'columns:static',
+			'static_directory':'.:static',
 			'upload_basepath':'test_uploads'
 		}
 		self.request = DummyRequest()
@@ -1448,17 +1456,17 @@ class TestQuickUploadViews(unittest.TestCase):
 		testing.tearDown()
 	
 	def test_browse_images(self):
-		from columns.views import browse_images_view
+		from ..views import browse_images_view
 		request = DummyRequest()
 		response = browse_images_view(request)
 	
 	def test_browse_images_ajax(self):
-		from columns.views import browse_images_ajax
+		from ..views import browse_images_ajax
 		request = DummyRequest()
 		response = browse_images_ajax(request)
 	
 	def test_quick_image_upload(self):
-		from columns.views import quick_image_upload
+		from ..views import quick_image_upload
 		test_file = FieldStorage()
 		test_file.filename = 'example.txt'
 		test_file.file = StringIO('12345')
@@ -1473,7 +1481,7 @@ class TestQuickUploadViews(unittest.TestCase):
 class TestBlogViews(unittest.TestCase):
 	def setUp(self):
 		settings = {
-			'static_directory':'columns:static',
+			'static_directory':'.:static',
 		}
 		self.request = DummyRequest()
 		self.config = testing.setUp(
@@ -1496,34 +1504,34 @@ class TestBlogViews(unittest.TestCase):
 		testing.tearDown()
 	
 	def test_page_view(self):
-		from columns.blog import page_view
+		from ..blog import page_view
 		self.request.matchdict = {'page': 'test_page'}
 		response = page_view(self.request)
 	
 	def test_page_view_invalid(self):
-		from columns.blog import page_view
+		from ..blog import page_view
 		self.request.matchdict = {'page': 'not_a_real_page'}
 		self.assertRaises(HTTPNotFound, page_view, self.request)
 	
 	def test_story_view(self):
-		from columns.blog import story_view
+		from ..blog import story_view
 		self.request.matchdict = {'permalink': 'test_article_permalink'}
 		response = story_view(self.request)
 	
 	def test_story_view_invalid(self):
-		from columns.blog import story_view
+		from ..blog import story_view
 		self.request.matchdict = {'permalink': 'not_a_real_article'}
 		self.assertRaises(HTTPNotFound, story_view, self.request)
 	
 	def test_stream_view(self):
-		from columns.blog import stream_view
+		from ..blog import stream_view
 		response = stream_view(self.request)
 	
 
 class TestSettingsViews(unittest.TestCase):
 	def setUp(self):
 		settings = {
-			'static_directory':'columns:static',
+			'static_directory':'.:static',
 		}
 		self.request = DummyRequest()
 		self.config = testing.setUp(
@@ -1546,11 +1554,11 @@ class TestSettingsViews(unittest.TestCase):
 		testing.tearDown()
 	
 	def test_settings_view(self):
-		from columns.views import settings_view
+		from ..views import settings_view
 		response = settings_view(self.request)
 	
 	def test_settings_edit_view(self):
-		from columns.views import settings_edit_view
+		from ..views import settings_edit_view
 		self.request.matchdict = {'module': 'dummy'}
 		_populateSettings({'dummy':{
 			'test_field': 'qwerty',
@@ -1558,7 +1566,7 @@ class TestSettingsViews(unittest.TestCase):
 		response = settings_edit_view(self.request)
 	
 	def test_settings_save(self):
-		from columns.views import settings_save
+		from ..views import settings_save
 		self.request.matchdict = {'module': 'dummy'}
 		_populateSettings({'dummy':{
 			'test_field': 'qwerty',
@@ -1579,10 +1587,10 @@ class TestSettingsViews(unittest.TestCase):
 ########################################
 class TestFunctionalArticle(unittest.TestCase):
 	def setUp(self):
-		from columns import main
+		from .. import main
 		settings = {
 			'test_engine': True,
-			'static_directory': 'columns:static'
+			'static_directory': '.:static'
 		}
 		main_app = main({},**settings)
 		self.app = TestApp(main_app)
@@ -1643,10 +1651,10 @@ class TestFunctionalArticle(unittest.TestCase):
 
 class TestFunctionalUser(unittest.TestCase):
 	def setUp(self):
-		from columns import main
+		from .. import main
 		settings = {
 			'test_engine': True,
-			'static_directory': 'columns:static'
+			'static_directory': '.:static'
 		}
 		main_app = main({},**settings)
 		self.app = TestApp(main_app)
@@ -1707,10 +1715,10 @@ class TestFunctionalUser(unittest.TestCase):
 
 class TestFunctionalUpload(unittest.TestCase):
 	def setUp(self):
-		from columns import main
+		from .. import main
 		settings = {
 			'test_engine': True,
-			'static_directory': 'columns:static'
+			'static_directory': '.:static'
 		}
 		main_app = main({},**settings)
 		self.app = TestApp(main_app)
@@ -1771,10 +1779,10 @@ class TestFunctionalUpload(unittest.TestCase):
 
 class TestFunctionalPage(unittest.TestCase):
 	def setUp(self):
-		from columns import main
+		from .. import main
 		settings = {
 			'test_engine': True,
-			'static_directory': 'columns:static'
+			'static_directory': '.:static'
 		}
 		main_app = main({},**settings)
 		self.app = TestApp(main_app)
@@ -1848,7 +1856,7 @@ class TestAuthenticationPolicy(unittest.TestCase):
 		testing.tearDown()
 	
 	def _makePolicy(self):
-		from columns.auth import SessionAuthenticationPolicy
+		from ..auth import SessionAuthenticationPolicy
 		return SessionAuthenticationPolicy()
 	
 	def test_remember(self):
@@ -1916,7 +1924,7 @@ class TestAuthenticationPolicy(unittest.TestCase):
 		permissions = policy.callback(userid ,self.request)
 	
 	def test_oid_callback(self):
-		from columns.auth import oid_authentication_callback
+		from ..auth import oid_authentication_callback
 		self.config.include('columns.blog')
 		success_dict = {
 			'identity_url': 'http://openid.example.com',
@@ -1939,7 +1947,7 @@ class TestAuthenticationPolicy(unittest.TestCase):
 			'DEFAULT_RETURN': '/',
 		
 		}})
-		from columns.auth import twitter_login_view
+		from ..auth import twitter_login_view
 		self.config.include('columns.blog')
 		self.config.include('columns.auth')
 		response = twitter_login_view(self.request)
@@ -1959,7 +1967,7 @@ class TestAuthenticationPolicy(unittest.TestCase):
 			'DEFAULT_RETURN': '/',
 		
 		}})
-		from columns.auth import twitter_login_view
+		from ..auth import twitter_login_view
 		self.config.include('columns.blog')
 		self.config.include('columns.auth')
 		self.request = DummyRequest()
@@ -1982,7 +1990,7 @@ class TestAuthenticationPolicy(unittest.TestCase):
 			'DEFAULT_RETURN': '/',
 		
 		}})
-		from columns.auth import twitter_login_view
+		from ..auth import twitter_login_view
 		self.config.include('columns.blog')
 		self.config.include('columns.auth')
 		response = twitter_login_view(self.request)
@@ -2001,14 +2009,14 @@ class TestAuthenticationPolicy(unittest.TestCase):
 			'DEFAULT_RETURN': '/',
 		
 		}})
-		from columns.auth import twitter_login_view
+		from ..auth import twitter_login_view
 		self.config.include('columns.blog')
 		self.config.include('columns.auth')
 		response = twitter_login_view(self.request)
 		response = twitter_login_view(self.request)
 	
 	def test_facebook_login_view(self):
-		from columns.auth import facebook_login_view
+		from ..auth import facebook_login_view
 		#response = facebook_login_view(self.request)
 	
 
@@ -2018,7 +2026,7 @@ class TestAuthorizationPolicy(unittest.TestCase):
 		self.config = testing.setUp(request=self.request)
 		self.config.include('columns.lib.view')
 		self.config.include('columns.auth')
-		self.config.add_static_view('static', 'columns:static/')
+		self.config.add_static_view('static', '.:static/')
 		self.request.registry = self.config.registry
 		self.session = _initTestingDB()
 	
@@ -2027,9 +2035,9 @@ class TestAuthorizationPolicy(unittest.TestCase):
 		testing.tearDown()
 	
 	def _makePolicy(self):
-		from columns.auth import AuthorizationPolicy
-		from columns.auth import is_author
-		from columns.auth import minimum_permission
+		from ..auth import AuthorizationPolicy
+		from ..auth import is_author
+		from ..auth import minimum_permission
 		PERMISSIONS = {
 			'super': 1,
 			'admin': 2,
@@ -2053,17 +2061,17 @@ class TestAuthorizationPolicy(unittest.TestCase):
 	
 	
 	def test_xrds_view(self):
-		from columns.auth import xrds_view
+		from ..auth import xrds_view
 		response = xrds_view(self.request)
 	
 	def test_login_view(self):
-		from columns.auth import login_view
+		from ..auth import login_view
 		self.config.testing_add_renderer('templates/auth/login.jinja')
 		response = login_view(self.request)
 		self.assertEquals(response.status_int, 200)
 	
 	def test_logout_view(self):
-		from columns.auth import logout_view
+		from ..auth import logout_view
 		response = logout_view(self.request)
 		self.assertEquals(response.status_int, 302)
 	
@@ -2110,11 +2118,11 @@ class TestJinjaFuncs(unittest.TestCase):
 		self.config.testing_securitypolicy(userid='1', permissive=True)
 	
 	def test_is_allowed(self):
-		from columns.lib.view import is_allowed
+		from ..lib.view import is_allowed
 		self.assertEquals(is_allowed('1'), True)
 	
 	def test_is_not_allowed(self):
-		from columns.lib.view import is_not_allowed
+		from ..lib.view import is_not_allowed
 		self.assertEquals(is_not_allowed('1'), False)
 	
 

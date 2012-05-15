@@ -10,7 +10,7 @@ from zope.interface import implements
 from zope.interface.verify import verifyClass
 
 dotted_resolver = DottedNameResolver(None)
-
+from sqlalchemy import not_, or_
 class InvalidResource(Exception):
 	def __init__(self, form):
 		self.form = form
@@ -154,6 +154,29 @@ class SQLACollectionContext(object):
 	
 	def build_query(self, query, specs):
 		"parses a specs dictionary (formatted like a mongo query) into a SQLAlchemy query"
+		op_map = {
+			'$eq': lambda val: query.filter(getattr(self.__model__, key) == val),
+			'$ne': lambda val: query.filter(getattr(self.__model__, key) != val),
+			'$gt': lambda val: query.filter(getattr(self.__model__, key) > val),
+			'$gte': lambda val: query.filter(getattr(self.__model__, key) >= val),
+			'$lt': lambda val: query.filter(getattr(self.__model__, key) < val),
+			'$lte': lambda val: query.filter(getattr(self.__model__, key) <= val),
+			'$in': lambda val: query.filter(getattr(self.__model__, key).in_(val)),
+			'$nin': lambda val: query.filter(not_(getattr(self.__model__, key).in_(val))),
+		}
+		for key in specs:
+			value = specs[key]
+			if not hasattr(self.__model__, key):
+				if key == '$or':
+					Session = sqlahelper.get_session()
+					query = query.filter(or_(
+						[self.build_query(Session.query(self.__model__), val) for val in value]
+					))
+			if isinstance(value, dict):
+				for operation, op_value in value.items():
+					query = op_map[operation](op_value)
+			else:
+				query = query.filter(getattr(self.__model__, key) == value)
 		return query
 		
 
@@ -188,7 +211,9 @@ class BaseViews(object):
 		
 		offset = int_or_none(self.request.GET.get('offset'))
 		limit = int_or_none(self.request.GET.get('limit'))
-		resources = self.context.index(limit=limit,offset=offset)
+		query_spec = self.request.GET.get('q')
+		
+		resources = self.context.index(limit=limit, offset=offset, query_spec=query_spec)
 		return {
 			'context': self.context, 
 			'resources': resources, 

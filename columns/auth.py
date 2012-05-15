@@ -23,7 +23,7 @@ import urllib
 import urlparse
 import sqlahelper
 from sqlalchemy.exc import InvalidRequestError
-from columns.models import User
+from .models import User
 
 #############################
 ## Authentication Policy 
@@ -120,7 +120,7 @@ FACEBOOK_AUTHORIZE_URL = 'https://graph.facebook.com/oauth/authorize'
 # auth:{'TWITTER_CONSUMER_SECRET':?}
 def settings_module(mod='core'):
 	import sqlahelper
-	from columns.models import Setting
+	from .models import Setting
 	Session = sqlahelper.get_session()
 	module = Session.query(Setting).get(mod)
 	setting_dict = getattr(module, 'values', {})

@@ -1,24 +1,25 @@
+# encoding: utf-8
 import sqlahelper
 from pyramid.httpexceptions import exception_response
 
-from columns.lib.base import SQLACollectionContext
-from columns.lib.base import BaseViews
-from columns.lib.base import InvalidResource
+from .lib.base import SQLACollectionContext
+from .lib.base import BaseViews
+from .lib.base import InvalidResource
 
-from columns.lib.form import Form
-from columns.forms import CreateUser
-from columns.forms import UpdateUser
-from columns.forms import CreateArticle
-from columns.forms import UpdateArticle
-from columns.forms import CreatePage
-from columns.forms import UpdatePage
-from columns.forms import CreateUpload
-from columns.forms import UpdateUpload
+from .lib.form import Form
+from .forms import CreateUser
+from .forms import UpdateUser
+from .forms import CreateArticle
+from .forms import UpdateArticle
+from .forms import CreatePage
+from .forms import UpdatePage
+from .forms import CreateUpload
+from .forms import UpdateUpload
 
-from columns.models import Article
-from columns.models import Page
-from columns.models import Upload
-from columns.models import User
+from .models import Article
+from .models import Page
+from .models import Upload
+from .models import User
 
 import os.path
 import datetime
@@ -49,7 +50,7 @@ def UserContextFactory(request):
 class ArticleCollectionContext(SQLACollectionContext):
 	__model__ = 'columns.models:Article'
 	__name__ = 'articles'
-	def index(self, offset=None, limit=None):
+	def index(self, offset=None, limit=None, query_spec=None):
 		def int_or_none(val):
 			try:
 				return int(val)

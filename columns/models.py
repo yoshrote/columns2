@@ -7,6 +7,7 @@ import datetime
 import os.path
 import shutil
 import time
+from lxml import etree
 
 from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.exc import IntegrityError
@@ -26,9 +27,9 @@ from sqlalchemy import event
 from pyramid.threadlocal import get_current_request
 from pyramid.security import authenticated_userid
 from zope.interface import implements
-from columns.lib.interfaces import IMemberContext
+from .lib.interfaces import IMemberContext
 
-from columns.lib import html
+from .lib import html
 
 class AlwaysUnicode(TypeDecorator):
 	impl = Unicode
@@ -127,11 +128,12 @@ class JSONUnicode(TypeDecorator):
 		value = simplejson.loads(value, use_decimal=True) if value is not None else None
 		return value
 	
-
-
 Base = sqlahelper.get_base()
 
-def initialize_database():
+url_host = None
+def initialize_models(config):
+	global url_host
+	url_host = config['hostname']
 	engine = sqlahelper.get_engine()
 	Base.metadata.create_all(engine)
 
@@ -307,7 +309,14 @@ class Article(Base):
 	
 	@property
 	def summary(self):
-		return html.stripobjects(self.content)
+		tree = etree.fromstring(self.content or '')
+		hr = tree.find(".//hr")
+		if hr is not None:
+			for i,x in enumerate(hr.itersiblings()):
+				x.getparent().remove(x)
+				changed = True
+			hr.getparent().remove(hr)
+		return etree.tostring(tree)
 	
 	@property
 	def metacontent(self):
@@ -654,20 +663,20 @@ Upload.author = relationship(
 ####################################
 ## ORM Event Handlers
 ####################################
-def article_before_insert(mapper, connection, target):
-	if target.published and not target.atom_id:
-		try:
-			request = get_current_request()
-			host = request.host
-		except:
-			target.atom_id = create_atom_tag('localhost', target.published, target.title)
-		else:
-			target.atom_id = create_atom_tag(host, target.published, target.title)
-	
+def trigger_article(mapper, connection, target):
+	if target.title and target.published and not target.permalink:
+		slug = slugify(target.title)
+		dt_str = target.published.strftime('%Y-%m-%d')
+		target.permalink = '/'.join([dt_str, slug])
+		target.atom_tag = 'tag:{host},{date}:{path}'.format(
+			host=url_host,
+			date=target.published.strftime('%Y-%m-%d'),
+			path=target.permalink,
+		)
+	target.updated = datetime.datetime.utcnow()
 
-def article_before_update(mapper, connection, target):
-	alter_contributor_value(target)
-	article_before_insert(mapper, connection, target)
+event.listen(Article, 'before_insert', trigger_article)
+event.listen(Article, 'before_update', trigger_article)
 
 def upload_before_insert(mapper, connection, target):
 	title = target.title or os.path.basename(target.filepath)
@@ -681,7 +690,4 @@ def upload_before_insert(mapper, connection, target):
 	else:
 		target.atom_id = create_atom_tag(host, target.created, title)
 	
-
-event.listen(Article, 'before_insert', article_before_insert)
-event.listen(Article, 'before_update', article_before_update)
 event.listen(Upload, 'before_insert', upload_before_insert)

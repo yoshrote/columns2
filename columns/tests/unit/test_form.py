@@ -34,7 +34,7 @@ class SimpleObj(object):
 class TestColanderForm(unittest.TestCase):
 	
 	def test_is_error(self):
-		from columns.lib.form import Form
+		from ...lib.form import Form
 		
 		request = testing.DummyRequest()
 		request.method = "POST"
@@ -47,7 +47,7 @@ class TestColanderForm(unittest.TestCase):
 		self.assert_(form.is_error('name'))
 	
 	def test_all_errors_with_dict(self):
-		from columns.lib.form import Form
+		from ...lib.form import Form
 		
 		request = testing.DummyRequest()
 		request.method = "POST"
@@ -61,7 +61,7 @@ class TestColanderForm(unittest.TestCase):
 		)
 	
 	def test_errors_for(self):
-		from columns.lib.form import Form
+		from ...lib.form import Form
 		
 		request = testing.DummyRequest()
 		request.method = "POST"
@@ -76,7 +76,7 @@ class TestColanderForm(unittest.TestCase):
 	
 	def test_validate_twice(self):
 		
-		from columns.lib.form import Form
+		from ...lib.form import Form
 		
 		request = testing.DummyRequest()
 		request.method = "POST"
@@ -95,7 +95,7 @@ class TestColanderForm(unittest.TestCase):
 		self.assert_(form.data['name'] == 'ok')
 	
 	def test_is_validated_on_post(self):
-		from columns.lib.form import Form
+		from ...lib.form import Form
 		
 		request = testing.DummyRequest()
 		request.method = "POST"
@@ -106,7 +106,7 @@ class TestColanderForm(unittest.TestCase):
 		self.assert_(form.is_validated)
 	
 	def test_is_validated_with_specified_params(self):
-		from columns.lib.form import Form
+		from ...lib.form import Form
 		
 		request = testing.DummyRequest()
 		request.method = "POST"
@@ -117,7 +117,7 @@ class TestColanderForm(unittest.TestCase):
 		self.assert_(obj.name == 'foo')
 	
 	def test_bind(self):
-		from columns.lib.form import Form
+		from ...lib.form import Form
 		
 		request = testing.DummyRequest()
 		request.method = "POST"
@@ -129,7 +129,7 @@ class TestColanderForm(unittest.TestCase):
 		self.assert_(obj.name == 'test')
 	
 	def test_bind_ignore_underscores(self):
-		from columns.lib.form import Form
+		from ...lib.form import Form
 		
 		request = testing.DummyRequest()
 		request.method = "POST"
@@ -153,7 +153,7 @@ class TestColanderForm(unittest.TestCase):
 		self.assert_(obj._ignoreme is None)
 	
 	def test_bind_not_validated_yet(self):
-		from columns.lib.form import Form
+		from ...lib.form import Form
 		
 		request = testing.DummyRequest()
 		request.method = "POST"
@@ -163,7 +163,7 @@ class TestColanderForm(unittest.TestCase):
 		self.assertRaises(RuntimeError, form.bind, SimpleObj())
  	
 	def test_bind_with_errors(self):
-		from columns.lib.form import Form
+		from ...lib.form import Form
 		
 		request = testing.DummyRequest()
 		request.method = "POST"
@@ -174,7 +174,7 @@ class TestColanderForm(unittest.TestCase):
 		self.assertRaises(RuntimeError, form.bind, SimpleObj())
 	
 	def test_bind_with_exclude(self):
-		from columns.lib.form import Form
+		from ...lib.form import Form
 		
 		request = testing.DummyRequest()
 		request.method = "POST"
@@ -186,7 +186,7 @@ class TestColanderForm(unittest.TestCase):
 		self.assert_(obj.name == None)
 	
 	def test_bind_with_include(self):
-		from columns.lib.form import Form
+		from ...lib.form import Form
 		
 		request = testing.DummyRequest()
 		request.method = "POST"
@@ -198,7 +198,7 @@ class TestColanderForm(unittest.TestCase):
 		self.assert_(obj.name == None)
 	
 	def test_initialize_with_obj(self):
-		from columns.lib.form import Form
+		from ...lib.form import Form
 		
 		request = testing.DummyRequest()
 		
@@ -211,7 +211,7 @@ class TestColanderForm(unittest.TestCase):
 		self.assert_(form.data['name'] == 'test')
 	
 	def test_initialize_with_defaults(self):
-		from columns.lib.form import Form
+		from ...lib.form import Form
 		
 		request = testing.DummyRequest()
 		form = Form(
@@ -223,7 +223,7 @@ class TestColanderForm(unittest.TestCase):
 		self.assert_(form.data['name'] == 'test')
 	
 	def test_initialize_with_obj_and_defaults(self):
-		from columns.lib.form import Form
+		from ...lib.form import Form
 		
 		request = testing.DummyRequest()
 		form = Form(request, SimpleColanderSchema(), 
@@ -233,7 +233,7 @@ class TestColanderForm(unittest.TestCase):
 		self.assert_(form.data['name'] == 'test1')
 	
 	def test_initialize_with_include(self):
-		from columns.lib.form import Form
+		from ...lib.form import Form
 		
 		request = testing.DummyRequest()
 		request.method = "POST"
@@ -248,7 +248,7 @@ class TestColanderForm(unittest.TestCase):
 		self.assert_('name' not in form.data)
 	
 	def test_initialize_with_exclude(self):
-		from columns.lib.form import Form
+		from ...lib.form import Form
 		
 		request = testing.DummyRequest()
 		request.method = "POST"
@@ -263,7 +263,7 @@ class TestColanderForm(unittest.TestCase):
 		self.assert_('name' not in form.data)
 	
 	def test_validate_from_GET(self):
-		from columns.lib.form import Form
+		from ...lib.form import Form
 		
 		request = testing.DummyRequest()
 		request.method = "GET"
@@ -275,7 +275,7 @@ class TestColanderForm(unittest.TestCase):
 		self.assert_(form.is_validated)
 	
 	def test_validate_from_GET_if_on_POST(self):
-		from columns.lib.form import Form
+		from ...lib.form import Form
 		
 		request = testing.DummyRequest()
 		request.method = "GET"
@@ -288,7 +288,7 @@ class TestColanderForm(unittest.TestCase):
 	
 	
 	def test_force_validate(self):
-		from columns.lib.form import Form
+		from ...lib.form import Form
 		
 		request = testing.DummyRequest()
 		request.GET['name'] = 'test'
@@ -302,8 +302,8 @@ class TestColanderForm(unittest.TestCase):
 class TestColanderFormRenderer(unittest.TestCase):
 	
 	def test_begin_form(self):
-		from columns.lib.form import Form
-		from columns.lib.form import FormRenderer
+		from ...lib.form import Form
+		from ...lib.form import FormRenderer
 		
 		request = testing.DummyRequest()
 		form = Form(request, SimpleColanderSchema())
@@ -313,8 +313,8 @@ class TestColanderFormRenderer(unittest.TestCase):
 					 '<form action="/" method="post">')
 	
 	def test_end_form(self):
-		from columns.lib.form import Form
-		from columns.lib.form import FormRenderer
+		from ...lib.form import Form
+		from ...lib.form import FormRenderer
 		
 		request = testing.DummyRequest()
 		form = Form(request, SimpleColanderSchema())
@@ -323,8 +323,8 @@ class TestColanderFormRenderer(unittest.TestCase):
 		self.assert_(renderer.end() == "</form>")
 	
 	def test_csrf(self):
-		from columns.lib.form import Form
-		from columns.lib.form import FormRenderer
+		from ...lib.form import Form
+		from ...lib.form import FormRenderer
 		
 		request = testing.DummyRequest()
 		form = Form(request, SimpleColanderSchema())
@@ -334,8 +334,8 @@ class TestColanderFormRenderer(unittest.TestCase):
 			'<input id="_csrf" name="_csrf" type="hidden" value="csrft" />')
 	
 	def test_csrf_token(self):
-		from columns.lib.form import Form
-		from columns.lib.form import FormRenderer
+		from ...lib.form import Form
+		from ...lib.form import FormRenderer
 		
 		request = testing.DummyRequest()
 		form = Form(request, SimpleColanderSchema())
@@ -347,8 +347,8 @@ class TestColanderFormRenderer(unittest.TestCase):
 	
 	def test_hidden_tag_with_csrf_and_other_names(self):
 		
-		from columns.lib.form import Form
-		from columns.lib.form import FormRenderer
+		from ...lib.form import Form
+		from ...lib.form import FormRenderer
 		
 		request = testing.DummyRequest()
 		form = Form(request, SimpleColanderSchema(), defaults={'name':'foo'})
@@ -361,8 +361,8 @@ class TestColanderFormRenderer(unittest.TestCase):
 	
 	def test_hidden_tag_with_just_csrf(self):
 		
-		from columns.lib.form import Form
-		from columns.lib.form import FormRenderer
+		from ...lib.form import Form
+		from ...lib.form import FormRenderer
 		
 		request = testing.DummyRequest()
 		form = Form(request, SimpleColanderSchema())
@@ -374,8 +374,8 @@ class TestColanderFormRenderer(unittest.TestCase):
 	
 	
 	def test_text(self):
-		from columns.lib.form import Form
-		from columns.lib.form import FormRenderer
+		from ...lib.form import Form
+		from ...lib.form import FormRenderer
 		
 		request = testing.DummyRequest()
 		form = Form(request, SimpleColanderSchema(), defaults={"name" : "Fred"})
@@ -385,8 +385,8 @@ class TestColanderFormRenderer(unittest.TestCase):
 				'<input id="name" name="name" type="text" value="Fred" />')
 	
 	def test_textarea(self):
-		from columns.lib.form import Form
-		from columns.lib.form import FormRenderer
+		from ...lib.form import Form
+		from ...lib.form import FormRenderer
 		
 		request = testing.DummyRequest()
 		form = Form(request, SimpleColanderSchema(), defaults={"name" : "Fred"})
@@ -396,8 +396,8 @@ class TestColanderFormRenderer(unittest.TestCase):
 				'<textarea id="name" name="name">Fred</textarea>')
 	
 	def test_hidden(self):
-		from columns.lib.form import Form
-		from columns.lib.form import FormRenderer
+		from ...lib.form import Form
+		from ...lib.form import FormRenderer
 		
 		request = testing.DummyRequest()
 		form = Form(request, SimpleColanderSchema(), defaults={"name" : "Fred"})
@@ -407,8 +407,8 @@ class TestColanderFormRenderer(unittest.TestCase):
 				'<input id="name" name="name" type="hidden" value="Fred" />')
 	
 	def test_select(self):
-		from columns.lib.form import Form
-		from columns.lib.form import FormRenderer
+		from ...lib.form import Form
+		from ...lib.form import FormRenderer
 		
 		request = testing.DummyRequest()
 		form = Form(request, SimpleColanderSchema(), defaults={"name" : "Fred"})
@@ -431,8 +431,8 @@ class TestColanderFormRenderer(unittest.TestCase):
 	
 	def test_file(self):
 		
-		from columns.lib.form import Form
-		from columns.lib.form import FormRenderer
+		from ...lib.form import Form
+		from ...lib.form import FormRenderer
 		
 		request = testing.DummyRequest()
 		form = Form(request, SimpleColanderSchema())
@@ -443,8 +443,8 @@ class TestColanderFormRenderer(unittest.TestCase):
 	
 	def test_password(self):
 		
-		from columns.lib.form import Form
-		from columns.lib.form import FormRenderer
+		from ...lib.form import Form
+		from ...lib.form import FormRenderer
 		
 		request = testing.DummyRequest()
 		form = Form(request, SimpleColanderSchema())
@@ -456,8 +456,8 @@ class TestColanderFormRenderer(unittest.TestCase):
 	
 	def test_radio(self):
 		
-		from columns.lib.form import Form
-		from columns.lib.form import FormRenderer
+		from ...lib.form import Form
+		from ...lib.form import FormRenderer
 		
 		request = testing.DummyRequest()
 		form = Form(request, SimpleColanderSchema(), defaults={"name" : 'Fred'})
@@ -473,8 +473,8 @@ class TestColanderFormRenderer(unittest.TestCase):
 	
 	def test_submit(self):
 		
-		from columns.lib.form import Form
-		from columns.lib.form import FormRenderer
+		from ...lib.form import Form
+		from ...lib.form import FormRenderer
 		
 		request = testing.DummyRequest()
 		form = Form(request, SimpleColanderSchema())
@@ -484,8 +484,8 @@ class TestColanderFormRenderer(unittest.TestCase):
 			'<input id="submit" name="submit" type="submit" value="Submit" />')
 	
 	def test_checkbox(self):
-		from columns.lib.form import Form
-		from columns.lib.form import FormRenderer
+		from ...lib.form import Form
+		from ...lib.form import FormRenderer
 		
 		request = testing.DummyRequest()
 		form = Form(request, SimpleColanderSchema(), defaults={"name" : True})
@@ -496,8 +496,8 @@ class TestColanderFormRenderer(unittest.TestCase):
 			'value="1" />')
 	
 	def test_is_error(self):
-		from columns.lib.form import Form
-		from columns.lib.form import FormRenderer
+		from ...lib.form import Form
+		from ...lib.form import FormRenderer
 		
 		request = testing.DummyRequest()
 		request.method = "POST"
@@ -511,8 +511,8 @@ class TestColanderFormRenderer(unittest.TestCase):
 	
 	def test_errors_for(self):
 		
-		from columns.lib.form import Form
-		from columns.lib.form import FormRenderer
+		from ...lib.form import Form
+		from ...lib.form import FormRenderer
 		
 		request = testing.DummyRequest()
 		request.method = "POST"
@@ -526,8 +526,8 @@ class TestColanderFormRenderer(unittest.TestCase):
 	
 	def test_errorlist(self):
 		
-		from columns.lib.form import Form
-		from columns.lib.form import FormRenderer
+		from ...lib.form import Form
+		from ...lib.form import FormRenderer
 		
 		request = testing.DummyRequest()
 		request.method = "POST"
@@ -543,8 +543,8 @@ class TestColanderFormRenderer(unittest.TestCase):
 	
 	def test_errorlist_with_no_errors(self):
 		
-		from columns.lib.form import Form
-		from columns.lib.form import FormRenderer
+		from ...lib.form import Form
+		from ...lib.form import FormRenderer
 		
 		request = testing.DummyRequest()
 		request.method = "POST"
@@ -560,8 +560,8 @@ class TestColanderFormRenderer(unittest.TestCase):
 	
 	def test_errorlist_with_field(self):
 		
-		from columns.lib.form import Form
-		from columns.lib.form import FormRenderer
+		from ...lib.form import Form
+		from ...lib.form import FormRenderer
 		
 		request = testing.DummyRequest()
 		request.method = "POST"
@@ -575,8 +575,8 @@ class TestColanderFormRenderer(unittest.TestCase):
 	
 	def test_label(self):
 		
-		from columns.lib.form import Form
-		from columns.lib.form import FormRenderer
+		from ...lib.form import Form
+		from ...lib.form import FormRenderer
 		
 		request = testing.DummyRequest()
 		form = Form(request, SimpleColanderSchema())
@@ -587,8 +587,8 @@ class TestColanderFormRenderer(unittest.TestCase):
 	
 	def test_label_using_field_name(self):
 		
-		from columns.lib.form import Form
-		from columns.lib.form import FormRenderer
+		from ...lib.form import Form
+		from ...lib.form import FormRenderer
 		
 		request = testing.DummyRequest()
 		form = Form(request, SimpleColanderSchema())
@@ -600,8 +600,8 @@ class TestColanderFormRenderer(unittest.TestCase):
 
 class TestColanderSequenceRenderer(unittest.TestCase):
 	def test_min_entries(self):
-		from columns.lib.form import Form
-		from columns.lib.form import FormRenderer
+		from ...lib.form import Form
+		from ...lib.form import FormRenderer
 		
 		request = testing.DummyRequest()
 		form = Form(request, ColanderSchemaWithSequence())
@@ -610,9 +610,9 @@ class TestColanderSequenceRenderer(unittest.TestCase):
 		self.assert_(len(seq_renderer.data) >= 5)
 	
 	def test___iter__(self):
-		from columns.lib.form import Form
-		from columns.lib.form import FormRenderer
-		from columns.lib.form import CompoundRenderer
+		from ...lib.form import Form
+		from ...lib.form import FormRenderer
+		from ...lib.form import CompoundRenderer
 		request = testing.DummyRequest()
 		form = Form(request, ColanderSchemaWithSequence())
 		form.data = {'name':['bob','alice']}
@@ -625,9 +625,9 @@ class TestColanderSequenceRenderer(unittest.TestCase):
 
 class TestColanderMapperRenderer(unittest.TestCase):
 	def test_min_entries(self):
-		from columns.lib.form import Form
-		from columns.lib.form import FormRenderer
-		from columns.lib.form import MappingRenderer
+		from ...lib.form import Form
+		from ...lib.form import FormRenderer
+		from ...lib.form import MappingRenderer
 		
 		request = testing.DummyRequest()
 		form = Form(request, ColanderSchemaWithMapping())
