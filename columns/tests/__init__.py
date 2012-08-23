@@ -80,7 +80,7 @@ def _populateSettings(settings_dict):
 	from ..models import Setting
 	Session = sqlahelper.get_session()
 	for k, v in settings_dict.items():
-		Session.add(Setting(module=k, values=v))
+		Session.add(Setting(module=k, config=v))
 	
 	Session.commit()
 

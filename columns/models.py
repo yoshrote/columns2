@@ -474,7 +474,7 @@ class Setting(Base):
 		nullable=False,
 		primary_key=True
 	)
-	values = Column(
+	config = Column(
 		MutationDict.as_mutable(JSONUnicode),
 		nullable=False
 	)

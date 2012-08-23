@@ -123,7 +123,7 @@ def settings_module(mod='core'):
 	from .models import Setting
 	Session = sqlahelper.get_session()
 	module = Session.query(Setting).get(mod)
-	setting_dict = getattr(module, 'values', {})
+	setting_dict = getattr(module, 'config', {})
 	return setting_dict
 
 def xrds_view(request):

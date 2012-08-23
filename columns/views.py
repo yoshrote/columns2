@@ -39,7 +39,7 @@ def settings_save(request):
 	for k,v in request.POST.items():
 		if k == 'save':
 			continue
-		setting.values[k] = v
+		setting.config[k] = v
 	Session.merge(setting)
 	Session.commit()
 	raise exception_response(
@@ -105,7 +105,7 @@ def quick_image_upload(request):
 def settings_module(mod='core'):
 	Session = sqlahelper.get_session()
 	module = Session.query(Setting).get(mod)
-	setting_dict = getattr(module, 'values', {})
+	setting_dict = getattr(module, 'config', {})
 	return setting_dict
 
 '''

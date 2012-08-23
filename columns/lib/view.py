@@ -74,7 +74,7 @@ def app_settings(key, mod='core'):
 	from columns.models import Setting
 	Session = sqlahelper.get_session()
 	module = Session.query(Setting).get(mod)
-	setting_dict = getattr(module, 'values', {})
+	setting_dict = getattr(module, 'config', {})
 	return setting_dict.get(key)
 
 

@@ -3,8 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
 	<head>
 		<meta http-equiv="Content-Type" content="text/html;charset=utf-8"></meta>
-{% block more_metadata %}{% endblock %}
 		<meta http-equiv="X-XRDS-Location" content="{{ 'xrds'|route_url }}"></meta>
+{% block more_metadata %}{% endblock %}
 		<link rel="index" title="{{ app_settings('site_name') }}" href="{{ 'blog_main'|route_url }}" />
 		<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.4.1/build/cssreset/cssreset-min.css">
 		<link href="{{ 'stylesheets/styles.css'|static_url }}" media="screen" rel="stylesheet" type="text/css" ></link>
