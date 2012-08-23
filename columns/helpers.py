@@ -29,8 +29,9 @@ def main_pages():
 	from columns.models import Page
 	Session = sqlahelper.get_session()
 	pages = Session.query(Page.slug, Page.title).\
-		filter(Page.in_main == True).\
-		all()
+		filter(Page.in_menu == True).\
+		filter(Page.visible == True).\
+		order_by(Page.in_main.desc(), Page.title.asc())
 	return [(slug,title) for slug, title in pages]
 
 '''

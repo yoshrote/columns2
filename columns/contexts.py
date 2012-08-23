@@ -63,6 +63,14 @@ class ArticleCollectionContext(SQLACollectionContext):
 		query = query.filter(Article.published == None) if drafts \
 			else query.filter(Article.published != None)
 		
+		if 'order' in self.request.GET:
+			order = self.request.GET.get('order')
+			try:
+				field, direction = order.split('.')
+				query = query.order_by(getattr(getattr(self.__model__, field), direction)())
+			except ValueError:
+				query = query.order_by(getattr(self.__model__, order).asc())
+
 		query = query.offset(offset).limit(limit)
 		
 		results = []

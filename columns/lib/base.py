@@ -125,6 +125,14 @@ class SQLACollectionContext(object):
 		if query_spec is not None:
 			query = self.build_query(query, query_spec)
 		
+		if 'order' in self.request.GET:
+			order = self.request.GET.get('order')
+			try:
+				field, direction = order.split('.')
+				query = query.order_by(getattr(getattr(self.__model__, field), direction)())
+			except ValueError:
+				query = query.order_by(getattr(self.__model__, order).asc())
+
 		query = query.offset(offset).limit(limit)
 		
 		results = []
@@ -358,16 +366,16 @@ def includeme(config):
 		)
 		
 		#index (html)
-		config.add_view(
-			route_name=collection,
-			context=collection_context,
-			name='',
-			view=view_class,
-			attr='index',
-			accept='text/html',
-			request_method='GET',
-			renderer='columns:templates/{0}/index.jinja'.format(collection)
-		)
+		#config.add_view(
+		#	route_name=collection,
+		#	context=collection_context,
+		#	name='',
+		#	view=view_class,
+		#	attr='index',
+		#	accept='text/html',
+		#	request_method='GET',
+		#	renderer='columns:templates/{0}/index.jinja'.format(collection)
+		#)
 		#index (json)
 		config.add_view(
 			route_name=collection,
@@ -394,16 +402,16 @@ def includeme(config):
 		)
 		
 		#new (html)
-		config.add_view(
-			route_name=collection,
-			context=collection_context,
-			name='new',
-			view=view_class,
-			attr='new',
-			accept='text/html',
-			request_method='GET',
-			renderer='columns:templates/{0}/new.jinja'.format(collection)
-		)
+		#config.add_view(
+		#	route_name=collection,
+		#	context=collection_context,
+		#	name='new',
+		#	view=view_class,
+		#	attr='new',
+		#	accept='text/html',
+		#	request_method='GET',
+		#	renderer='columns:templates/{0}/new.jinja'.format(collection)
+		#)
 		#new (json)
 		config.add_view(
 			route_name=collection,
@@ -417,16 +425,16 @@ def includeme(config):
 		)
 		
 		#show (html)
-		config.add_view(
-			route_name=collection,
-			context=member_context,
-			name='',
-			view=view_class,
-			attr='show',
-			accept='text/html',
-			request_method='GET',
-			renderer='columns:templates/{0}/show.jinja'.format(collection)
-		)
+		#config.add_view(
+		#	route_name=collection,
+		#	context=member_context,
+		#	name='',
+		#	view=view_class,
+		#	attr='show',
+		#	accept='text/html',
+		#	request_method='GET',
+		#	renderer='columns:templates/{0}/show.jinja'.format(collection)
+		#)
 		#show (json)
 		config.add_view(
 			route_name=collection,
@@ -453,15 +461,15 @@ def includeme(config):
 		)
 		
 		#edit (html)
-		config.add_view(
-			route_name=collection,
-			context=member_context,
-			name='edit',
-			view=view_class,
-			attr='show',
-			request_method='GET',
-			renderer='columns:templates/{0}/edit.jinja'.format(collection)
-		)
+		#config.add_view(
+		#	route_name=collection,
+		#	context=member_context,
+		#	name='edit',
+		#	view=view_class,
+		#	attr='show',
+		#	request_method='GET',
+		#	renderer='columns:templates/{0}/edit.jinja'.format(collection)
+		#)
 		
 		#create (x-form-urlencoded)
 		config.add_view(

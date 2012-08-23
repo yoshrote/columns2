@@ -8,6 +8,7 @@ import os.path
 import shutil
 import time
 from lxml import etree
+from lxml.html.soupparser import fromstring as soup_fromstring
 
 from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.exc import IntegrityError
@@ -125,8 +126,11 @@ class JSONUnicode(TypeDecorator):
 		return value
 	
 	def process_result_value(self, value, dialect):
-		value = simplejson.loads(value, use_decimal=True) if value is not None else None
-		return value
+		try:
+			value = simplejson.loads(value, use_decimal=True) if value is not None else None
+			return value
+		except simplejson.JSONDecodeError:
+			return None
 	
 Base = sqlahelper.get_base()
 
@@ -309,7 +313,7 @@ class Article(Base):
 	
 	@property
 	def summary(self):
-		tree = etree.fromstring(self.content or '')
+		tree = soup_fromstring(self.content or '')
 		hr = tree.find(".//hr")
 		if hr is not None:
 			for i,x in enumerate(hr.itersiblings()):
@@ -348,7 +352,8 @@ class Article(Base):
 	
 	def update_from_values(self, values):
 		tags = set([Tag(slug=slugify(tag), label=tag) for tag in values.pop('tags',[])])
-			
+		if 'published' in values:
+			values['published'] = values['published'].replace(tzinfo=None)
 		for k,v in values.items():
 			if not k.startswith('_') and hasattr(self, k):
 				setattr(self, k, v)
@@ -356,6 +361,8 @@ class Article(Base):
 		return self
 	
 	def build_from_values(self, values):
+		if 'published' in values:
+			values['published'] = values['published'].replace(tzinfo=None)
 		return self.update_from_values(values)
 	
 
