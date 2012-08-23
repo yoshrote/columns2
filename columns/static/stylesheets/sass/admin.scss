@@ -18,7 +18,7 @@ $base_media_url:'http://media.nerdblerp.com';
 	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#4C4C4E', endColorstr='#282425');
 }
 
-html{background-color:rgb(23,63,85);color:black;}
+html{background-color:rgb(23,63,85);color:black;font-family:"Times New Roman", Times, serif;}
 label{font-weight:bold;}
 
 /***********************
@@ -233,6 +233,35 @@ label{font-weight:bold;}
 	vertical-align:bottom;
 	margin-left:10px;
 }
+
+
+@mixin writing_style{
+	strong, b{font-weight:bold;}
+	u{text-decoration:underline;}
+	em, i{font-style:italic;}
+	ul{list-style-type: disc;}
+	ol{list-style-type: decimal;}
+	/*a{color:rgb(255, 90, 0);}*/
+	p{text-indent:2em;margin-top:1em;margin-bottom:1em;}
+	h4{font-weight:bold;font-size:1.15em;}
+	blockquote{
+		border:$outline_color solid 1px;
+		display:block;
+		margin:{
+			left:20px;
+			right:20px;
+			top:5px;
+			bottom:5px;
+		}
+	}
+	img, object{
+		display:block;
+		max-width:650px;
+	}
+}
+.redactor_editor{@include writing_style;}
+
+
 /***********************
  Image Browser CSS
 ***********************/

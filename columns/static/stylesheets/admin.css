@@ -3,7 +3,8 @@
 /***********************/
 html {
   background-color: #173f55;
-  color: black; }
+  color: black;
+  font-family: "Times New Roman", Times, serif; }
 
 label {
   font-weight: bold; }
@@ -207,6 +208,36 @@ label {
   float: right;
   vertical-align: bottom;
   margin-left: 10px; }
+
+.redactor_editor {
+  /*a{color:rgb(255, 90, 0);}*/ }
+  .redactor_editor strong, .redactor_editor b {
+    font-weight: bold; }
+  .redactor_editor u {
+    text-decoration: underline; }
+  .redactor_editor em, .redactor_editor i {
+    font-style: italic; }
+  .redactor_editor ul {
+    list-style-type: disc; }
+  .redactor_editor ol {
+    list-style-type: decimal; }
+  .redactor_editor p {
+    text-indent: 2em;
+    margin-top: 1em;
+    margin-bottom: 1em; }
+  .redactor_editor h4 {
+    font-weight: bold;
+    font-size: 1.15em; }
+  .redactor_editor blockquote {
+    border: #2b77c4 solid 1px;
+    display: block;
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-top: 5px;
+    margin-bottom: 5px; }
+  .redactor_editor img, .redactor_editor object {
+    display: block;
+    max-width: 650px; }
 
 /***********************
  Image Browser CSS

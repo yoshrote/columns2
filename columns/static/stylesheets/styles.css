@@ -3,7 +3,8 @@
 /***********************/
 html {
   background-color: #173f55;
-  color: black; }
+  color: black;
+  font-family: "Times New Roman", Times, serif; }
 
 body {
   padding-top: 20px;
@@ -127,21 +128,25 @@ label {
 
 .story-content {
   margin-top: 10px;
-  margin-bottom: 10px; }
-  .story-content strong {
+  margin-bottom: 10px;
+  /*a{color:rgb(255, 90, 0);}*/ }
+  .story-content strong, .story-content b {
     font-weight: bold; }
   .story-content u {
     text-decoration: underline; }
-  .story-content em {
+  .story-content em, .story-content i {
     font-style: italic; }
   .story-content ul {
     list-style-type: disc; }
   .story-content ol {
     list-style-type: decimal; }
-  .story-content a {
-    color: #ff5a00; }
   .story-content p {
-    text-indent: 2em; }
+    text-indent: 2em;
+    margin-top: 1em;
+    margin-bottom: 1em; }
+  .story-content h4 {
+    font-weight: bold;
+    font-size: 1.15em; }
   .story-content blockquote {
     border: #2b77c4 solid 1px;
     display: block;
@@ -154,24 +159,28 @@ label {
     max-width: 650px; }
 
 .page-content {
+  /*a{color:rgb(255, 90, 0);}*/
   box-shadow: #282425 0px 0px 5px 0px;
   background-color: #EEEEEE;
   border-radius: 5px;
   padding: 10px; }
-  .page-content strong {
+  .page-content strong, .page-content b {
     font-weight: bold; }
   .page-content u {
     text-decoration: underline; }
-  .page-content em {
+  .page-content em, .page-content i {
     font-style: italic; }
   .page-content ul {
     list-style-type: disc; }
   .page-content ol {
     list-style-type: decimal; }
-  .page-content a {
-    color: #ff5a00; }
   .page-content p {
-    text-indent: 2em; }
+    text-indent: 2em;
+    margin-top: 1em;
+    margin-bottom: 1em; }
+  .page-content h4 {
+    font-weight: bold;
+    font-size: 1.15em; }
   .page-content blockquote {
     border: #2b77c4 solid 1px;
     display: block;

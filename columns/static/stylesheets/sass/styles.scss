@@ -23,13 +23,14 @@ $base_media_url:'http://media.nerdblerp.com';
 	filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#282425', endColorstr='#4C4C4E');
 }
 @mixin writing_style{
-	strong{font-weight:bold;}
+	strong, b{font-weight:bold;}
 	u{text-decoration:underline;}
-	em{font-style:italic;}
+	em, i{font-style:italic;}
 	ul{list-style-type: disc;}
 	ol{list-style-type: decimal;}
-	a{color:rgb(255, 90, 0);}
-	p{text-indent:2em;}
+	/*a{color:rgb(255, 90, 0);}*/
+	p{text-indent:2em;margin-top:1em;margin-bottom:1em;}
+	h4{font-weight:bold;font-size:1.15em;}
 	blockquote{
 		border:$outline_color solid 1px;
 		display:block;
@@ -46,7 +47,7 @@ $base_media_url:'http://media.nerdblerp.com';
 	}
 }
 
-html{background-color:rgb(23,63,85);color:black;}
+html{background-color:rgb(23,63,85);color:black;font-family:"Times New Roman", Times, serif;}
 body{padding-top: 20px;padding-left:100px;width:1000px;}
 label{font-weight:bold;}
 
