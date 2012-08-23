@@ -28,7 +28,9 @@ $(document).ready(function(){
 		<div id="top-menu">
 			<a class="main" href="{{ 'blog_main'|route_url }}" title="Main">Main</a>
 			{% for slug, title in h.main_pages() %}
+			{% if slug != 'main' %}
 			<a class="{{ slug }}" href="{{ 'blog_page'|route_url(page=slug) }}" title="{{ title }}">{{ title }}</a>
+			{% endif %}
 			{% endfor %}
 		</div>
 		<section id="top-content">
