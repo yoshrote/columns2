@@ -1,7 +1,8 @@
 var Article = Backbone.Model.extend({
 	defaults: {
 		title: '',
-		content: ''
+		created: '',
+		updated: '',
 	},
 	url: function(){
 		if (this.isNew()){
@@ -11,17 +12,26 @@ var Article = Backbone.Model.extend({
 		}
 	},
 	parse: function(resp, xhr) {
-		return resp.resource;
+		if(resp.resource === undefined)
+			return resp; // from a collection
+		else
+			return resp.resource;
 	}
 }); 
 
 var ArticleList = Backbone.Collection.extend({
 	model: Article,
+	limit: 20,
+	offset: 0,
+	sort_order: 'updated.desc',
+	comparator: function(article) {
+		return -(new Date(article.get("published")).getTime());
+	},
 	url: function(){
 		if (this.drafts == true){
-			return '/api/articles/?drafts=1';
+			return '/api/articles/?drafts=1&limit='+this.limit+'&offset='+this.offset+'&order='+this.sort_order;
 		} else {
-			return '/api/articles/';
+			return '/api/articles/?limit='+this.limit+'&offset='+this.offset+'&order='+this.sort_order;
 		}
 	},
     parse : function(resp, xhr) {
@@ -63,8 +73,9 @@ var ArticleView = Backbone.View.extend({
 		</div>\
 		';
 		var template_vars = this.model.toJSON();
+		console.log(template_vars);
 		template_vars.has_tags = template_vars.tags.length > 0 ? true:false;
-		template_vars.published_friendly = template_vars.published == null ? 'Draft' : template_vars.published.toLocaleString();
+		template_vars.published_friendly = template_vars.published == null ? 'Draft' : moment(template_vars.published).format('LLLL');
 		template_vars.url = '';
 		$(this.el).html(Mustache.to_html(tmpl, template_vars));
 	}
@@ -72,9 +83,13 @@ var ArticleView = Backbone.View.extend({
 
 var ArticleIndexView = Backbone.View.extend({ 
 	el: $('section#admin-content'), // attaches `this.el` to an existing element.
-	events: {},
-	initialize: function(){
-		_.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
+	events: {
+		'click .prev-article-page': 'prev_page',
+		'click .next-article-page': 'next_page'
+	},
+	initialize: function(options){
+		_.bindAll(this, 'render', 'prev_page', 'next_page'); // fixes loss of context for 'this' within methods
+		this.router = options.router;
 	},
 	render: function(){
 		var tmpl = '\
@@ -97,20 +112,27 @@ var ArticleIndexView = Backbone.View.extend({
 				<tr class="{{zebra}}">\
 					<td><a href="#/articles/{{id}}/edit">Edit</a></td>\
 					<td>{{title}}{{#sticky}} - Sticky{{/sticky}}</td>\
-					<td>{{^published}}Draft{{/published}}{{#published}}{{published}}{{/published}}</td>\
+					<td>{{published_friendly}}</td>\
 					<td>{{author_name}}</td>\
 				</tr>\
 			{{/resources}}\
 			</tbody>\
 		</table>\
+		<div>\
+			<a href="#/articles/{{#drafts}}drafts{{/drafts}}" class="prev-article-page" >Previous</a>\
+			<a href="#/articles/{{#drafts}}drafts{{/drafts}}" class="next-article-page" >Next</a>\
+		</div>\
 		';
 		var template_vars = this.collection.toJSON();
+		console.log(template_vars);
 		for(var i=0;i < template_vars.length; i++){
 			template_vars[i].author_name = template_vars[i].author.name;
+			template_vars[i].published_friendly = template_vars[i].published == null ? 'Draft': moment(template_vars[i].published).format('L LT');
 		}
 		Mustache.zebra = true;
 		$(this.el).html(Mustache.to_html(tmpl, {
 			resources: template_vars,
+			drafts: this.collection.drafts || false,
 			zebra: function(){
 				var mode = '';
 				if(Mustache.zebra){
@@ -122,6 +144,39 @@ var ArticleIndexView = Backbone.View.extend({
 				return mode;
 			}
 		}));
+	},
+	prev_page: function(){
+		var router = this.router;
+		var collection = this.collection;
+		var view = this;
+		collection.offset -= collection.limit;
+		if(collection.offset < 0){
+			collection.offset = 0;
+		}
+		collection.fetch({
+			success: function(model, resp){
+				view.render();
+			},
+			error: function(model, options){
+				alert('Something went wrong');
+				router.navigate('', true);
+			}
+		});
+	},
+	next_page: function(){
+		var router = this.router;
+		var collection = this.collection;
+		var view = this;
+		collection.offset += collection.limit;
+		collection.fetch({
+			success: function(model, resp){
+				view.render();
+			},
+			error: function(model, options){
+				alert('Something went wrong');
+				router.navigate('', true);
+			}
+		});
 	}
 });
 
@@ -138,6 +193,7 @@ var ArticleFormView = Backbone.View.extend({
 	render: function(){
 		var template_vars = this.model.toJSON();
 		template_vars.is_new = this.model.isNew();
+		console.log(template_vars);
 		var tmpl = '\
 		<form id="save-form">\
 			<div class="field-n-label">\
@@ -154,7 +210,7 @@ var ArticleFormView = Backbone.View.extend({
 			</div>\
 			<div class="field-n-label">\
 				<label for="content">Content</label>\
-				<textarea name="content" class="jquery_ckeditor">{{{content}}}</textarea>\
+				<textarea name="content" class="redactor">{{{content}}}</textarea>\
 			</div>\
 			<div class="field-n-label">\
 				<label for="tags">Tags</label>\
@@ -173,7 +229,7 @@ var ArticleFormView = Backbone.View.extend({
 		{{/is_new}}\
 		';
 		$(this.el).html(Mustache.to_html(tmpl, template_vars));
-		//$("select, input:checkbox, input:radio, input:file").uniform();
+		$(".redactor").redactor({ fixed: true });
 	},
 	save_form: function(){
 		var router = this.router;
@@ -251,9 +307,10 @@ var ArticleCtrl = Backbone.Router.extend({
 	},
 	index: function() {
 		var collection = new ArticleList();
+		var router = this;
 		collection.fetch({
 			success: function(model, resp){
-				var view = new ArticleIndexView({collection: collection});
+				var view = new ArticleIndexView({collection: collection, router: router});
 				view.render();
 			},
 			error: function(model, options){
@@ -268,7 +325,7 @@ var ArticleCtrl = Backbone.Router.extend({
 		collection.drafts = true;
 		collection.fetch({
 			success: function(model, resp){
-				var view = new ArticleIndexView({collection: collection});
+				var view = new ArticleIndexView({collection: collection, router: router});
 				view.render();
 			},
 			error: function(model, options){

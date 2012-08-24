@@ -17,13 +17,24 @@ var Page = Backbone.Model.extend({
 		}
 	},
 	parse: function(resp, xhr) {
-		return resp.resource;
+		if(resp.resource === undefined)
+			return resp; // from a collection
+		else
+			return resp.resource;
 	}
 }); 
 
 var PageList = Backbone.Collection.extend({
 	model: Page,
-	url: '/api/pages/',
+	limit: 20,
+	offset: 0,
+	sort_order: 'slug',
+	comparator: function(page) {
+		return page.get("slug");
+	},
+	url: function(){
+		return '/api/pages/?limit='+this.limit+'&offset='+this.offset+'&order='+this.sort_order;
+	},
     parse : function(resp, xhr) {
       return resp.resources;
     }
@@ -48,9 +59,12 @@ var PageView = Backbone.View.extend({
 var PageIndexView = Backbone.View.extend({ 
 	el: $('section#admin-content'), // attaches `this.el` to an existing element.
 	events: {
+		'click .prev-page-page': 'prev_page',
+		'click .next-page-page': 'next_page'
 	},
-	initialize: function(){
-		_.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
+	initialize: function(options){
+		_.bindAll(this, 'render', 'prev_page', 'next_page'); // fixes loss of context for 'this' within methods
+		this.router = options.router;
 	},
 	render: function(){
 		var tmpl = '\
@@ -75,6 +89,10 @@ var PageIndexView = Backbone.View.extend({
 			{{/resources}}\
 			</tbody>\
 		</table>\
+		<div>\
+			<a href="#/pages/" class="prev-page-page" >Previous</a>\
+			<a href="#/pages/" class="next-page-page" >Next</a>\
+		</div>\
 		';
 		var template_vars = this.collection.toJSON();
 		console.log(template_vars);
@@ -92,6 +110,39 @@ var PageIndexView = Backbone.View.extend({
 				return mode;
 			}
 		}));
+	},
+	prev_page: function(){
+		var router = this.router;
+		var collection = this.collection;
+		var view = this;
+		collection.offset -= collection.limit;
+		if(collection.offset < 0){
+			collection.offset = 0;
+		}
+		collection.fetch({
+			success: function(model, resp){
+				view.render();
+			},
+			error: function(model, options){
+				alert('Something went wrong');
+				router.navigate('', true);
+			}
+		});
+	},
+	next_page: function(){
+		var router = this.router;
+		var collection = this.collection;
+		var view = this;
+		collection.offset += collection.limit;
+		collection.fetch({
+			success: function(model, resp){
+				view.render();
+			},
+			error: function(model, options){
+				alert('Something went wrong');
+				router.navigate('', true);
+			}
+		});
 	}
 });
 
@@ -108,6 +159,7 @@ var PageFormView = Backbone.View.extend({
 	render: function(){
 		var template_vars = this.model.toJSON();
 		template_vars.is_new = this.model.isNew();
+		console.log(template_vars);
 		var tmpl = '\
 		<form id="save-form">\
 			<div class="field-n-label">\
@@ -148,7 +200,7 @@ var PageFormView = Backbone.View.extend({
 			</div>\
 			<div class="field-n-label">\
 				<label for="content">Content</label>\
-				<textarea name="content" class="jquery_ckeditor">{{content}}</textarea>\
+				<textarea name="content" class="redactor">{{content}}</textarea>\
 			</div>\
 			<input type="submit" name="save" value="Save" class="form-submit-left"/>\
 		</form>\
@@ -163,7 +215,7 @@ var PageFormView = Backbone.View.extend({
 		$(this.el).html(Mustache.to_html(tmpl, template_vars));
 		$("select[name='stream_comment_style']").val(template_vars.stream_comment_style);
 		$("select[name='story_comment_style']").val(template_vars.story_comment_style);
-		$("select, input:checkbox, input:radio, input:file").uniform();
+		$(".redactor").redactor();
 	},
 	save_form: function(){
 		var router = this.router;
@@ -245,7 +297,7 @@ var PageCtrl = Backbone.Router.extend({
 		var collection = new PageList();
 		collection.fetch({
 			success: function(model, resp){
-				var view = new PageIndexView({collection: collection});
+				var view = new PageIndexView({collection: collection, router: ctrl});
 				view.render();
 			},
 			error: function(model, options){

@@ -11,13 +11,24 @@ var Upload = Backbone.Model.extend({
 		}
 	},
 	parse : function(resp, xhr) {
-		return resp.resource;
+		if(resp.resource === undefined)
+			return resp; // from a collection
+		else
+			return resp.resource;
 	}
 });
      
 var UploadList = Backbone.Collection.extend({
 	model: Upload,
-	url: '/api/uploads/',
+	limit: 20,
+	offset: 0,
+	sort_order: 'updated.desc',
+	comparator: function(upload) {
+		return -(new Date(upload.get("updated")).getTime());
+	},
+	url: function(){
+		return '/api/uploads/?limit='+this.limit+'&offset='+this.offset+'&order='+this.sort_order;
+	},
     parse : function(resp, xhr) {
       return resp.resources;
     }
@@ -47,9 +58,12 @@ var UploadView = Backbone.View.extend({
 var UploadIndexView = Backbone.View.extend({ 
 	el: $('section#admin-content'), // attaches `this.el` to an existing element.
 	events: {
+		'click .prev-upload-page': 'prev_page',
+		'click .next-upload-page': 'next_page'
 	},
-	initialize: function(){
-		_.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
+	initialize: function(options){
+		_.bindAll(this, 'render', 'prev_page', 'next_page'); // fixes loss of context for 'this' within methods
+		this.router = options.router;
 	},
 	render: function(){
 		var tmpl = '\
@@ -67,14 +81,21 @@ var UploadIndexView = Backbone.View.extend({
 				<tr class="{{zebra}}">\
 					<td><a href="#/uploads/{{id}}/edit">Edit</a></td>\
 					<td><a href="{{static_base}}{{filepath}}" target="blank_">{{title}}</a></td>\
-					<td class="datetime-container">{{updated}}</td>\
+					<td>{{updated}}</td>\
 				</tr>\
 			{{/resources}}\
 			</tbody>\
 		</table>\
+		<div>\
+			<a href="#/uploads/" class="prev-upload-page" >Previous</a>\
+			<a href="#/uploads/" class="next-upload-page" >Next</a>\
+		</div>\
 		';
 		var template_vars = this.collection.toJSON();
 		console.log(template_vars);
+		for(var i=0;i < template_vars.length; i++){
+			template_vars[i].updated = template_vars[i].updated == null ? 'Draft': moment(template_vars[i].updated).format('LLL');
+		}
 		Mustache.zebra = true;
 		$(this.el).html(Mustache.to_html(tmpl, {
 			resources: template_vars,
@@ -89,6 +110,39 @@ var UploadIndexView = Backbone.View.extend({
 				return mode;
 			}
 		}));
+	},
+	prev_page: function(){
+		var router = this.router;
+		var collection = this.collection;
+		var view = this;
+		collection.offset -= collection.limit;
+		if(collection.offset < 0){
+			collection.offset = 0;
+		}
+		collection.fetch({
+			success: function(model, resp){
+				view.render();
+			},
+			error: function(model, options){
+				alert('Something went wrong');
+				router.navigate('', true);
+			}
+		});
+	},
+	next_page: function(){
+		var router = this.router;
+		var collection = this.collection;
+		var view = this;
+		collection.offset += collection.limit;
+		collection.fetch({
+			success: function(model, resp){
+				view.render();
+			},
+			error: function(model, options){
+				alert('Something went wrong');
+				router.navigate('', true);
+			}
+		});
 	}
 });
 
@@ -105,6 +159,7 @@ var UploadFormView = Backbone.View.extend({
 	render: function(){
 		var template_vars = this.model.toJSON();
 		template_vars.is_new = this.model.isNew();
+		console.log(template_vars);
 		var tmpl = '\
 		<form id="save-form">\
 			{{#is_new}}\
@@ -132,7 +187,7 @@ var UploadFormView = Backbone.View.extend({
 		{{/is_new}}\
 		';
 		$(this.el).html(Mustache.to_html(tmpl, template_vars));
-		$("select, input:checkbox, input:radio, input:file").uniform();
+		$("input:file").uniform();
 	},
 	save_form: function(){
 		var router = this.router;
@@ -209,7 +264,7 @@ var UploadCtrl = Backbone.Router.extend({
 		var collection = new UploadList();
 		collection.fetch({
 			success: function(model, resp){
-				var view = new UploadIndexView({collection: collection});
+				var view = new UploadIndexView({collection: collection, router: ctrl});
 				view.render();
 			},
 			error: function(model, options){
