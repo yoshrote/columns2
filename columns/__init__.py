@@ -78,10 +78,11 @@ def setup_admin_routes(config):
 		route_name='browse_images_ajax',
 		renderer='json'
 	)
-	config.add_route('quick_image_upload', '/admin/quick_image_upload')
+	config.add_route('wysiwyg_imageupload', '/api/imageupload')
 	config.add_view(
-		'columns.views.quick_image_upload',
-		route_name='quick_image_upload',
+		'columns.views.imageupload',
+		route_name='wysiwyg_imageupload',
+		renderer='json'
 	)
 
 

@@ -57,9 +57,9 @@ def browse_images_view(request):
 	)
 
 def browse_images_ajax(request):
-	prefix = request.registry.settings.get('static_directory','')
-	offset = int(request.params.get('offset','0'))
-	limit = int(request.params.get('limit','20'))
+	prefix = request.registry.settings.get('static_directory', '')
+	offset = int(request.params.get('offset', '0'))
+	limit = int(request.params.get('limit', '20'))
 	Session = sqlahelper.get_session()
 	uploads = Session.query(Upload).\
 		order_by(Upload.updated.desc()).\
@@ -69,16 +69,15 @@ def browse_images_ajax(request):
 	return [
 		{
 			'filepath': request.static_url(
-				'/'.join([prefix,item.filepath]).replace('//','/')
+				'/'.join([prefix, item.filepath]).replace('//', '/')
 			),
 			'date':item.updated.isoformat(),
 			'alt':item.title or ''
 		} for item in uploads
 	]
 
-def quick_image_upload(request):
-	ckedit_num = request.GET.get('CKEditorFuncNum')
-	upload_file = request.POST['upload']
+def imageupload(request):
+	upload_file = request.POST['file']
 	values = {
 		'title': upload_file.filename,
 		'content': '',
@@ -89,13 +88,9 @@ def quick_image_upload(request):
 	try:
 		upload = upload.build_from_values(values, request=request)
 	except OSError: # pragma: no cover
-		return Response(""""<script type='text/javascript'>\
-		window.parent.CKEDITOR.tools.callFunction(%(n)s, '%(u)s', '%(m)s')\
-		</script>""" % {'n':ckedit_num,'m':message,'u':upload.filepath})
+		raise exception_response(500)
 	else:
-		return Response(""""<script type='text/javascript'>\
-			window.parent.CKEDITOR.tools.callFunction(%(num)s, '%(url)s')\
-		</script>""" % {'num':ckedit_num,'url':upload.filepath})
+		return {'filelink': '/'.join([self.request.registry.settings.get('upload_baseurl'), upload.filepath]).replace('//','/')}
 
 
 #############################

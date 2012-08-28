@@ -46,6 +46,14 @@ def story_view(request):
 def stream_view(request):
 	tag = request.GET.get('tag')
 	user = request.GET.get('user')
+	page_number = request.GET.get('page')
+	stories_per_page = 10
+	try:
+		page_number = int(page_number)
+		if page_number < 0:
+			page_number = 0
+	except (TypeError, ValueError):
+		page_number = 0
 	
 	Session = sqlahelper.get_session()
 	query = Session.query(Article)
@@ -57,11 +65,13 @@ def stream_view(request):
 	stream = query.\
 		filter(Article.published != None).\
 		order_by(Article.published.desc()).\
+		limit(stories_per_page).\
+		offset(page_number * stories_per_page).\
 		all()
 	
 	return render_to_response(
 		'columns:templates/blog/stream.jinja', 
-		{'stream': stream}
+		{'stream': stream, 'request': request, 'page': page_number}
 	)
 
 
