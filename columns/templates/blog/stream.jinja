@@ -1,4 +1,4 @@
-{% if not request.is_xhr %}{% extends "columns:templates/blog/main.jinja" %}{% endif %}
+{% if not request.is_xhr %}{% extends "columns:templates/blog/ndbp.jinja" %}{% endif %}
 {% block content %}
 {% for story in stream %}
 <article class="story-container hentry">
@@ -33,6 +33,9 @@
 		</ul>
 		{% endif %}
 	</div>
+	<div class="story-comments">
+	<a href="{{ 'blog_story'|route_url(permalink=story.permalink) }}#disqus_thread"  data-disqus-identifier="nerdblerp_{{story.permalink}}">Comments</a>
+	</div>
 </article>
 	{% endfor %}
 <div id="stream-pagination">
@@ -52,4 +55,5 @@
 $(".date-container").html(function(idx, txt){
 	return moment(txt, 'YYYY-MM-DDTHH:mm:sszz').format("LLLL");
 });
+$.getScript('http://nerdblerp.disqus.com/count.js');
 {% endblock %}

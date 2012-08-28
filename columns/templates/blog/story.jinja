@@ -1,4 +1,4 @@
-{% if not request.is_xhr %}{% extends "columns:templates/blog/main.jinja" %}{% endif %}
+{% if not request.is_xhr %}{% extends "columns:templates/blog/ndbp.jinja" %}{% endif %}
 
 {% block content %}
 <article class="story-container hentry">
@@ -33,6 +33,11 @@
 			{% endfor %}
 		</ul>
 		{% endif %}
+	</div>
+	<div class="comments-container">
+		<div id="disqus_thread"></div>
+		<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+		<a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>	
 	</div>
 </article>
 {% endblock %}
@@ -73,5 +78,9 @@
 $(".date-container").html(function(idx, txt){
 	return moment(txt, 'YYYY-MM-DDTHH:mm:sszz').format("LLLL");
 });
+disqus_shortname = 'nerdblerp';
+disqus_identifier = '{{story.permalink}}';
+disqus_url = '{{ 'blog_story'|route_url(permalink=story.permalink) }}';
+$.getScript('http://nerdblerp.disqus.com/embed.js');
 {% endblock %}
 
