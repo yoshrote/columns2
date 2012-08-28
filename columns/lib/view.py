@@ -26,6 +26,8 @@ def includeme(config):
 	import columns.helpers
 	jinja_env.globals['h'] = columns.helpers
 	jinja_env.globals['app_settings'] = app_settings
+	jinja_env.globals['request'] = get_current_request
+	jinja_env.globals['static_basepath'] = config.get_settings()['upload_baseurl']
 	
 	# Assign filters
 	jinja_env.filters['resource_url'] = config.maybe_dotted(

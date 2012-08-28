@@ -215,7 +215,7 @@ var PageFormView = Backbone.View.extend({
 		$(this.el).html(Mustache.to_html(tmpl, template_vars));
 		$("select[name='stream_comment_style']").val(template_vars.stream_comment_style);
 		$("select[name='story_comment_style']").val(template_vars.story_comment_style);
-		$(".redactor").redactor();
+		$(".redactor").redactor({ fixed: true, imageUpload: '/api/imageupload' });
 	},
 	save_form: function(){
 		var router = this.router;

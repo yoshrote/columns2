@@ -165,6 +165,10 @@ def get_author_id():
 	request = get_current_request()
 	return authenticated_userid(request)
 
+def get_static_basepath():
+	request = get_current_request()
+	return request.registry.settings.get('upload_baseurl')
+
 def get_author_data_from_user():
 	user_id = get_author_id()
 	session = sqlahelper.get_session()
@@ -429,6 +433,7 @@ class Upload(Base):
 			'content': self.content,
 			'filepath': self.filepath,
 			'tags': list(self.tags),
+			'static_base': get_static_basepath(),
 		}
 	
 	

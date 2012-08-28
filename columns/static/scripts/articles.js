@@ -229,7 +229,7 @@ var ArticleFormView = Backbone.View.extend({
 		{{/is_new}}\
 		';
 		$(this.el).html(Mustache.to_html(tmpl, template_vars));
-		$(".redactor").redactor({ fixed: true });
+		$(".redactor").redactor({ fixed: true, imageUpload: '/api/imageupload' });
 	},
 	save_form: function(){
 		var router = this.router;

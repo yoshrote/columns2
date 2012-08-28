@@ -35,6 +35,10 @@
 	</div>
 </article>
 	{% endfor %}
+<div id="stream-pagination">
+	<a href="{{request.path_url}}?page={{ [page, 1] | sum }}" title="Older Stories">&lt; Older Stories</a>
+	<a href="{{request.path_url}}?page={{ [page, -1] | sum }}" title="Newer Stories">Newer Stories &gt;</a>
+</div>
 {% endblock %}
 {% block more_metadata -%}
 {{ super() }}
@@ -48,5 +52,4 @@
 $(".date-container").html(function(idx, txt){
 	return moment(txt, 'YYYY-MM-DDTHH:mm:sszz').format("LLLL");
 });
-$.getScript('http://nerdblerp.disqus.com/count.js');
 {% endblock %}

@@ -26,17 +26,20 @@ $(document).ready(function(){
 			<h1>{{ app_settings('site_name') }}</h1>
 		</header>
 		<div id="top-menu">
-			<a class="main" href="{{ 'blog_main'|route_url }}" title="Main">Main</a>
+			<ul>
+			<li><a class="main" href="{{ 'blog_main'|route_url }}" title="Main">Main</a></li>
 			{% for slug, title in h.main_pages() %}
 			{% if slug != 'main' %}
-			<a class="{{ slug }}" href="{{ 'blog_page'|route_url(page=slug) }}" title="{{ title }}">{{ title }}</a>
+			<li><a class="{{ slug }}" href="{{ 'blog_page'|route_url(page=slug) }}" title="{{ title }}">{{ title }}</a></li>
 			{% endif %}
 			{% endfor %}
+			</ul>
 		</div>
 		<section id="top-content">
 			{% block content %}{% endblock %}
 		</section>
 		<section id="top-sidebar">
+			{% block sidebar %}{% endblock %}
 		</section>
 		<footer id="top-footer">
 			<p id="site-rights">
