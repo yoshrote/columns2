@@ -45,10 +45,10 @@
 	<body>
 		<header id="admin-header"><h1>{{ app_settings('site_name') }} Management</h1></header>
 		<nav id="admin-nav">
-			<a href="#/articles/" data-nav-name="articles" class="nav-link" title="Articles">Articles</a>
-			<a href="#/pages/" data-nav-name="pages" class="nav-link" title="Pages">Pages</a>
-			<a href="#/uploads/" data-nav-name="uploads" class="nav-link" title="Uploads">Uploads</a>
-			<a href="#/users/" data-nav-name="users" class="nav-link" title="Users">Users</a>
+			<a href="/admin/#/articles/" data-nav-name="articles" class="nav-link" title="Articles">Articles</a>
+			<a href="/admin/#/pages/" data-nav-name="pages" class="nav-link" title="Pages">Pages</a>
+			<a href="/admin/#/uploads/" data-nav-name="uploads" class="nav-link" title="Uploads">Uploads</a>
+			<a href="/admin/#/users/" data-nav-name="users" class="nav-link" title="Users">Users</a>
 			{% if 'settings' is allowed -%}
 			<a href="{{ 'settings'|route_url }}" data-nav-name="settings" class="nav-link" title="Settings">Settings</a>
 			{%- endif %}
