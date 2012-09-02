@@ -43,7 +43,6 @@ def UploadContextFactory(request):
 def UserContextFactory(request):
 	return UserCollectionContext(request)
 
-
 ########################################
 ## Collection Contexts
 ########################################
@@ -91,7 +90,6 @@ class ArticleCollectionContext(SQLACollectionContext):
 			raise KeyError(key)
 		Session.delete(resource)
 		Session.commit()
-	
 
 class PageCollectionContext(SQLACollectionContext):
 	__model__ = 'columns.models:Page'
@@ -114,12 +112,10 @@ class UploadCollectionContext(SQLACollectionContext):
 		Session.delete(resource)
 		Session.commit()
 		os.remove(resource_path)
-	
 
 class UserCollectionContext(SQLACollectionContext):
 	__model__ = 'columns.models:User'
 	__name__ = 'users'
-
 
 ########################################
 ## Views
@@ -237,7 +233,6 @@ class ArticleViews(BaseViews):
 			return update_form.data
 		else:
 			raise InvalidResource(update_form)
-	
 
 class PageViews(BaseViews):
 	def _create_values_from_request(self):
@@ -271,7 +266,6 @@ class PageViews(BaseViews):
 	
 	def _update_values_from_atom(self):
 		raise exception_response(501)
-	
 
 class UploadViews(BaseViews):
 	def _create_values_from_request(self):
@@ -305,7 +299,6 @@ class UploadViews(BaseViews):
 	
 	def _update_values_from_atom(self):
 		raise exception_response(501)
-	
 
 class UserViews(BaseViews):
 	def _create_values_from_request(self):
@@ -339,5 +332,3 @@ class UserViews(BaseViews):
 	
 	def _update_values_from_atom(self):
 		raise exception_response(501)
-	
-

@@ -36,7 +36,7 @@ PERMISSIONS = {
 	'probation': 8,
 	'subscriber': 9
 }
-DEFAULT_PERMISSION = 'subscriber'
+DEFAULT_PERMISSION = Authenticated
 def get_permissions():
 	return dict([(v,k) for k,v in PERMISSIONS.items()])
 
@@ -313,10 +313,11 @@ POLICY_MAP = {
 	None: {
 		'default': set([DEFAULT_PERMISSION]),
 		'settings': [minimum_permission('super')],
+		'admin': set([Authenticated]),
 	},
-	'article': {
-		'index': [set([Everyone])],
-		'show': [set([Everyone])],
+	'articles': {
+		'index': [minimum_permission('probation')],
+		'show': [minimum_permission('probation')],
 		'new': [minimum_permission('probation')],
 		'create': [minimum_permission('probation')],
 		'edit': [minimum_permission('editor'), is_author],
@@ -324,16 +325,16 @@ POLICY_MAP = {
  		'delete': [minimum_permission('editor'), is_author],
 		'publish': [minimum_permission('editor'), is_author],
 	},
-	'page':  {
-		'index': [set([Everyone])],
-		'show': [set([Everyone])],
+	'pages':  {
+		'index': [minimum_permission('probation')],
+		'show': [minimum_permission('probation')],
 		'new': [minimum_permission('admin')],
 		'create': [minimum_permission('admin')],
 		'edit': [minimum_permission('admin')],
 		'update': [minimum_permission('admin')],
 		'delete': [minimum_permission('admin')],
 	},
-	'user':  {
+	'users':  {
 		'index': [minimum_permission('admin')],
 		'show': [minimum_permission('admin')],
 		'new': [minimum_permission('admin')],
@@ -342,9 +343,9 @@ POLICY_MAP = {
 		'update': [minimum_permission('admin')],
 		'delete': [minimum_permission('admin')],
 	},
-	'upload':  {
-		'index': [set([Everyone])],
-		'show': [set([Everyone])],
+	'uploads':  {
+		'index': [minimum_permission('probation')],
+		'show': [minimum_permission('probation')],
 		'new': [minimum_permission('probation')],
 		'create': [minimum_permission('probation')],
 		'edit': [minimum_permission('probation')],
@@ -352,6 +353,7 @@ POLICY_MAP = {
 		'delete': [minimum_permission('editor')],
 	},
 }
+
 class AuthorizationPolicy(object):
 	"""An authorization policy
 	"""
@@ -371,6 +373,7 @@ class AuthorizationPolicy(object):
 		else:
 			context_name = context.__name__
 		permission_context = self.policy_map.get(context_name, {})
+
 		try:
 			principals = []
 			for perm in permission_context[permission]:
@@ -391,13 +394,13 @@ def includeme(config):
 	config.set_authorization_policy(AuthorizationPolicy(POLICY_MAP))
 	config.set_authentication_policy(SessionAuthenticationPolicy())
 	
-	config.add_route('login', 'login')
+	config.add_route('login', '/login')
 	config.add_view(
 		'columns.auth.login_view',
 		route_name='login',
 	)
 	
-	config.add_route('logout', 'logout')
+	config.add_route('logout', '/logout')
 	config.add_view(
 		'columns.auth.logout_view',
 		route_name='logout',
@@ -412,7 +415,7 @@ def includeme(config):
 		route_name='verify_openid',
 	)
 	
-	config.add_route('xrds', 'xrds.xml')
+	config.add_route('xrds', '/xrds.xml')
 	config.add_view(
 		'columns.auth.xrds_view',
 		route_name='xrds',
