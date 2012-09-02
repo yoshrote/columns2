@@ -286,8 +286,9 @@ def oid_authentication_callback(context, request, success_dict):
 		# use standard auth callback to populate session
 		#authentication_callback(user.id, request)
 		remember(request, user.id)
-		referer = request.params.get('referer', request.route_url('blog_main'))
-		return exception_response(302, location=referer)
+		return exception_response(302, location=request.route_url('admin'))
+	else:
+		return exception_response(401)
 	
 
 
