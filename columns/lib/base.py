@@ -385,7 +385,8 @@ def includeme(config):
 			attr='index',
 			accept='application/json',
 			request_method='GET',
-			renderer='json'
+			renderer='json',
+			permission='index',
 		)
 		#index (atom)
 		config.add_view(
@@ -421,7 +422,8 @@ def includeme(config):
 			attr='new',
 			accept='application/json',
 			request_method='GET',
-			renderer='json'
+			renderer='json',
+			permission='new',
 		)
 		
 		#show (html)
@@ -444,7 +446,8 @@ def includeme(config):
 			attr='show',
 			accept='application/json',
 			request_method='GET',
-			renderer='json'
+			renderer='json',
+			permission='show',
 		)
 		#show (atom)
 		config.add_view(
@@ -457,7 +460,8 @@ def includeme(config):
 			request_method='GET',
 			renderer='columns:templates/{0}/show.atom.jinja'.format(
 				collection
-			)
+			),
+			permission='show',
 		)
 		
 		#edit (html)
@@ -479,6 +483,7 @@ def includeme(config):
 			view=view_class,
 			attr='create',
 			request_method='POST',
+			permission='create',
 		)
 		#create (atom)
 		config.add_view(
@@ -491,6 +496,7 @@ def includeme(config):
 				lambda ctxt,req: 'atom' in req.content_type
 			],
 			request_method='POST',
+			permission='create',
 		)
 		
 		#update (x-form-urlencoded)
@@ -501,6 +507,7 @@ def includeme(config):
 			view=view_class,
 			attr='update',
 			request_method='PUT',
+			permission='update',
 		)
 		#update (x-form-urlencoded w/ browser fakeout)
 		config.add_view(
@@ -511,6 +518,7 @@ def includeme(config):
 			attr='update',
 			request_method='POST',
 			request_param='_method=PUT',
+			permission='update',
 		)
 		#update (atom)
 		config.add_view(
@@ -523,6 +531,7 @@ def includeme(config):
 				lambda ctxt,req: 'atom' in req.content_type
 			],
 			request_method='PUT',
+			permission='update',
 		)
 		
 		#delete (x-form-urlencoded)
@@ -533,6 +542,7 @@ def includeme(config):
 			view=view_class,
 			attr='delete',
 			request_method='DELETE',
+			permission='delete',
 		)
 		#delete (x-form-urlencoded w/ browser fakeout)
 		config.add_view(
@@ -543,6 +553,7 @@ def includeme(config):
 			attr='delete',
 			request_method='POST',
 			request_param='_method=PUT',
+			permission='delete',
 		)
 	
 	config.add_directive('add_resource', generate_routing)

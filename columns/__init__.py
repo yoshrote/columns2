@@ -41,17 +41,20 @@ def setup_admin_routes(config):
 	config.add_view(
 		'columns.views.admin_view',
 		route_name='admin',
+		permission='admin',
 	)
 	config.add_route('admin_no_slash', '/admin')
 	config.add_view(
 		'columns.views.admin_no_slash_view',
 		route_name='admin_no_slash',
+		permission='admin',
 	)
 	
 	config.add_route('settings', '/admin/settings')
 	config.add_view(
 		'columns.views.settings_view',
 		route_name='settings',
+		permission='admin'
 	)
 	
 	config.add_route('settings_edit', '/admin/settings/:module/edit')
@@ -59,11 +62,13 @@ def setup_admin_routes(config):
 		'columns.views.settings_edit_view',
 		request_method='GET',
 		route_name='settings_edit',
+		permission='admin',
 	)
 	config.add_view(
 		'columns.views.settings_save',
 		request_method='POST',
 		route_name='settings_edit',
+		permission='admin',
 	)
 	
 	
@@ -71,18 +76,21 @@ def setup_admin_routes(config):
 	config.add_view(
 		'columns.views.browse_images_view',
 		route_name='browse_images',
+		permission='admin',
 	)
 	config.add_route('browse_images_ajax', '/admin/browse_images_ajax')
 	config.add_view(
 		'columns.views.browse_images_ajax',
 		route_name='browse_images_ajax',
-		renderer='json'
+		renderer='json',
+		permission='admin',
 	)
 	config.add_route('wysiwyg_imageupload', '/api/imageupload')
 	config.add_view(
 		'columns.views.imageupload',
 		route_name='wysiwyg_imageupload',
-		renderer='json'
+		renderer='json',
+		permission='admin',
 	)
 
 
