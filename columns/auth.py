@@ -19,11 +19,14 @@ from pyramid.security import forget
 
 import oauth2 as oauth
 import cgi
+import logging
 import urllib
 import urlparse
 import sqlahelper
 from sqlalchemy.exc import InvalidRequestError
 from .models import User
+
+LOG = logging.getLogger(__name__)
 
 #############################
 ## Authentication Policy 
@@ -68,11 +71,13 @@ class SessionAuthenticationPolicy(CallbackAuthenticationPolicy):
 		""" Store a principal in the session."""
 		auth_type = request.session.get('auth.type')
 		#load user into cache
+		LOG.debug('auth_type = %r', auth_type)
 		if not auth_type:
 			user = find_user('id', principal, create=kw.get('create',False))
 			if isinstance(user, User):
 				request.session[self.userid_key] = principal
 				request.session['auth.type'] = user.type
+			LOG.debug('session info: %r', request.session)
 		return []
 	
 	def forget(self, request):
@@ -89,6 +94,7 @@ class SessionAuthenticationPolicy(CallbackAuthenticationPolicy):
 def find_user(attribute, value, create=False):
 	DBSession = sqlahelper.get_session()
 	try:
+		LOG.info('Looking for user where %s=%r', attribute, value)
 		user = DBSession.query(User).filter(getattr(User, attribute)==value).one()
 	except InvalidRequestError:
 		if create:
@@ -101,6 +107,8 @@ def find_user(attribute, value, create=False):
 			return user
 		else:
 			return None
+	else:
+		LOG.info('User found: %r', user.name)
 	return user
 
 
@@ -281,7 +289,7 @@ def oid_authentication_callback(context, request, success_dict):
 		'sreg': {}
 	}
 	"""
-	user = find_user('open_id', success_dict['identity_url'], create=True)
+	user = find_user('open_id', success_dict['identity_url'])
 	if user:
 		# use standard auth callback to populate session
 		#authentication_callback(user.id, request)
