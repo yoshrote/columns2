@@ -70,9 +70,9 @@ class SessionAuthenticationPolicy(CallbackAuthenticationPolicy):
 		#load user into cache
 		if not auth_type:
 			user = find_user('id', principal, create=kw.get('create',False))
-			request.session[self.userid_key] = principal
-			request.session['auth.type'] = user.type if user else None
-		
+			if isinstance(user, User):
+				request.session[self.userid_key] = principal
+				request.session['auth.type'] = user.type
 		return []
 	
 	def forget(self, request):
