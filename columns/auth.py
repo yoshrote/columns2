@@ -39,7 +39,7 @@ PERMISSIONS = {
 	'probation': 8,
 	'subscriber': 9
 }
-DEFAULT_PERMISSION = Authenticated
+DEFAULT_PERMISSION = Everyone
 def get_permissions():
 	return dict([(v,k) for k,v in PERMISSIONS.items()])
 
@@ -65,6 +65,7 @@ class SessionAuthenticationPolicy(CallbackAuthenticationPolicy):
 		# add in principles according to session stored variables
 		inv_permission = get_permissions()
 		principals.append(inv_permission.get(request.session['auth.type'], 'subscriber'))
+		LOG.info('User principals: %r', principals)
 		return principals
 	
 	def remember(self, request, principal, **kw):
@@ -322,7 +323,7 @@ POLICY_MAP = {
 	None: {
 		'default': set([DEFAULT_PERMISSION]),
 		'settings': [minimum_permission('super')],
-		'admin': set([Authenticated]),
+		'admin': minimum_permission('probation'),
 	},
 	'articles': {
 		'index': [minimum_permission('probation')],
@@ -381,7 +382,10 @@ class AuthorizationPolicy(object):
 			context_name = context.__parent__.__name__
 		else:
 			context_name = context.__name__
-		permission_context = self.policy_map.get(context_name, {})
+
+		LOG.info('Context: %s', context_name)
+		permission_context = self.policy_map.get(context_name, self.policy_map[None])
+		LOG.info('Policy: %r', permission_context)
 
 		try:
 			principals = []
@@ -399,10 +403,15 @@ class AuthorizationPolicy(object):
 #############################
 ## Auth Config 
 #############################
+from pyramid.events import NewResponse
+def debug_sessions(event):
+	LOG.info('Session: %r', event.request.session)
+
 def includeme(config):
 	config.set_authorization_policy(AuthorizationPolicy(POLICY_MAP))
 	config.set_authentication_policy(SessionAuthenticationPolicy())
-	
+	config.add_subscriber(debug_sessions, NewResponse)
+
 	config.add_route('login', '/login')
 	config.add_view(
 		'columns.auth.login_view',
