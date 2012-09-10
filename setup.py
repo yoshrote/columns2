@@ -27,6 +27,10 @@ requires = [
     'pytz',
     ]
 
+dependency_links = [
+  'git+https://github.com/yoshrote/pyramid_openid.git#egg=pyramid_openid'
+]
+
 tests_require = requires + ['webtest']
 
 setup(name='columns',
