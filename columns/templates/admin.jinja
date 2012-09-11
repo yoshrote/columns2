@@ -53,6 +53,7 @@
 			{% if 'settings' is allowed -%}
 			<a href="{{ 'settings'|route_url }}" data-nav-name="settings" class="nav-link" title="Settings">Settings</a>
 			{%- endif %}
+			{% if logged_in() -%}<a href="{{ 'logout'|route_url }}">Logout</a>{%- endif %}
 		</nav>
 		<section id="admin-content">
 		{% block content %}

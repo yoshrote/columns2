@@ -260,27 +260,27 @@ var UploadCtrl = Backbone.Router.extend({
 		_.bindAll(this, 'index', 'edit', 'new', 'show'); // fixes loss of context for 'this' within methods
 	},
 	index: function() {
-		var ctrl = this;
+		var router = this;
 		var collection = new UploadList();
 		collection.fetch({
 			success: function(model, resp){
-				var view = new UploadIndexView({collection: collection, router: ctrl});
+				var view = new UploadIndexView({collection: collection, router: router});
 				view.render();
 			},
 			error: function(model, options){
 				alert('Something went wrong');
-				ctrl.navigate('', true);
+				router.navigate('', true);
 			}
 		});
 	},
 	new: function() {
-		var ctrl = this;
+		var router = this;
 		var model = new Upload();
-		var view = new UploadFormView({model: model, router: ctrl});
+		var view = new UploadFormView({model: model, router: router});
 		view.render();
 	},
 	show: function(id) {
-		var ctrl = this;
+		var router = this;
 		var model = new Upload();
 		model.set({id: id});
 		model.fetch({
@@ -290,22 +290,22 @@ var UploadCtrl = Backbone.Router.extend({
 			},
 			error: function(model, options){
 				alert('Something went wrong');
-				ctrl.navigate('/uploads/', true);
+				router.navigate('/uploads/', true);
 			}
 		});
 	},
 	edit: function(id) {
-		var ctrl = this;
+		var router = this;
 		var model = new Upload();
 		model.set({id: id});
 		model.fetch({
 			success: function(model, resp){
-				var view = new UploadFormView({model: model, router: ctrl});
+				var view = new UploadFormView({model: model, router: router});
 				view.render();
 			},
 			error: function(model, options){
 				alert('Something went wrong');
-				ctrl.navigate('/uploads/', true);
+				router.navigate('/uploads/', true);
 			}
 		});
 	}

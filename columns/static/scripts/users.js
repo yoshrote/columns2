@@ -270,27 +270,27 @@ var UserCtrl = Backbone.Router.extend({
 		_.bindAll(this, 'index', 'edit', 'new', 'show'); // fixes loss of context for 'this' within methods
 	},
 	index: function() {
-		var ctrl = this;
+		var router = this;
 		var collection = new UserList();
 		collection.fetch({
 			success: function(model, resp){
-				var view = new UserIndexView({collection: collection, router: ctrl});
+				var view = new UserIndexView({collection: collection, router: router});
 				view.render();
 			},
 			error: function(model, options){
 				alert('Something went wrong');
-				ctrl.navigate('', true);
+				router.navigate('', true);
 			}
 		});
 	},
 	new: function() {
-		var ctrl = this;
+		var router = this;
 		var model = new User();
-		var view = new UserFormView({model: model, router: ctrl});
+		var view = new UserFormView({model: model, router: router});
 		view.render();
 	},
 	show: function(id) {
-		var ctrl = this;
+		var router = this;
 		var model = new User();
 		model.set({id: id});
 		model.fetch({
@@ -300,22 +300,22 @@ var UserCtrl = Backbone.Router.extend({
 			},
 			error: function(model, options){
 				alert('Something went wrong');
-				ctrl.navigate('/users/', true);
+				router.navigate('/users/', true);
 			}
 		});
 	},
 	edit: function(id) {
-		var ctrl = this;
+		var router = this;
 		var model = new User();
 		model.set({id: id});
 		model.fetch({
 			success: function(model, resp){
-				var view = new UserFormView({model: model, router: ctrl});
+				var view = new UserFormView({model: model, router: router});
 				view.render();
 			},
 			error: function(model, options){
 				alert('Something went wrong');
-				ctrl.navigate('/users/', true);
+				router.navigate('/users/', true);
 			}
 		});
 	}

@@ -315,7 +315,7 @@ var ArticleCtrl = Backbone.Router.extend({
 			},
 			error: function(model, options){
 				alert('Something went wrong');
-				ctrl.navigate('', true);
+				router.navigate('', true);
 			}
 		});
 	},
@@ -335,13 +335,13 @@ var ArticleCtrl = Backbone.Router.extend({
 		});
 	},
 	new: function() {
-		var ctrl = this;
+		var router = this;
 		var model = new Article();
-		var view = new ArticleFormView({model: model, router: ctrl});
+		var view = new ArticleFormView({model: model, router: router});
 		view.render();
 	},
 	show: function(id) {
-		var ctrl = this;
+		var router = this;
 		var model = new Article();
 		model.set({id: id});
 		model.fetch({
@@ -351,22 +351,22 @@ var ArticleCtrl = Backbone.Router.extend({
 			},
 			error: function(model, options){
 				alert('Something went wrong');
-				ctrl.navigate('/articles/', true);
+				router.navigate('/articles/', true);
 			}
 		});
 	},
 	edit: function(id) {
-		var ctrl = this;
+		var router = this;
 		var model = new Article();
 		model.set({id: id});
 		model.fetch({
 			success: function(model, resp){
-				var view = new ArticleFormView({model: model, router: ctrl});
+				var view = new ArticleFormView({model: model, router: router});
 				view.render();
 			},
 			error: function(model, options){
 				alert('Something went wrong');
-				ctrl.navigate('/articles/', true);
+				router.navigate('/articles/', true);
 			}
 		});
 	}
