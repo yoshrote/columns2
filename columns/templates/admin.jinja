@@ -29,14 +29,14 @@
 			.script('{{ "scripts/pages.js"|static_url }}')
 			.script('{{ "scripts/users.js"|static_url }}')
 			.script('{{ "scripts/uploads.js"|static_url }}')
-			{% if 'settings' is allowed -%}.script('{{ "scripts/settings.js"|static_url }}'){%- endif %}
+			{#% if 'settings' is allowed -%}.script('{{ "scripts/settings.js"|static_url }}'){%- endif %#}
 			.wait(function(){
 				$(document).ready(function(){
 					articles_app.initialize();
 					pages_app.initialize();
 					users_app.initialize();
 					uploads_app.initialize();
-					{% if 'settings' is allowed -%}settings_app.initialize();{%- endif %}
+					{#% if 'settings' is allowed -%}settings_app.initialize();{%- endif %#}
 					Backbone.history.start({root: "/admin/#"});
 				});
 			});
@@ -55,7 +55,18 @@
 			{%- endif %}
 		</nav>
 		<section id="admin-content">
-		{% block content %}{% endblock %}
+		{% block content %}
+		{% if not logged_in() %}
+		<div id="login-form">
+			{{ h.form('verify_openid'|route_url, method="post") }}
+				<div>
+					{{ h.text('openid') }}
+					{{ h.submit('login', 'Login') }}
+				</div>
+			{{ h.end_form() }}
+		</div>
+		{% endif %}
+		{% endblock %}
 		</section>
 		<footer id="admin-footer">
 		{% block footer %}{% endblock %}
