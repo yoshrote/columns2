@@ -10,6 +10,7 @@
 		<link href="{{ 'stylesheets/absolution/jquery.ui.all.css'|static_url }}" media="screen" 
 		rel="stylesheet" type="text/css" ></link>
 		<link href="{{ 'scripts/redactor/redactor.css'|static_url }}" rel="stylesheet" type="text/css" ></link>
+		<script src="https://login.persona.org/include.js"></script>
 		<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/labjs/2.0.3/LAB.min.js"></script>
 		<script type="text/javascript">
 			$LAB
@@ -24,6 +25,7 @@
 			.script('http://cachedcommons.org/cache/jquery-uniform/1.7.3/javascripts/jquery-uniform-min.js')
 			.script('{{ "scripts/moment.min.js"|static_url }}')
 			.script('{{ "scripts/redactor/redactor.min.js"|static_url }}')
+			.script('{{ "scripts/jquery.browserid.min.js"|static_url }}')
 			.wait()
 			.script('{{ "scripts/articles.js"|static_url }}')
 			.script('{{ "scripts/pages.js"|static_url }}')
@@ -38,6 +40,15 @@
 					uploads_app.initialize();
 					{#% if 'settings' is allowed -%}settings_app.initialize();{%- endif %#}
 					Backbone.history.start({root: "/admin/#"});
+					$(".btn").browserid(
+						function (assertion) {
+							alert(assertion); 
+						}, 
+						{ 
+							assertionSuccessFunction: function () { alert("Success!"); },
+							errorHandler: function () { alert("Error!"); }
+						}
+					);
 				});
 			});
 		</script>
@@ -53,6 +64,7 @@
 			{% if 'settings' is allowed -%}
 			<a href="{{ 'settings'|route_url }}" data-nav-name="settings" class="nav-link" title="Settings">Settings</a>
 			{%- endif %}
+			{% if not logged_in() -%}<div class="btn">Login</div>{%- endif %}
 			{% if logged_in() -%}<a href="{{ 'logout'|route_url }}">Logout</a>{%- endif %}
 		</nav>
 		<section id="admin-content">
@@ -65,6 +77,7 @@
 					{{ h.submit('login', 'Login') }}
 				</div>
 			{{ h.end_form() }}
+			<
 		</div>
 		{% endif %}
 		{% endblock %}
