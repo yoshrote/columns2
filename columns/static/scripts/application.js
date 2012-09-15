@@ -1,102 +1,98 @@
-BaseModel = Backbone.Model.extend({
-	http_url: '',
-	url: function(){
-		if (this.isNew()){
-			return this.http_url;
-		} else {
-			return this.http_url + this.id;
-		}
-	},
-	parse: function(resp, xhr) {
-		if(resp.resource === undefined)
-			return resp; // from a collection
-		else
-			return resp.resource;
-	}
-}); 
+user_id = {}
 
-BaseCollection = Backbone.Collection.extend({
-	model: Page,
-	limit: 20,
-	offset: 0,
-	sort_order: 'id',
-	http_url: '',
-	comparator: function(page) {
-		return page.get(this.sort_order);
+NavigationView = Backbone.View.extend({
+	el: $('nav#admin-nav'), // attaches `this.el` to an existing element.
+	events: {
+		'click .login-link': 'do_login',
+		'click .logout-link': 'do_logout'
+//		'click #login-google': 'google_login'
 	},
-    parse : function(resp, xhr) {
-      return resp.resources;
-    }
-	url: function(){
-		return this.http_url+'?limit='+this.limit+'&offset='+this.offset+'&order='+this.sort_order;
-	},
-});  
-
-PagedView = Backbone.View.extend({ 
 	initialize: function(options){
-		_.bindAll(this, 'render', 'prev_page', 'next_page'); // fixes loss of context for 'this' within methods
-		this.router = options.router;
+		_.bindAll(this, 'render', 'do_login', 'do_logout', 'google_login'); // fixes loss of context for 'this' within methods
 	},
-	prev_page: function(){
-		var router = this.router;
-		var collection = this.collection;
+	render: function(){
 		var view = this;
-		collection.offset -= collection.limit;
-		if(collection.offset < 0){
-			collection.offset = 0;
-		}
-		collection.fetch({
-			success: function(model, resp){
-				view.render();
-			},
-			error: function(model, options){
-				alert('Something went wrong');
-				router.navigate('', true);
-			}
+		var tmpl = '\
+		<a href="/admin/#/articles/" data-nav-name="articles" class="nav-link" title="Articles">Articles</a>\
+		<a href="/admin/#/pages/" data-nav-name="pages" class="nav-link" title="Pages">Pages</a>\
+		<a href="/admin/#/uploads/" data-nav-name="uploads" class="nav-link" title="Uploads">Uploads</a>\
+		<a href="/admin/#/users/" data-nav-name="users" class="nav-link" title="Users">Users</a>\
+		{{#settings_access}}\
+		<a href="/admin/#/settings/" data-nav-name="settings" class="nav-link" title="Settings">Settings</a>\
+		{{/settings_access}}\
+		{{^logged_in}}\
+		<button class="auth-btn login-link">Login</button>\
+		<div id="login-dialog">\
+		<ul>\
+			<li><button id="login-google">Google</button></li>\
+			<li>\
+				<form id="login-form" action="/auth/openid">\
+					<div>\
+					<input type="submit" value="OpenID"></input>\
+					<input type="text" name="openid" id="openid"></input>\
+					</div>\
+				</form>\
+			</li>\
+		</ul>\
+		</div>\
+		</div>\
+		{{/logged_in}}\
+		{{#logged_in}}<button class="auth-btn logout-link">Logout</button>{{/logged_in}}\
+		';
+		$(this.el).html(Mustache.to_html(tmpl, {
+			logged_in: _.isNumber(user_id.id) && _.isNumber(user_id.type),
+			settings_access: user_id.type === 1
+		}));
+		$("#login-dialog button, #login-dialog input[type='submit']").button();
+
+		$('#login-google').click(function(){
+			view.google_login();
+		})
+		$('#login-dialog').dialog({
+			title: 'Login',
+			autoOpen: false,
+			modal: true,
+			resizable: false,
+			draggable: false,
+			width: 500,
 		});
+
+
 	},
-	next_page: function(){
-		var router = this.router;
-		var collection = this.collection;
+	do_login: function(){
+		$('#login-dialog').dialog('open');
+	},
+	google_login: function(){
+		$('input#openid').val('https://www.google.com/accounts/o8/id');
+		$('form#login-form').submit();
+	},
+	do_logout: function(){
 		var view = this;
-		collection.offset += collection.limit;
-		collection.fetch({
-			success: function(model, resp){
-				view.render();
-			},
-			error: function(model, options){
-				alert('Something went wrong');
-				router.navigate('', true);
-			}
+		$.get('/auth/logout', function(){
+			user_id = {};
+			view.render();
 		});
 	}
 });
 
-form_error_callback = function(router, model, field_names, response){
-	console.log(response);
-	console.log(model);
-	if (response.status == 200 || response.status == 201){
-		router.navigate('/articles/', true);
-	} else if (response.status == 400) {
-		var errors = JSON.parse(response.responseText);
-		for(var i = 0; i < field_names.length; i++){
-			var field = field_names[i]
-			var field_error = errors[ field ];
-			if (field_error === undefined){
-			// clear error field if there is no error
-				this.$('label[for="' + field + '"] span.error').html('');
-			} else {
-				var error_label = this.$('label[for="' + field + '"] span.error');
-				if (error_label.length == 0){
-				// build span.error if it did not exist
-					this.$('label[for="' + field + '"]').append(
-						' <span class="error">*' + errors[field] + '</span>'
-					);
-				} else {
-				// update the existing span.error
-					error_label.html('*' + errors[field]);
-				}
-			}
-		}
-	}
+get_auth_data = function(){
+	$.get('/auth/whoami', function(data){
+		user_id = data;
+		navigation_view.render();
+	})
 }
+
+main_application = function(){
+	articles_app.initialize();
+	pages_app.initialize();
+	users_app.initialize();
+	uploads_app.initialize();
+	navigation_view = new NavigationView();
+	if(user_id.id === undefined){
+		get_auth_data();
+	} else {
+		navigation_view.render();
+	}
+	Backbone.history.start({root: "/admin/#"});
+}
+

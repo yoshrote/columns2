@@ -10,7 +10,6 @@
 		<link href="{{ 'stylesheets/absolution/jquery.ui.all.css'|static_url }}" media="screen" 
 		rel="stylesheet" type="text/css" ></link>
 		<link href="{{ 'scripts/redactor/redactor.css'|static_url }}" rel="stylesheet" type="text/css" ></link>
-		<script src="https://login.persona.org/include.js"></script>
 		<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/labjs/2.0.3/LAB.min.js"></script>
 		<script type="text/javascript">
 			$LAB
@@ -31,24 +30,11 @@
 			.script('{{ "scripts/pages.js"|static_url }}')
 			.script('{{ "scripts/users.js"|static_url }}')
 			.script('{{ "scripts/uploads.js"|static_url }}')
+			.script('{{ "scripts/application.js"|static_url }}')
 			{#% if 'settings' is allowed -%}.script('{{ "scripts/settings.js"|static_url }}'){%- endif %#}
 			.wait(function(){
 				$(document).ready(function(){
-					articles_app.initialize();
-					pages_app.initialize();
-					users_app.initialize();
-					uploads_app.initialize();
-					{#% if 'settings' is allowed -%}settings_app.initialize();{%- endif %#}
-					Backbone.history.start({root: "/admin/#"});
-					$(".btn").browserid(
-						function (assertion) {
-							alert(assertion); 
-						}, 
-						{ 
-							assertionSuccessFunction: function () { alert("Success!"); },
-							errorHandler: function () { alert("Error!"); }
-						}
-					);
+					main_application();
 				});
 			});
 		</script>
@@ -57,30 +43,9 @@
 	<body>
 		<header id="admin-header"><h1>{{ app_settings('site_name') }} Management</h1></header>
 		<nav id="admin-nav">
-			<a href="/admin/#/articles/" data-nav-name="articles" class="nav-link" title="Articles">Articles</a>
-			<a href="/admin/#/pages/" data-nav-name="pages" class="nav-link" title="Pages">Pages</a>
-			<a href="/admin/#/uploads/" data-nav-name="uploads" class="nav-link" title="Uploads">Uploads</a>
-			<a href="/admin/#/users/" data-nav-name="users" class="nav-link" title="Users">Users</a>
-			{% if 'settings' is allowed -%}
-			<a href="{{ 'settings'|route_url }}" data-nav-name="settings" class="nav-link" title="Settings">Settings</a>
-			{%- endif %}
-			{% if not logged_in() -%}<div class="btn">Login</div>{%- endif %}
-			{% if logged_in() -%}<a href="{{ 'logout'|route_url }}">Logout</a>{%- endif %}
 		</nav>
 		<section id="admin-content">
-		{% block content %}
-		{% if not logged_in() %}
-		<div id="login-form">
-			{{ h.form('verify_openid'|route_url, method="post") }}
-				<div>
-					{{ h.text('openid') }}
-					{{ h.submit('login', 'Login') }}
-				</div>
-			{{ h.end_form() }}
-			<
-		</div>
-		{% endif %}
-		{% endblock %}
+		{% block content %}{% endblock %}
 		</section>
 		<footer id="admin-footer">
 		{% block footer %}{% endblock %}

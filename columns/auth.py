@@ -78,6 +78,7 @@ class SessionAuthenticationPolicy(CallbackAuthenticationPolicy):
 			if isinstance(user, User):
 				request.session[self.userid_key] = principal
 				request.session['auth.type'] = user.type
+				request.session['auth.name'] = user.name
 			LOG.debug('session info: %r', request.session)
 		return []
 	
@@ -299,14 +300,21 @@ def oid_authentication_callback(context, request, success_dict):
 	else:
 		return exception_response(401)
 	
-
-
-def login_view(request):
-	return render_to_response('columns:templates/auth/login.jinja', {})
-
 def logout_view(request):
 	forget(request)
-	return exception_response(302, location=request.route_url('login'))
+	if request.is_xhr:
+		return exception_response(200)
+	return exception_response(302, location=request.route_url('admin'))
+
+def whoami_view(request):
+	user_type = request.session.get('auth.type')
+	if user_type:
+		return {
+			'id': request.session.get('auth.userid'),
+			'user': request.session.get('auth.name'),
+			'type': user_type,
+		}
+	return {}
 
 
 #############################
@@ -383,9 +391,9 @@ class AuthorizationPolicy(object):
 		else:
 			context_name = context.__name__
 
-		LOG.info('Context: %s', context_name)
+		LOG.debug('Context: %s', context_name)
 		permission_context = self.policy_map.get(context_name, self.policy_map[None])
-		LOG.info('Policy: %r', permission_context)
+		LOG.debug('Policy: %r', permission_context)
 
 		try:
 			principals = []
@@ -405,23 +413,24 @@ class AuthorizationPolicy(object):
 #############################
 from pyramid.events import NewResponse
 def debug_sessions(event):
-	LOG.info('Session: %r', event.request.session)
+	LOG.debug('Session: %r', event.request.session)
 
 def includeme(config):
 	config.set_authorization_policy(AuthorizationPolicy(POLICY_MAP))
 	config.set_authentication_policy(SessionAuthenticationPolicy())
 	config.add_subscriber(debug_sessions, NewResponse)
 
-	config.add_route('login', '/login')
-	config.add_view(
-		'columns.auth.login_view',
-		route_name='login',
-	)
-	
 	config.add_route('logout', '/logout')
 	config.add_view(
 		'columns.auth.logout_view',
 		route_name='logout',
+	)
+
+	config.add_route('whoami', '/whoami')
+	config.add_view(
+		'columns.auth.whoami_view',
+		route_name='whoami',
+		renderer='json'
 	)
 	
 	config.add_route(
