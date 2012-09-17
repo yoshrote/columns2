@@ -16,6 +16,16 @@ var Article = Backbone.Model.extend({
 			return resp; // from a collection
 		else
 			return resp.resource;
+	},
+	initialize: function(){
+		_.bindAll(this, 'can_publish');
+	},
+	can_publish: function(){
+		if(user_id.type <= 3 || user_id.id == this.author_id || this.author_id === undefined){
+			return true;
+		} else {
+			return false;
+		}
 	}
 }); 
 
@@ -43,6 +53,7 @@ var ArticleView = Backbone.View.extend({
 	el: $('section#admin-content'), // attaches `this.el` to an existing element.
 	events: {},
 	initialize: function(){
+		$('section#admin-content').unbind()
 		_.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
 	},
 	render: function(){
@@ -73,7 +84,6 @@ var ArticleView = Backbone.View.extend({
 		</div>\
 		';
 		var template_vars = this.model.toJSON();
-		console.log(template_vars);
 		template_vars.has_tags = template_vars.tags.length > 0 ? true:false;
 		template_vars.published_friendly = template_vars.published == null ? 'Draft' : moment(template_vars.published).format('LLLL');
 		template_vars.url = '';
@@ -88,6 +98,7 @@ var ArticleIndexView = Backbone.View.extend({
 		'click .next-article-page': 'next_page'
 	},
 	initialize: function(options){
+		$('section#admin-content').unbind()
 		_.bindAll(this, 'render', 'prev_page', 'next_page'); // fixes loss of context for 'this' within methods
 		this.router = options.router;
 	},
@@ -124,7 +135,6 @@ var ArticleIndexView = Backbone.View.extend({
 		</div>\
 		';
 		var template_vars = this.collection.toJSON();
-		console.log(template_vars);
 		for(var i=0;i < template_vars.length; i++){
 			template_vars[i].author_name = template_vars[i].author.name;
 			template_vars[i].published_friendly = template_vars[i].published == null ? 'Draft': moment(template_vars[i].published).format('L LT');
@@ -184,25 +194,23 @@ var ArticleFormView = Backbone.View.extend({
 	el: $('section#admin-content'),
 	events: {
 		'submit #save-form': 'save_form',
-		'submit #delete-form': 'delete_form'
+		'submit #delete-form': 'delete_form',
+		'click #preview-post': 'show_preview'
 	},
 	initialize: function(options){
-		_.bindAll(this, 'render', 'save_form', 'delete_form'); // fixes loss of context for 'this' within methods
+		$('section#admin-content').unbind()
+		_.bindAll(this, 'render', 'save_form', 'delete_form', 'show_preview'); // fixes loss of context for 'this' within methods
 		this.router = options.router;
 	},
 	render: function(){
 		var template_vars = this.model.toJSON();
 		template_vars.is_new = this.model.isNew();
-		console.log(template_vars);
+		template_vars.can_publish = this.model.can_publish();
 		var tmpl = '\
 		<form id="save-form">\
 			<div class="field-n-label">\
 				<label for="title">Title</label>\
 				<input type="text" name="title" value="{{title}}" />\
-			</div>\
-			<div class="field-n-label">\
-				<label for="can_comment">Enable Comments</label>\
-				<input type="checkbox" name="can_comment" value="1"{{#can_comment}} checked="checked"{{/can_comment}} />\
 			</div>\
 			<div class="field-n-label">\
 				<label for="sticky">Make Sticky</label>\
@@ -217,8 +225,9 @@ var ArticleFormView = Backbone.View.extend({
 				<input type="text" name="tags" value="{{#tags}}{{label}}, {{/tags}}" />\
 			</div>\
 			<input type="hidden" name="published" value="{{published}}" />\
-			<input type="button" id="preview_post" value="Preview Post" class="form-submit-left"/>\
+			<input type="button" id="preview-post" value="Preview Post" class="form-submit-left"/>\
 			<input type="submit" name="save" value="Save{{^published}} As Draft{{/published}}"  class="form-submit-left"/>\
+			{{^published}}{{#can_publish}}<input type="submit" name="save-publish" value="Publish" class="form-submit-left"/>{{/can_publish}}{{/published}}\
 		</form>\
 		{{^is_new}}\
 		<form id="delete-form">\
@@ -234,10 +243,9 @@ var ArticleFormView = Backbone.View.extend({
 	save_form: function(){
 		var router = this.router;
 		var model = this.model;
-		var field_names = ['title', 'can_comment', 'sticky', 'content', 'tags'];
+		var field_names = ['title', 'sticky', 'content', 'tags'];
 		model.save({
 			title: this.$('input[name="title"]').val(),
-			can_comment: this.$('input[name="can_comment"]:checked').val(),
 			sticky: this.$('input[name="sticky"]:checked').val(),
 			content: this.$('textarea[name="content"]').val(),
 			tags: this.$('input[name="tags"]').val(),
@@ -245,15 +253,11 @@ var ArticleFormView = Backbone.View.extend({
 		},
 		{
 			success: function(model, response){
-				console.log(response);
-				console.log(model);
-				router.navigate('/articles/', true);
+				router.navigate('//articles/', true);
 			},
 			error: function(model, response){
-				console.log(response);
-				console.log(model);
 				if (response.status == 200 || response.status == 201){
-					router.navigate('/articles/', true);
+					router.navigate('//articles/', true);
 				} else if (response.status == 400) {
 					var errors = JSON.parse(response.responseText);
 					for(var i = 0; i < field_names.length; i++){
@@ -284,13 +288,37 @@ var ArticleFormView = Backbone.View.extend({
 		var router = this.router;
 		this.model.destroy({
 			success: function(model, response){
-				router.navigate('/articles/', true);
+				router.navigate('//articles/', true);
 			},
 			error: function(model, response){
+				console.log('Error on delete');
+				console.log(model);
 				console.log(response);
 			}
 		});
 		return false;
+	},
+	show_preview: function(){
+		var tmpl = '\
+		<html><head><link href="/static/stylesheets/styles.css" media="screen" rel="stylesheet" type="text/css">\
+		</head><body>\
+		<section id="top-content">\
+		<article class="story-container hentry">\
+			<h2 class="story-title entry-title">\
+				<a href="#" rel="bookmark">{{ title }}</a>\
+			</h2>\
+			<div class="story-content entry-content">\
+				{{{ content }}}\
+			</div>\
+		</article>\
+		</section>\
+		</body></html>';
+
+		var preview = window.open('');
+		preview.document.write(Mustache.to_html(tmpl, {
+			title: this.$('input[name="title"]').val(),
+			content: this.$('textarea[name="content"]').val()
+		}))
 	}
 });
 
@@ -351,7 +379,7 @@ var ArticleCtrl = Backbone.Router.extend({
 			},
 			error: function(model, options){
 				alert('Something went wrong');
-				router.navigate('/articles/', true);
+				router.navigate('//articles/', true);
 			}
 		});
 	},
@@ -366,10 +394,8 @@ var ArticleCtrl = Backbone.Router.extend({
 			},
 			error: function(model, options){
 				alert('Something went wrong');
-				router.navigate('/articles/', true);
+				router.navigate('//articles/', true);
 			}
 		});
 	}
 });
-
-var articles_app = new ArticleCtrl();

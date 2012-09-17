@@ -79,10 +79,6 @@ class CreateArticle(colander.MappingSchema):
 		colander.Boolean(),
 		missing=False
 	)
-	can_comment = colander.SchemaNode(
-		colander.Boolean(),
-		missing=False
-	)
 	tags = colander.SchemaNode(
 		StringList(),
 		missing=[]

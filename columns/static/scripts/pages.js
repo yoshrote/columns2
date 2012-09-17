@@ -45,6 +45,7 @@ var PageView = Backbone.View.extend({
 	events: {
 	},
 	initialize: function(){
+		$('section#admin-content').unbind()
 		_.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
 	},
 	render: function(){
@@ -63,6 +64,7 @@ var PageIndexView = Backbone.View.extend({
 		'click .next-page-page': 'next_page'
 	},
 	initialize: function(options){
+		$('section#admin-content').unbind()
 		_.bindAll(this, 'render', 'prev_page', 'next_page'); // fixes loss of context for 'this' within methods
 		this.router = options.router;
 	},
@@ -95,7 +97,6 @@ var PageIndexView = Backbone.View.extend({
 		</div>\
 		';
 		var template_vars = this.collection.toJSON();
-		console.log(template_vars);
 		Mustache.zebra = true;
 		$(this.el).html(Mustache.to_html(tmpl, {
 			resources: template_vars,
@@ -153,13 +154,13 @@ var PageFormView = Backbone.View.extend({
 		'submit #delete-form': 'delete_form'
 	},
 	initialize: function(options){
+		$('section#admin-content').unbind()
 		_.bindAll(this, 'render', 'save_form', 'delete_form'); // fixes loss of context for 'this' within methods
 		this.router = options.router;
 	},
 	render: function(){
 		var template_vars = this.model.toJSON();
 		template_vars.is_new = this.model.isNew();
-		console.log(template_vars);
 		var tmpl = '\
 		<form id="save-form">\
 			<div class="field-n-label">\
@@ -233,15 +234,11 @@ var PageFormView = Backbone.View.extend({
 		},
 		{
 			success: function(model, response){
-				console.log(response);
-				console.log(model);
-				router.navigate('/pages/', true);
+				router.navigate('//pages/', true);
 			},
 			error: function(model, response){
-				console.log(response);
-				console.log(model);
 				if (response.status == 200 || response.status == 201){
-					router.navigate('/pages/', true);
+					router.navigate('//pages/', true);
 				} else if (response.status == 400) {
 					var errors = JSON.parse(response.responseText);
 					for(var i = 0; i < field_names.length; i++){
@@ -272,9 +269,12 @@ var PageFormView = Backbone.View.extend({
 		var router = this.router;
 		this.model.destroy({
 			success: function(model, response){
-				router.navigate('/pages/', true);
+				console.log('Success on delete');
+				router.navigate('//pages/', true);
 			},
 			error: function(model, response){
+				console.log('Error on delete');
+				console.log(model);
 				console.log(response);
 			}
 		});
@@ -323,7 +323,7 @@ var PageCtrl = Backbone.Router.extend({
 			},
 			error: function(model, options){
 				alert('Something went wrong');
-				router.navigate('/pages/', true);
+				router.navigate('//pages/', true);
 			}
 		});
 	},
@@ -338,11 +338,9 @@ var PageCtrl = Backbone.Router.extend({
 			},
 			error: function(model, options){
 				alert('Something went wrong');
-				router.navigate('/pages/', true);
+				router.navigate('//pages/', true);
 			}
 		});
 	}
 });
-
-var pages_app = new PageCtrl();
 

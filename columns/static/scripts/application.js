@@ -1,11 +1,9 @@
-user_id = {}
-
 NavigationView = Backbone.View.extend({
 	el: $('nav#admin-nav'), // attaches `this.el` to an existing element.
 	events: {
 		'click .login-link': 'do_login',
 		'click .logout-link': 'do_logout'
-//		'click #login-google': 'google_login'
+		//'click #login-google': 'google_login'
 	},
 	initialize: function(options){
 		_.bindAll(this, 'render', 'do_login', 'do_logout', 'google_login'); // fixes loss of context for 'this' within methods
@@ -56,8 +54,6 @@ NavigationView = Backbone.View.extend({
 			draggable: false,
 			width: 500,
 		});
-
-
 	},
 	do_login: function(){
 		$('#login-dialog').dialog('open');
@@ -71,6 +67,7 @@ NavigationView = Backbone.View.extend({
 		$.get('/auth/logout', function(){
 			user_id = {};
 			view.render();
+			window.location = '/admin/';
 		});
 	}
 });
@@ -83,16 +80,24 @@ get_auth_data = function(){
 }
 
 main_application = function(){
-	articles_app.initialize();
-	pages_app.initialize();
-	users_app.initialize();
-	uploads_app.initialize();
+	$('body').append('<div class="loading-modal"></div>');
+	$("body").on({
+		ajaxStart: function() { 
+			$(this).addClass("loading"); 
+		},
+		ajaxStop: function() { 
+			$(this).removeClass("loading"); 
+		}
+	});
+	user_id = {}
+	get_auth_data();
+	articles_app = new ArticleCtrl();
+	pages_app = new PageCtrl()
+	users_app = new UserCtrl()
+	uploads_app = new UploadCtrl()
 	navigation_view = new NavigationView();
-	if(user_id.id === undefined){
-		get_auth_data();
-	} else {
-		navigation_view.render();
-	}
 	Backbone.history.start({root: "/admin/#"});
 }
+
+
 
