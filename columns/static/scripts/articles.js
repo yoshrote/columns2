@@ -195,11 +195,12 @@ var ArticleFormView = Backbone.View.extend({
 	events: {
 		'submit #save-form': 'save_form',
 		'submit #delete-form': 'delete_form',
-		'click #preview-post': 'show_preview'
+		'click #preview-post': 'show_preview',
+		'click #save-publish': 'save_publish'
 	},
 	initialize: function(options){
 		$('section#admin-content').unbind()
-		_.bindAll(this, 'render', 'save_form', 'delete_form', 'show_preview'); // fixes loss of context for 'this' within methods
+		_.bindAll(this, 'render', 'save_form', 'save_publish', 'delete_form', 'show_preview'); // fixes loss of context for 'this' within methods
 		this.router = options.router;
 	},
 	render: function(){
@@ -227,7 +228,7 @@ var ArticleFormView = Backbone.View.extend({
 			<input type="hidden" name="published" value="{{published}}" />\
 			<input type="button" id="preview-post" value="Preview Post" class="form-submit-left"/>\
 			<input type="submit" name="save" value="Save{{^published}} As Draft{{/published}}"  class="form-submit-left"/>\
-			{{^published}}{{#can_publish}}<input type="submit" name="save-publish" value="Publish" class="form-submit-left"/>{{/can_publish}}{{/published}}\
+			{{^published}}{{#can_publish}}<input type="button" name="save-publish" id="save-publish" value="Publish" class="form-submit-left"/>{{/can_publish}}{{/published}}\
 		</form>\
 		{{^is_new}}\
 		<form id="delete-form">\
@@ -239,6 +240,10 @@ var ArticleFormView = Backbone.View.extend({
 		';
 		$(this.el).html(Mustache.to_html(tmpl, template_vars));
 		$(".redactor").redactor({ fixed: true, imageUpload: '/api/imageupload' });
+	},
+	save_publish: function(){
+		$('input[name="published"]').val(moment.utc().format('YYYY-MM-DDTHH:mm:SS\\Z'));
+		this.save_form();
 	},
 	save_form: function(){
 		var router = this.router;
