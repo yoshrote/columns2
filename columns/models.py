@@ -673,8 +673,8 @@ def trigger_article(mapper, connection, target):
 	if target.title and target.published and not target.permalink:
 		slug = slugify(target.title)
 		dt_str = target.published.strftime('%Y-%m-%d')
-		target.permalink = '/'.join([dt_str, slug])
-		target.atom_tag = 'tag:{host},{date}:{path}'.format(
+		target.permalink = '-'.join([dt_str, slug])
+		target.atom_id = 'tag:{host},{date}:{path}'.format(
 			host=url_host,
 			date=target.published.strftime('%Y-%m-%d'),
 			path=target.permalink,

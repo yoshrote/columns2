@@ -65,7 +65,7 @@ class SessionAuthenticationPolicy(CallbackAuthenticationPolicy):
 		# add in principles according to session stored variables
 		inv_permission = get_permissions()
 		principals.append(inv_permission.get(request.session['auth.type'], 'subscriber'))
-		LOG.info('User principals: %r', principals)
+		LOG.debug('User principals: %r', principals)
 		return principals
 	
 	def remember(self, request, principal, **kw):
@@ -96,7 +96,7 @@ class SessionAuthenticationPolicy(CallbackAuthenticationPolicy):
 def find_user(attribute, value, create=False):
 	DBSession = sqlahelper.get_session()
 	try:
-		LOG.info('Looking for user where %s=%r', attribute, value)
+		LOG.debug('Looking for user where %s=%r', attribute, value)
 		user = DBSession.query(User).filter(getattr(User, attribute)==value).one()
 	except InvalidRequestError:
 		if create:
@@ -110,7 +110,7 @@ def find_user(attribute, value, create=False):
 		else:
 			return None
 	else:
-		LOG.info('User found: %r', user.name)
+		LOG.debug('User found: %r', user.name)
 	return user
 
 
