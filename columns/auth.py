@@ -298,7 +298,8 @@ def oid_authentication_callback(context, request, success_dict):
 		remember(request, user.id)
 		return exception_response(302, location=request.route_url('admin'))
 	else:
-		return exception_response(401)
+		error_response = "This login is not authorized.\nEmail this to josh@nerdblerp.com: '%s'" % success_dict['identity_url']
+		return exception_response(401, body=error_response)
 	
 def logout_view(request):
 	forget(request)
