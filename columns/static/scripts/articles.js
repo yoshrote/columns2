@@ -242,7 +242,7 @@ var ArticleFormView = Backbone.View.extend({
 		$(".redactor").redactor({ fixed: true, imageUpload: '/api/imageupload' });
 	},
 	save_publish: function(){
-		$('input[name="published"]').val(moment.utc().format('YYYY-MM-DDTHH:mm:SS\\Z'));
+		$('input[name="published"]').val(moment.utc().format('YYYY-MM-DDTHH:mm:ss\\Z'));
 		this.save_form();
 	},
 	save_form: function(){
