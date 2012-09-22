@@ -1,8 +1,15 @@
 var Article = Backbone.Model.extend({
-	defaults: {
-		title: '',
-		created: '',
-		updated: '',
+	defaults: function(){
+		return {
+			id: null,
+			title: '',
+			atom_id: null,
+			author_id: null
+			author_meta: {id: user_id.id},
+			published: null,
+			content: '',
+			sticky: false,
+		}
 	},
 	url: function(){
 		if (this.isNew()){
@@ -18,10 +25,17 @@ var Article = Backbone.Model.extend({
 			return resp.resource;
 	},
 	initialize: function(){
-		_.bindAll(this, 'can_publish');
+		_.bindAll(this, 'can_publish', 'is_draft');
 	},
 	can_publish: function(){
-		if(user_id.type <= 3 || user_id.id == this.author_id || this.author_id === undefined){
+		if(user_id.type <= 3 || user_id.id == this.author_id || this.author_id === null){
+			return true;
+		} else {
+			return false;
+		}
+	}
+	is_draft: function(){
+		if(this.get('published') === null){
 			return true;
 		} else {
 			return false;
@@ -55,6 +69,7 @@ var ArticleView = Backbone.View.extend({
 	initialize: function(){
 		$('section#admin-content').unbind()
 		_.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
+		this.lang = options.lang;
 	},
 	render: function(){
 		var tmpl = '\
@@ -85,7 +100,7 @@ var ArticleView = Backbone.View.extend({
 		';
 		var template_vars = this.model.toJSON();
 		template_vars.has_tags = template_vars.tags.length > 0 ? true:false;
-		template_vars.published_friendly = template_vars.published == null ? 'Draft' : moment(template_vars.published).format('LLLL');
+		template_vars.published_friendly = this.model.is_draft() ? 'Draft' : moment(template_vars.published).format(this.lang.display_date_format);
 		template_vars.url = '';
 		$(this.el).html(Mustache.to_html(tmpl, template_vars));
 	}
@@ -101,28 +116,29 @@ var ArticleIndexView = Backbone.View.extend({
 		$('section#admin-content').unbind()
 		_.bindAll(this, 'render', 'prev_page', 'next_page'); // fixes loss of context for 'this' within methods
 		this.router = options.router;
+		this.lang = options.lang;
 	},
 	render: function(){
 		var tmpl = '\
 		<div>\
-			<a href="#/articles/" class="new-link">Show Posts</a> | \
-			<a href="#/articles/drafts" class="new-link">Show Drafts</a>\
+			<a href="#/articles/" class="new-link">{{ lang.show_posts }}</a> | \
+			<a href="#/articles/drafts" class="new-link">{{ this.lang.show_drafts }}</a>\
 		</div>\
-		<a href="#/articles/new" class="new-link">Create New</a>\
+		<a href="#/articles/new" class="new-link">{{ lang.create_new }}</a>\
 		<table id="admin-resource-list">\
 			<thead>\
 				<tr>\
 					<td class="filler-cell">&nbsp;</td>\
-					<th>Subject</th>\
-					<th>Date Published</th>\
-					<th>Author</th>\
+					<th>{{ lang.subject_head }}</th>\
+					<th>{{ lang.published_head }}</th>\
+					<th>{{ lang.author_head }}</th>\
 				</tr>\
 			</thead>\
 			<tbody>\
 			{{#resources}}\
 				<tr class="{{zebra}}">\
-					<td><a href="#/articles/{{id}}/edit">Edit</a></td>\
-					<td>{{title}}{{#sticky}} - Sticky{{/sticky}}</td>\
+					<td><a href="#/articles/{{id}}/edit">{{ lang.edit }}</a></td>\
+					<td>{{title}}{{#sticky}} - {{ lang.sticky }}{{/sticky}}</td>\
 					<td>{{published_friendly}}</td>\
 					<td>{{author_name}}</td>\
 				</tr>\
@@ -130,14 +146,15 @@ var ArticleIndexView = Backbone.View.extend({
 			</tbody>\
 		</table>\
 		<div>\
-			<a href="#/articles/{{#drafts}}drafts{{/drafts}}" class="prev-article-page" >Previous</a>\
-			<a href="#/articles/{{#drafts}}drafts{{/drafts}}" class="next-article-page" >Next</a>\
+			<a href="#/articles/{{#drafts}}drafts{{/drafts}}" class="prev-article-page" >{{ lang.previous }}</a>\
+			<a href="#/articles/{{#drafts}}drafts{{/drafts}}" class="next-article-page" >{{ lang.next }}</a>\
 		</div>\
 		';
 		var template_vars = this.collection.toJSON();
+		template_vars['lang'] = this.lang
 		for(var i=0;i < template_vars.length; i++){
 			template_vars[i].author_name = template_vars[i].author.name;
-			template_vars[i].published_friendly = template_vars[i].published == null ? 'Draft': moment(template_vars[i].published).format('L LT');
+			template_vars[i].published_friendly = template_vars[i].published == null ? this.lang.drafts: moment(template_vars[i].published).format(this.lang.published_format);
 		}
 		Mustache.zebra = true;
 		$(this.el).html(Mustache.to_html(tmpl, {
@@ -168,7 +185,7 @@ var ArticleIndexView = Backbone.View.extend({
 				view.render();
 			},
 			error: function(model, options){
-				alert('Something went wrong');
+				alert(this.fetch_error);
 				router.navigate('', true);
 			}
 		});
@@ -183,7 +200,7 @@ var ArticleIndexView = Backbone.View.extend({
 				view.render();
 			},
 			error: function(model, options){
-				alert('Something went wrong');
+				alert(this.fetch_error);
 				router.navigate('', true);
 			}
 		});
@@ -202,6 +219,7 @@ var ArticleFormView = Backbone.View.extend({
 		$('section#admin-content').unbind()
 		_.bindAll(this, 'render', 'save_form', 'save_publish', 'delete_form', 'show_preview'); // fixes loss of context for 'this' within methods
 		this.router = options.router;
+		this.lang = options.lang
 	},
 	render: function(){
 		var template_vars = this.model.toJSON();
@@ -210,25 +228,25 @@ var ArticleFormView = Backbone.View.extend({
 		var tmpl = '\
 		<form id="save-form">\
 			<div class="field-n-label">\
-				<label for="title">Title</label>\
+				<label for="title">{{ lang.title_label }}</label>\
 				<input type="text" name="title" value="{{title}}" />\
 			</div>\
 			<div class="field-n-label">\
-				<label for="sticky">Make Sticky</label>\
+				<label for="sticky">{{ lang.sticky_label }}</label>\
 				<input type="checkbox" name="sticky" value="1"{{#sticky}} checked="checked"{{/sticky}} />\
 			</div>\
 			<div class="field-n-label">\
-				<label for="content">Content</label>\
+				<label for="content">{{ lang.content_label }}</label>\
 				<textarea name="content" class="redactor">{{{content}}}</textarea>\
 			</div>\
 			<div class="field-n-label">\
-				<label for="tags">Tags</label>\
+				<label for="tags">{{ lang.tags }}</label>\
 				<input type="text" name="tags" value="{{#tags}}{{label}}, {{/tags}}" />\
 			</div>\
 			<input type="hidden" name="published" value="{{published}}" />\
-			<input type="button" id="preview-post" value="Preview Post" class="form-submit-left"/>\
-			<input type="submit" name="save" value="Save{{^published}} As Draft{{/published}}"  class="form-submit-left"/>\
-			{{^published}}{{#can_publish}}<input type="button" name="save-publish" id="save-publish" value="Publish" class="form-submit-left"/>{{/can_publish}}{{/published}}\
+			<input type="button" id="preview-post" value="{{ lang.preview_button }}" class="form-submit-left"/>\
+			<input type="submit" name="save" value="{{#published}}{{ lang.save_button }}{{/published}}{{^published}}{{ lang.save_draft_button }}{{/published}}"  class="form-submit-left"/>\
+			{{^published}}{{#can_publish}}<input type="button" name="save-publish" id="save-publish" value="{{ lang.publish_button }}" class="form-submit-left"/>{{/can_publish}}{{/published}}\
 		</form>\
 		{{^is_new}}\
 		<form id="delete-form">\
@@ -296,7 +314,7 @@ var ArticleFormView = Backbone.View.extend({
 				router.navigate('//articles/', true);
 			},
 			error: function(model, response){
-				console.log('Error on delete');
+				console.log(this.lang.delete_error);
 				console.log(model);
 				console.log(response);
 			}
@@ -337,13 +355,39 @@ var ArticleCtrl = Backbone.Router.extend({
 	},
 	initialize: function(options){
 		_.bindAll(this, 'index', 'edit', 'new', 'show', 'drafts'); // fixes loss of context for 'this' within methods
+		var default_language = {
+			display_date_format: 'LLLL',
+			published_format: 'L LT',
+			show_posts: 'Show Posts',
+			show_drafts: 'Show Drafts',
+			create_new: 'Create New',
+			subject_head: 'Subject',
+			published_head: 'Date Published',
+			author_head: 'Author',
+			edit: 'Edit',
+			sticky: 'Sticky',
+			drafts: 'Drafts',
+			previous: 'Previous',
+			next: 'Next',
+			fetch_error: 'Something went wrong',
+			delete_error: 'Something went wrong',
+			title_label: 'Title',
+			sticky_label: 'Make Sticky',
+			content_label: 'Content',
+			tags_label: 'Tags',
+			preview_button: 'Preview Post',
+			publish_button: 'Publish',
+			save_button: 'Save',
+			save_draft_button: ' Save As Draft'
+		};
+		this.lang = _.extend(default_language, options)
 	},
 	index: function() {
 		var collection = new ArticleList();
 		var router = this;
 		collection.fetch({
 			success: function(model, resp){
-				var view = new ArticleIndexView({collection: collection, router: router});
+				var view = new ArticleIndexView({collection: collection, router: router, lang: this.lang});
 				view.render();
 			},
 			error: function(model, options){
@@ -358,7 +402,7 @@ var ArticleCtrl = Backbone.Router.extend({
 		collection.drafts = true;
 		collection.fetch({
 			success: function(model, resp){
-				var view = new ArticleIndexView({collection: collection, router: router});
+				var view = new ArticleIndexView({collection: collection, router: router, lang: this.lang});
 				view.render();
 			},
 			error: function(model, options){
@@ -370,7 +414,7 @@ var ArticleCtrl = Backbone.Router.extend({
 	new: function() {
 		var router = this;
 		var model = new Article();
-		var view = new ArticleFormView({model: model, router: router});
+		var view = new ArticleFormView({model: model, router: router, lang: this.lang});
 		view.render();
 	},
 	show: function(id) {
@@ -379,7 +423,7 @@ var ArticleCtrl = Backbone.Router.extend({
 		model.set({id: id});
 		model.fetch({
 			success: function(model, resp){
-				var view = new ArticleView({model: model});
+				var view = new ArticleView({model: model, lang: this.lang});
 				view.render();
 			},
 			error: function(model, options){
@@ -394,7 +438,7 @@ var ArticleCtrl = Backbone.Router.extend({
 		model.set({id: id});
 		model.fetch({
 			success: function(model, resp){
-				var view = new ArticleFormView({model: model, router: router});
+				var view = new ArticleFormView({model: model, router: router, lang: this.lang});
 				view.render();
 			},
 			error: function(model, options){
