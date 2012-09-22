@@ -19,11 +19,14 @@ from pyramid.security import forget
 
 import oauth2 as oauth
 import cgi
+import logging
 import urllib
 import urlparse
 import sqlahelper
 from sqlalchemy.exc import InvalidRequestError
 from .models import User
+
+LOG = logging.getLogger(__name__)
 
 #############################
 ## Authentication Policy 
@@ -36,7 +39,7 @@ PERMISSIONS = {
 	'probation': 8,
 	'subscriber': 9
 }
-DEFAULT_PERMISSION = Authenticated
+DEFAULT_PERMISSION = Everyone
 def get_permissions():
 	return dict([(v,k) for k,v in PERMISSIONS.items()])
 
@@ -62,17 +65,21 @@ class SessionAuthenticationPolicy(CallbackAuthenticationPolicy):
 		# add in principles according to session stored variables
 		inv_permission = get_permissions()
 		principals.append(inv_permission.get(request.session['auth.type'], 'subscriber'))
+		LOG.debug('User principals: %r', principals)
 		return principals
 	
 	def remember(self, request, principal, **kw):
 		""" Store a principal in the session."""
 		auth_type = request.session.get('auth.type')
 		#load user into cache
+		LOG.debug('auth_type = %r', auth_type)
 		if not auth_type:
 			user = find_user('id', principal, create=kw.get('create',False))
-			request.session[self.userid_key] = principal
-			request.session['auth.type'] = user.type if user else None
-		
+			if isinstance(user, User):
+				request.session[self.userid_key] = principal
+				request.session['auth.type'] = user.type
+				request.session['auth.name'] = user.name
+			LOG.debug('session info: %r', request.session)
 		return []
 	
 	def forget(self, request):
@@ -89,6 +96,7 @@ class SessionAuthenticationPolicy(CallbackAuthenticationPolicy):
 def find_user(attribute, value, create=False):
 	DBSession = sqlahelper.get_session()
 	try:
+		LOG.debug('Looking for user where %s=%r', attribute, value)
 		user = DBSession.query(User).filter(getattr(User, attribute)==value).one()
 	except InvalidRequestError:
 		if create:
@@ -101,6 +109,8 @@ def find_user(attribute, value, create=False):
 			return user
 		else:
 			return None
+	else:
+		LOG.debug('User found: %r', user.name)
 	return user
 
 
@@ -281,22 +291,31 @@ def oid_authentication_callback(context, request, success_dict):
 		'sreg': {}
 	}
 	"""
-	user = find_user('open_id', success_dict['identity_url'], create=True)
+	user = find_user('open_id', success_dict['identity_url'])
 	if user:
 		# use standard auth callback to populate session
 		#authentication_callback(user.id, request)
 		remember(request, user.id)
-		referer = request.params.get('referer', request.route_url('blog_main'))
-		return exception_response(302, location=referer)
+		return exception_response(302, location=request.route_url('admin'))
+	else:
+		error_response = "This login is not authorized.\nEmail this to josh@nerdblerp.com: '%s'" % success_dict['identity_url']
+		return exception_response(401, body=error_response)
 	
-
-
-def login_view(request):
-	return render_to_response('columns:templates/auth/login.jinja', {})
-
 def logout_view(request):
 	forget(request)
-	return exception_response(302, location=request.route_url('login'))
+	if request.is_xhr:
+		return exception_response(200)
+	return exception_response(302, location=request.route_url('admin'))
+
+def whoami_view(request):
+	user_type = request.session.get('auth.type')
+	if user_type:
+		return {
+			'id': request.session.get('auth.userid'),
+			'user': request.session.get('auth.name'),
+			'type': user_type,
+		}
+	return {}
 
 
 #############################
@@ -313,7 +332,7 @@ POLICY_MAP = {
 	None: {
 		'default': set([DEFAULT_PERMISSION]),
 		'settings': [minimum_permission('super')],
-		'admin': set([Authenticated]),
+		'admin': [minimum_permission('probation')],
 	},
 	'articles': {
 		'index': [minimum_permission('probation')],
@@ -363,6 +382,7 @@ class AuthorizationPolicy(object):
 	
 	def permits(self, context, principals, permission):
 		allowed_principals = self.principals_allowed_by_permission(context, permission)
+		LOG.debug('Permission: %s\nContext: %s\nPrincipals: %s\nAllowed Principals: %s', permission, context, principals, allowed_principals)
 		return bool(set(principals).intersection(allowed_principals))
 	
 	def principals_allowed_by_permission(self, context, permission):
@@ -372,7 +392,9 @@ class AuthorizationPolicy(object):
 			context_name = context.__parent__.__name__
 		else:
 			context_name = context.__name__
-		permission_context = self.policy_map.get(context_name, {})
+		LOG.debug('Context: %s', context_name)
+		permission_context = self.policy_map.get(context_name, self.policy_map[None])
+		LOG.debug('Policy: %r', permission_context)
 
 		try:
 			principals = []
@@ -390,20 +412,27 @@ class AuthorizationPolicy(object):
 #############################
 ## Auth Config 
 #############################
+from pyramid.events import NewResponse
+def debug_sessions(event):
+	LOG.debug('Session: %r', event.request.session)
+	event.request.session.pop('_f_', None)
+
 def includeme(config):
 	config.set_authorization_policy(AuthorizationPolicy(POLICY_MAP))
 	config.set_authentication_policy(SessionAuthenticationPolicy())
-	
-	config.add_route('login', '/login')
-	config.add_view(
-		'columns.auth.login_view',
-		route_name='login',
-	)
-	
+	config.add_subscriber(debug_sessions, NewResponse)
+
 	config.add_route('logout', '/logout')
 	config.add_view(
 		'columns.auth.logout_view',
 		route_name='logout',
+	)
+
+	config.add_route('whoami', '/whoami')
+	config.add_view(
+		'columns.auth.whoami_view',
+		route_name='whoami',
+		renderer='json'
 	)
 	
 	config.add_route(

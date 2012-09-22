@@ -1,0 +1,65 @@
+{% extends "columns:templates/blog/main.jinja" %}
+{% block more_scripts %}
+	{{super()}}
+	<script src="http://media.nerdblerp.com/scripts/jquery.linkify.js" type="text/javascript"></script>
+	<script src="http://media.nerdblerp.com/scripts/jquery.juitter.js" type="text/javascript"></script>
+	<script src="http://www.google-analytics.com/ga.js" type="text/javascript"></script>
+{% endblock %}
+{% block templates_and_resources %}
+{{super()}}
+try{
+	var pageTracker = _gat._getTracker("UA-15442937-1");
+	pageTracker._trackPageview();
+} catch(err) {}
+{% endblock %}
+{% block on_ready %}
+{{super()}}
+$.Juitter.start({
+			username:"nerdblerp",
+			listname:"blerp-writers",
+			placeHolder:"juitterContainer",
+			loadMSG: "Loading messages...",
+			total: 20,
+			readMore: "Read it on Twitter",
+			nameUser:"text",
+			openExternalLinks:"newWindow",
+			filter:"sex->*BAD word*,porn->*BAD word*,fuck->*BAD word*,shit->*BAD word*",
+		});
+{% endblock %}
+
+{% block sidebar %}
+	<div class="sidebar-section">
+		<h4 class="sector-tags" title="Tag Navigation"></h4>
+		<ul class="sector-tags-list">
+			<li><a href="/?tag=tech" title="Tech">Tech</a></li>
+			<li><a href="/?tag=games" title="Games">Games</a></li>
+			<li><a href="/?tag=movies" title="Movies">Movies</a></li>
+			<li><a href="/?tag=tv" title="TV">TV</a></li>
+			<li><a href="/?tag=comics" title="Comics">Comics</a></li>
+			<li><a href="/?tag=anime" title="Anime">Anime</a></li>
+		</ul>
+	</div>
+	<div class="sidebar-section">
+		<iframe src="http://www.facebook.com/plugins/likebox.php?href=http%3A%2F%2Fwww.facebook.com%2Fpages%2FNDBP%2F117980651569262&amp;width=218&amp;colorscheme=dark&amp;show_faces=true&amp;stream=false&amp;header=true&amp;height=290" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:218px; height:290px;" allowTransparency="true"></iframe>
+	</div>
+	<div class="sidebar-section">
+		<h4 class="sector-twitter"  title="Twitter Stream"></h4>
+		<div id="juitterContainer"></div>
+	</div>
+	<div class="sidebar-section">
+		<h4 class="sector-partners" title="Partner Sites"></h4>
+		<ul class="sector-partners-list">
+			<li>
+				<a href="http://www.2d-x.com/" rel="friend met">
+					<img src="http://media.nerdblerp.com/images/ads/2DX_Ad.png" alt="2D-X Games"/>
+				</a>
+			</li>
+			<li>
+				<a href="http://adultswimcentral.com/">
+					<img src="http://media.nerdblerp.com/images/ads/ascentralblerp.png" alt="Adult Swim Central"/>
+				</a>
+			</li>
+		</ul>
+		<div class="sector-bottom"></div>
+	</div>	
+{% endblock %}

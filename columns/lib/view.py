@@ -28,6 +28,7 @@ def includeme(config):
 	jinja_env.globals['app_settings'] = app_settings
 	jinja_env.globals['request'] = get_current_request
 	jinja_env.globals['static_basepath'] = config.get_settings()['upload_baseurl']
+	jinja_env.globals['logged_in'] = is_logged_in
 	
 	# Assign filters
 	jinja_env.filters['resource_url'] = config.maybe_dotted(
@@ -79,6 +80,9 @@ def app_settings(key, mod='core'):
 	setting_dict = getattr(module, 'config', {})
 	return setting_dict.get(key)
 
+def is_logged_in():
+	request = get_current_request()
+	return 'auth.type' in request.session
 
 #############################################
 ## Custom Filters
@@ -110,4 +114,3 @@ def is_allowed(permission):
 
 def is_not_allowed(permission):
 	return not is_allowed(permission)
-

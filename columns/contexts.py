@@ -1,6 +1,7 @@
 # encoding: utf-8
 import sqlahelper
 from pyramid.httpexceptions import exception_response
+from pyramid.security import has_permission
 
 from .lib.base import SQLACollectionContext
 from .lib.base import BaseViews
@@ -89,7 +90,11 @@ class ArticleCollectionContext(SQLACollectionContext):
 		if resource is None:
 			raise KeyError(key)
 		Session.delete(resource)
-		Session.commit()
+		try:
+			Session.commit()
+		except Exception, ex:
+			Session.rollback()
+			raise ex
 
 class PageCollectionContext(SQLACollectionContext):
 	__model__ = 'columns.models:Page'

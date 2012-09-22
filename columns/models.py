@@ -249,7 +249,6 @@ class Article(Base):
 	
 	id = Column(
 		Integer(),
-		nullable=False,
 		primary_key=True,
 		autoincrement=True
 	)
@@ -305,11 +304,6 @@ class Article(Base):
 		nullable=False,
 		default=False
 	)
-	can_comment = Column(
-		Boolean(),
-		nullable=False,
-		default=True
-	)
 	permalink = Column(
 		AlwaysUnicode(length=255),
 		nullable=True
@@ -334,6 +328,7 @@ class Article(Base):
 		return {
 			'id': self.id,
 			'atom_id': self.atom_id,
+			'author_id': self.author_id,
 			'created': self.created,
 			'updated': self.updated,
 			'author': self.author_meta,
@@ -342,7 +337,6 @@ class Article(Base):
 			'published': self.published,
 			'content': self.content,
 			'sticky': self.sticky,
-			'can_comment': self.can_comment,
 			'permalink': self.permalink,
 			'tags': list(self.tags),
 		}
@@ -356,7 +350,7 @@ class Article(Base):
 	
 	def update_from_values(self, values):
 		tags = set([Tag(slug=slugify(tag), label=tag) for tag in values.pop('tags',[])])
-		if 'published' in values:
+		if values.get('published'):
 			values['published'] = values['published'].replace(tzinfo=None)
 		for k,v in values.items():
 			if not k.startswith('_') and hasattr(self, k):
@@ -365,7 +359,7 @@ class Article(Base):
 		return self
 	
 	def build_from_values(self, values):
-		if 'published' in values:
+		if values.get('published'):
 			values['published'] = values['published'].replace(tzinfo=None)
 		return self.update_from_values(values)
 	
@@ -679,8 +673,8 @@ def trigger_article(mapper, connection, target):
 	if target.title and target.published and not target.permalink:
 		slug = slugify(target.title)
 		dt_str = target.published.strftime('%Y-%m-%d')
-		target.permalink = '/'.join([dt_str, slug])
-		target.atom_tag = 'tag:{host},{date}:{path}'.format(
+		target.permalink = '-'.join([dt_str, slug])
+		target.atom_id = 'tag:{host},{date}:{path}'.format(
 			host=url_host,
 			date=target.published.strftime('%Y-%m-%d'),
 			path=target.permalink,

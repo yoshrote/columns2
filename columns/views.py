@@ -90,7 +90,7 @@ def imageupload(request):
 	except OSError: # pragma: no cover
 		raise exception_response(500)
 	else:
-		return {'filelink': '/'.join([self.request.registry.settings.get('upload_baseurl'), upload.filepath]).replace('//','/')}
+		return {'filelink': '/'.join([request.registry.settings.get('upload_baseurl'), upload.filepath])}
 
 
 #############################

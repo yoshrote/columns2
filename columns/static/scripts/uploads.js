@@ -39,6 +39,7 @@ var UploadView = Backbone.View.extend({
 	events: {
 	},
 	initialize: function(){
+		$('section#admin-content').unbind()
 		_.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
 	},
 	render: function(){
@@ -62,6 +63,7 @@ var UploadIndexView = Backbone.View.extend({
 		'click .next-upload-page': 'next_page'
 	},
 	initialize: function(options){
+		$('section#admin-content').unbind()
 		_.bindAll(this, 'render', 'prev_page', 'next_page'); // fixes loss of context for 'this' within methods
 		this.router = options.router;
 	},
@@ -92,7 +94,6 @@ var UploadIndexView = Backbone.View.extend({
 		</div>\
 		';
 		var template_vars = this.collection.toJSON();
-		console.log(template_vars);
 		for(var i=0;i < template_vars.length; i++){
 			template_vars[i].updated = template_vars[i].updated == null ? 'Draft': moment(template_vars[i].updated).format('LLL');
 		}
@@ -153,13 +154,13 @@ var UploadFormView = Backbone.View.extend({
 		'submit #delete-form': 'delete_form'
 	},
 	initialize: function(options){
+		$('section#admin-content').unbind()
 		_.bindAll(this, 'render', 'save_form', 'delete_form'); // fixes loss of context for 'this' within methods
 		this.router = options.router;
 	},
 	render: function(){
 		var template_vars = this.model.toJSON();
 		template_vars.is_new = this.model.isNew();
-		console.log(template_vars);
 		var tmpl = '\
 		<form id="save-form">\
 			{{#is_new}}\
@@ -199,15 +200,11 @@ var UploadFormView = Backbone.View.extend({
 		},
 		{
 			success: function(model, response){
-				console.log(response);
-				console.log(model);
-				router.navigate('/uploads/', true);
+				router.navigate('//uploads/', true);
 			},
 			error: function(model, response){
-				console.log(response);
-				console.log(model);
 				if (response.status == 200 || response.status == 201){
-					router.navigate('/uploads/', true);
+					router.navigate('//uploads/', true);
 				} else if (response.status == 400) {
 					var errors = JSON.parse(response.responseText);
 					for(var i = 0; i < field_names.length; i++){
@@ -238,9 +235,11 @@ var UploadFormView = Backbone.View.extend({
 		var router = this.router;
 		this.model.destroy({
 			success: function(model, response){
-				router.navigate('/uploads/', true);
+				router.navigate('//uploads/', true);
 			},
 			error: function(model, response){
+				console.log('Error on delete');
+				console.log(model);
 				console.log(response);
 			}
 		});
@@ -260,27 +259,27 @@ var UploadCtrl = Backbone.Router.extend({
 		_.bindAll(this, 'index', 'edit', 'new', 'show'); // fixes loss of context for 'this' within methods
 	},
 	index: function() {
-		var ctrl = this;
+		var router = this;
 		var collection = new UploadList();
 		collection.fetch({
 			success: function(model, resp){
-				var view = new UploadIndexView({collection: collection, router: ctrl});
+				var view = new UploadIndexView({collection: collection, router: router});
 				view.render();
 			},
 			error: function(model, options){
 				alert('Something went wrong');
-				ctrl.navigate('', true);
+				router.navigate('', true);
 			}
 		});
 	},
 	new: function() {
-		var ctrl = this;
+		var router = this;
 		var model = new Upload();
-		var view = new UploadFormView({model: model, router: ctrl});
+		var view = new UploadFormView({model: model, router: router});
 		view.render();
 	},
 	show: function(id) {
-		var ctrl = this;
+		var router = this;
 		var model = new Upload();
 		model.set({id: id});
 		model.fetch({
@@ -290,26 +289,24 @@ var UploadCtrl = Backbone.Router.extend({
 			},
 			error: function(model, options){
 				alert('Something went wrong');
-				ctrl.navigate('/uploads/', true);
+				router.navigate('//uploads/', true);
 			}
 		});
 	},
 	edit: function(id) {
-		var ctrl = this;
+		var router = this;
 		var model = new Upload();
 		model.set({id: id});
 		model.fetch({
 			success: function(model, resp){
-				var view = new UploadFormView({model: model, router: ctrl});
+				var view = new UploadFormView({model: model, router: router});
 				view.render();
 			},
 			error: function(model, options){
 				alert('Something went wrong');
-				ctrl.navigate('/uploads/', true);
+				router.navigate('//uploads/', true);
 			}
 		});
 	}
 });
-
-var uploads_app = new UploadCtrl();
 

@@ -77,7 +77,11 @@ class SQLACollectionContext(object):
 		if resource is None:
 			raise KeyError(key)
 		Session.delete(resource)
-		Session.commit()
+		try:
+			Session.commit()
+		except Exception, ex:
+			Session.rollback()
+			raise ex
 	
 	def __setitem__(self, key, value):
 		Session = sqlahelper.get_session()
@@ -151,14 +155,23 @@ class SQLACollectionContext(object):
 	def add(self, resource):
 		Session = sqlahelper.get_session()
 		saved_resource = Session.merge(resource)
-		Session.commit()
-		saved_resource.__name__ = saved_resource.get_key()
-		return saved_resource
+		try:
+			Session.commit()
+		except Exception, ex:
+			Session.rollback()
+			raise ex
+		else:
+			saved_resource.__name__ = saved_resource.get_key()
+			return saved_resource
 	
 	def clear(self):
 		Session = sqlahelper.get_session()
 		Session.query(self.__model__).delete()
-		Session.commit()
+		try:
+			Session.commit()
+		except Exception, ex:
+			Session.rollback()
+			raise ex
 	
 	def build_query(self, query, specs):
 		"parses a specs dictionary (formatted like a mongo query) into a SQLAlchemy query"
@@ -320,7 +333,7 @@ class BaseViews(object):
 		collection = self.context.__parent__
 		collection_name = collection.__name__
 		del collection[self.context.__name__]
-		raise exception_response(200)
+		raise exception_response(200, body='{}')
 	
 
 

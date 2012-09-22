@@ -105,6 +105,7 @@ def main(global_config, **settings):
 		sqlahelper.add_engine(engine)
 		sqlahelper.get_session().configure(extension=None)
 	config = Configurator(settings=settings)
+	config.include('pyramid_beaker')
 	session_factory = session_factory_from_settings(settings)
 	config.add_static_view('static', settings.get('static_directory'))
 	config.add_route('favicon.ico', 'favicon.ico')
