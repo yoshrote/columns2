@@ -332,7 +332,7 @@ POLICY_MAP = {
 	None: {
 		'default': set([DEFAULT_PERMISSION]),
 		'settings': [minimum_permission('super')],
-		'admin': minimum_permission('probation'),
+		'admin': [minimum_permission('probation')],
 	},
 	'articles': {
 		'index': [minimum_permission('probation')],
@@ -382,6 +382,7 @@ class AuthorizationPolicy(object):
 	
 	def permits(self, context, principals, permission):
 		allowed_principals = self.principals_allowed_by_permission(context, permission)
+		LOG.debug('Permission: %s\nContext: %s\nPrincipals: %s\nAllowed Principals: %s', permission, context, principals, allowed_principals)
 		return bool(set(principals).intersection(allowed_principals))
 	
 	def principals_allowed_by_permission(self, context, permission):
@@ -415,6 +416,7 @@ class AuthorizationPolicy(object):
 from pyramid.events import NewResponse
 def debug_sessions(event):
 	LOG.debug('Session: %r', event.request.session)
+	event.request.session.pop('_f_', None)
 
 def includeme(config):
 	config.set_authorization_policy(AuthorizationPolicy(POLICY_MAP))
