@@ -38,8 +38,8 @@ NavigationView = Backbone.View.extend({
 		{{#logged_in}}<button class="auth-btn logout-link">Logout</button>{{/logged_in}}\
 		';
 		$(this.el).html(Mustache.to_html(tmpl, {
-			logged_in: _.isNumber(user_id.id) && _.isNumber(user_id.type),
-			settings_access: user_id.type === 1
+			logged_in: APP_STATE.session.logged_in(),
+			settings_access: APP_STATE.session.settings_access()
 		}));
 		$("#login-dialog button, #login-dialog input[type='submit']").button();
 
@@ -65,18 +65,72 @@ NavigationView = Backbone.View.extend({
 	do_logout: function(){
 		var view = this;
 		$.get('/auth/logout', function(){
-			user_id = {};
-			view.render();
+			APP_STATE.session.clear(APP_STATE.session.defaults)
 			window.location = '/admin/';
 		});
 	}
 });
 
-get_auth_data = function(){
-	$.get('/auth/whoami', function(data){
-		user_id = data;
-		navigation_view.render();
-	})
+UserSession = Backbone.Model.extend({
+	defaults: {
+		id: null,
+		name: '',
+		type: 9,
+	},
+	url: '/auth/whoami',
+	initialize: function(options){
+		_.bindAll(this, 'logged_in', 'settings_access');
+	},
+	logged_in: function(){
+		return _.isNumber(this.get('id')) && _.isNumber(this.get('type')) ? true : false
+	},
+	settings_access: function(){
+		return this.get('type') === 1 ? true : false
+	}
+}); 
+
+APP_STATE = {
+	lang: {
+		display_date_format: 'LLLL',
+		create_new: 'Create New',
+		edit: 'Edit',
+		previous: 'Previous',
+		next: 'Next',
+		true: 'True',
+		false: 'False',
+		fetch_error: 'Something went wrong',
+		delete_error: 'Something went wrong',
+		article:{
+			show_posts: 'Show Posts',
+			show_drafts: 'Show Drafts',
+			save_button: 'Save',
+			delete_button: 'Delete',
+			published_format: 'L LT',
+			drafts: 'Drafts',
+			preview_button: 'Preview Post',
+			publish_button: 'Publish',
+			save_draft_button: ' Save As Draft',
+			subject_head: 'Subject',
+			published_head: 'Date Published',
+			author_head: 'Author',
+			sticky: 'Sticky',
+			title_label: 'Title',
+			sticky_label: 'Make Sticky',
+			content_label: 'Content',
+			tags_label: 'Tags',
+		},
+		page:{
+			name_head: 'Name',
+			visible_head: 'Visible',
+			in_main_head: 'In Main Feed',
+			title_label: 'Page Title',
+			visible_label: 'Is Visible',
+			can_post_label: 'Enable Posts',
+			in_menu_label: 'Show Page in Menu',
+			in_main_label: 'Show Posts in Main Stream'
+		},
+	},
+	session: null
 }
 
 main_application = function(){
@@ -89,15 +143,15 @@ main_application = function(){
 			$(this).removeClass("loading"); 
 		}
 	});
-	user_id = {}
-	get_auth_data();
-	articles_app = new ArticleCtrl();
-	pages_app = new PageCtrl()
-	users_app = new UserCtrl()
-	uploads_app = new UploadCtrl()
-	navigation_view = new NavigationView();
-	Backbone.history.start({root: "/admin/#"});
+	APP_STATE.session = new UserSession();
+	navigation_view = null;
+	APP_STATE.session.fetch().complete(function(){
+		navigation_view = new NavigationView();
+		navigation_view.render();
+		articles_app = new ArticleCtrl();
+		pages_app = new PageCtrl();
+		users_app = new UserCtrl();
+		uploads_app = new UploadCtrl();
+		Backbone.history.start({root: "/admin/#"});
+	});
 }
-
-
-

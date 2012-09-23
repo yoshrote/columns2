@@ -257,6 +257,7 @@ var UploadCtrl = Backbone.Router.extend({
 	},
 	initialize: function(options){
 		_.bindAll(this, 'index', 'edit', 'new', 'show'); // fixes loss of context for 'this' within methods
+		this.lang = APP_STATE.lang;
 	},
 	index: function() {
 		var router = this;

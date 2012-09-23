@@ -4,8 +4,8 @@ var Article = Backbone.Model.extend({
 			id: null,
 			title: '',
 			atom_id: null,
-			author_id: null
-			author_meta: {id: user_id.id},
+			author_id: null,
+			author_meta: {id: APP_STATE.session.get('id')},
 			published: null,
 			content: '',
 			sticky: false,
@@ -25,15 +25,11 @@ var Article = Backbone.Model.extend({
 			return resp.resource;
 	},
 	initialize: function(){
-		_.bindAll(this, 'can_publish', 'is_draft');
+		_.bindAll(this, 'can_edit', 'is_draft');
 	},
-	can_publish: function(){
-		if(user_id.type <= 3 || user_id.id == this.author_id || this.author_id === null){
-			return true;
-		} else {
-			return false;
-		}
-	}
+	can_edit: function(sess){
+		return (sess.get('type') <= 3 || sess.get('id') == this.get('author_id') || this.get('author_id') === null) ? true : false;
+	},
 	is_draft: function(){
 		if(this.get('published') === null){
 			return true;
@@ -121,24 +117,24 @@ var ArticleIndexView = Backbone.View.extend({
 	render: function(){
 		var tmpl = '\
 		<div>\
-			<a href="#/articles/" class="new-link">{{ lang.show_posts }}</a> | \
-			<a href="#/articles/drafts" class="new-link">{{ this.lang.show_drafts }}</a>\
+			<a href="#/articles/" class="new-link">{{ lang.article.show_posts }}</a> | \
+			<a href="#/articles/drafts" class="new-link">{{ lang.article.show_drafts }}</a>\
 		</div>\
 		<a href="#/articles/new" class="new-link">{{ lang.create_new }}</a>\
 		<table id="admin-resource-list">\
 			<thead>\
 				<tr>\
 					<td class="filler-cell">&nbsp;</td>\
-					<th>{{ lang.subject_head }}</th>\
-					<th>{{ lang.published_head }}</th>\
-					<th>{{ lang.author_head }}</th>\
+					<th>{{ lang.article.subject_head }}</th>\
+					<th>{{ lang.article.published_head }}</th>\
+					<th>{{ lang.article.author_head }}</th>\
 				</tr>\
 			</thead>\
 			<tbody>\
 			{{#resources}}\
 				<tr class="{{zebra}}">\
 					<td><a href="#/articles/{{id}}/edit">{{ lang.edit }}</a></td>\
-					<td>{{title}}{{#sticky}} - {{ lang.sticky }}{{/sticky}}</td>\
+					<td>{{title}}{{#sticky}} - {{ lang.article.sticky }}{{/sticky}}</td>\
 					<td>{{published_friendly}}</td>\
 					<td>{{author_name}}</td>\
 				</tr>\
@@ -151,13 +147,13 @@ var ArticleIndexView = Backbone.View.extend({
 		</div>\
 		';
 		var template_vars = this.collection.toJSON();
-		template_vars['lang'] = this.lang
 		for(var i=0;i < template_vars.length; i++){
 			template_vars[i].author_name = template_vars[i].author.name;
-			template_vars[i].published_friendly = template_vars[i].published == null ? this.lang.drafts: moment(template_vars[i].published).format(this.lang.published_format);
+			template_vars[i].published_friendly = template_vars[i].published == null ? this.lang.article.drafts: moment(template_vars[i].published).format(this.lang.article.published_format);
 		}
 		Mustache.zebra = true;
-		$(this.el).html(Mustache.to_html(tmpl, {
+		$(this.el).html(Mustache.render(tmpl, {
+			lang: this.lang,
 			resources: template_vars,
 			drafts: this.collection.drafts || false,
 			zebra: function(){
@@ -185,7 +181,7 @@ var ArticleIndexView = Backbone.View.extend({
 				view.render();
 			},
 			error: function(model, options){
-				alert(this.fetch_error);
+				alert(view.lang.fetch_error);
 				router.navigate('', true);
 			}
 		});
@@ -200,7 +196,7 @@ var ArticleIndexView = Backbone.View.extend({
 				view.render();
 			},
 			error: function(model, options){
-				alert(this.fetch_error);
+				alert(view.lang.fetch_error);
 				router.navigate('', true);
 			}
 		});
@@ -219,34 +215,36 @@ var ArticleFormView = Backbone.View.extend({
 		$('section#admin-content').unbind()
 		_.bindAll(this, 'render', 'save_form', 'save_publish', 'delete_form', 'show_preview'); // fixes loss of context for 'this' within methods
 		this.router = options.router;
-		this.lang = options.lang
+		this.lang = options.lang;
 	},
 	render: function(){
 		var template_vars = this.model.toJSON();
 		template_vars.is_new = this.model.isNew();
-		template_vars.can_publish = this.model.can_publish();
+		template_vars.can_edit = this.model.can_edit(APP_STATE.session);
+		template_vars.lang = this.lang;
 		var tmpl = '\
 		<form id="save-form">\
 			<div class="field-n-label">\
-				<label for="title">{{ lang.title_label }}</label>\
+				<label for="title">{{ lang.article.title_label }}</label>\
 				<input type="text" name="title" value="{{title}}" />\
 			</div>\
 			<div class="field-n-label">\
-				<label for="sticky">{{ lang.sticky_label }}</label>\
+				<label for="sticky">{{ lang.article.sticky_label }}</label>\
 				<input type="checkbox" name="sticky" value="1"{{#sticky}} checked="checked"{{/sticky}} />\
 			</div>\
 			<div class="field-n-label">\
-				<label for="content">{{ lang.content_label }}</label>\
+				<label for="content">{{ lang.article.content_label }}</label>\
 				<textarea name="content" class="redactor">{{{content}}}</textarea>\
 			</div>\
 			<div class="field-n-label">\
-				<label for="tags">{{ lang.tags }}</label>\
+				<label for="tags">{{ lang.article.tags }}</label>\
 				<input type="text" name="tags" value="{{#tags}}{{label}}, {{/tags}}" />\
 			</div>\
 			<input type="hidden" name="published" value="{{published}}" />\
-			<input type="button" id="preview-post" value="{{ lang.preview_button }}" class="form-submit-left"/>\
-			<input type="submit" name="save" value="{{#published}}{{ lang.save_button }}{{/published}}{{^published}}{{ lang.save_draft_button }}{{/published}}"  class="form-submit-left"/>\
-			{{^published}}{{#can_publish}}<input type="button" name="save-publish" id="save-publish" value="{{ lang.publish_button }}" class="form-submit-left"/>{{/can_publish}}{{/published}}\
+			<input type="button" id="preview-post" value="{{ lang.article.preview_button }}" class="form-submit-left"/>\
+		{{#can_edit}}\
+			<input type="submit" name="save" value="{{#published}}{{ lang.article.save_button }}{{/published}}{{^published}}{{ lang.article.save_draft_button }}{{/published}}"  class="form-submit-left"/>\
+			{{^published}}<input type="button" name="save-publish" id="save-publish" value="{{ lang.article.publish_button }}" class="form-submit-left"/>{{/published}}\
 		</form>\
 		{{^is_new}}\
 		<form id="delete-form">\
@@ -255,6 +253,7 @@ var ArticleFormView = Backbone.View.extend({
 			</div>\
 		</form>\
 		{{/is_new}}\
+		{{/can_edit}}\
 		';
 		$(this.el).html(Mustache.to_html(tmpl, template_vars));
 		$(".redactor").redactor({ fixed: true, imageUpload: '/api/imageupload' });
@@ -314,7 +313,6 @@ var ArticleFormView = Backbone.View.extend({
 				router.navigate('//articles/', true);
 			},
 			error: function(model, response){
-				console.log(this.lang.delete_error);
 				console.log(model);
 				console.log(response);
 			}
@@ -355,43 +353,18 @@ var ArticleCtrl = Backbone.Router.extend({
 	},
 	initialize: function(options){
 		_.bindAll(this, 'index', 'edit', 'new', 'show', 'drafts'); // fixes loss of context for 'this' within methods
-		var default_language = {
-			display_date_format: 'LLLL',
-			published_format: 'L LT',
-			show_posts: 'Show Posts',
-			show_drafts: 'Show Drafts',
-			create_new: 'Create New',
-			subject_head: 'Subject',
-			published_head: 'Date Published',
-			author_head: 'Author',
-			edit: 'Edit',
-			sticky: 'Sticky',
-			drafts: 'Drafts',
-			previous: 'Previous',
-			next: 'Next',
-			fetch_error: 'Something went wrong',
-			delete_error: 'Something went wrong',
-			title_label: 'Title',
-			sticky_label: 'Make Sticky',
-			content_label: 'Content',
-			tags_label: 'Tags',
-			preview_button: 'Preview Post',
-			publish_button: 'Publish',
-			save_button: 'Save',
-			save_draft_button: ' Save As Draft'
-		};
-		this.lang = _.extend(default_language, options)
+		this.lang = APP_STATE.lang;
 	},
 	index: function() {
 		var collection = new ArticleList();
 		var router = this;
 		collection.fetch({
 			success: function(model, resp){
-				var view = new ArticleIndexView({collection: collection, router: router, lang: this.lang});
+				var view = new ArticleIndexView({collection: collection, router: router, lang: router.lang});
 				view.render();
 			},
 			error: function(model, options){
-				alert('Something went wrong');
+				alert(router.lang.fetch_error);
 				router.navigate('', true);
 			}
 		});
@@ -402,11 +375,11 @@ var ArticleCtrl = Backbone.Router.extend({
 		collection.drafts = true;
 		collection.fetch({
 			success: function(model, resp){
-				var view = new ArticleIndexView({collection: collection, router: router, lang: this.lang});
+				var view = new ArticleIndexView({collection: collection, router: router, lang: router.lang});
 				view.render();
 			},
 			error: function(model, options){
-				alert('Something went wrong');
+				alert(router.lang.fetch_error);
 				router.navigate('', true);
 			}
 		});
@@ -414,7 +387,7 @@ var ArticleCtrl = Backbone.Router.extend({
 	new: function() {
 		var router = this;
 		var model = new Article();
-		var view = new ArticleFormView({model: model, router: router, lang: this.lang});
+		var view = new ArticleFormView({model: model, router: router, lang: router.lang});
 		view.render();
 	},
 	show: function(id) {
@@ -423,11 +396,11 @@ var ArticleCtrl = Backbone.Router.extend({
 		model.set({id: id});
 		model.fetch({
 			success: function(model, resp){
-				var view = new ArticleView({model: model, lang: this.lang});
+				var view = new ArticleView({model: model, lang: router.lang});
 				view.render();
 			},
 			error: function(model, options){
-				alert('Something went wrong');
+				alert(router.lang.fetch_error);
 				router.navigate('//articles/', true);
 			}
 		});
@@ -438,11 +411,11 @@ var ArticleCtrl = Backbone.Router.extend({
 		model.set({id: id});
 		model.fetch({
 			success: function(model, resp){
-				var view = new ArticleFormView({model: model, router: router, lang: this.lang});
+				var view = new ArticleFormView({model: model, router: router, lang: router.lang});
 				view.render();
 			},
 			error: function(model, options){
-				alert('Something went wrong');
+				alert(router.lang.fetch_error);
 				router.navigate('//articles/', true);
 			}
 		});
