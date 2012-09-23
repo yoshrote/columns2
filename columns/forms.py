@@ -135,14 +135,6 @@ class CreatePage(colander.MappingSchema):
 	content = colander.SchemaNode(
 		HTMLString()
 	)
-	stream_comment_style = colander.SchemaNode(
-		StrippingString(),
-		validator=colander.OneOf(['summary','list','none'])
-	)
-	story_comment_style = colander.SchemaNode(
-		StrippingString(),
-		validator=colander.OneOf(['summary','list','none'])
-	)
 	visible = colander.SchemaNode(
 		colander.Boolean(),
 		missing=False

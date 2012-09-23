@@ -509,16 +509,6 @@ class Page(Base):
 		AlwaysUnicodeText(),
 		nullable=True
 	)
-	stream_comment_style = Column(
-		AlwaysUnicode(length=20),
-		default=u'summary',
-		nullable=False
-	)
-	story_comment_style = Column(
-		AlwaysUnicode(length=20),
-		default=u'list',
-		nullable=False
-	)
 	visible = Column(
 		Boolean(),
 		default=True,
@@ -546,8 +536,6 @@ class Page(Base):
 			'title': self.title,
 			'slug': self.slug,
 			'content': self.content,
-			'stream_comment_style': self.stream_comment_style,
-			'story_comment_style': self.story_comment_style,
 			'visible': self.visible,
 			'can_post': self.can_post,
 			'in_main': self.in_main,

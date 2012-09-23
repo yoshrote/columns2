@@ -24,14 +24,6 @@
 		{{ h.checkbox("in_main", checked=resource.in_main) }}
 	</div>
 	<div class="field-n-label">
-		<label for="stream_comment_style">Stream Comment Style</label>
-		{{ h.select('stream_comment_style', resource.stream_comment_style, styles_list) }}
-	</div>
-	<div class="field-n-label">
-		<label for="story_comment_style">Story Comment Style</label>
-		{{ h.select('story_comment_style', resource.story_comment_style, styles_list) }}
-	</div>
-	<div class="field-n-label">
 		<label for="content">Content</label>
 		{{ h.textarea("content", resource.content, class_="jquery_ckeditor") }}
 	</div>

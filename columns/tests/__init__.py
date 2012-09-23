@@ -1314,8 +1314,6 @@ class TestPageView(unittest.TestCase):
 		request = DummyRequest(post={
 			'title': 'next_page',
 			'content': '<p>test data</p>',
-			'stream_comment_style': 'summary',
-			'story_comment_style': 'list',
 		})
 		context = DummyCollection()
 		viewer = viewer_cls(context, request)
@@ -1340,8 +1338,6 @@ class TestPageView(unittest.TestCase):
 		request = DummyRequest(post={
 			'title': 'next_page',
 			'content': '<p>test data</p>',
-			'stream_comment_style': 'summary',
-			'story_comment_style': 'list',
 		})
 		collection = DummyCollection()
 		context = DummyMember(name='1',parent=collection)
