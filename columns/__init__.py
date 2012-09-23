@@ -41,13 +41,11 @@ def setup_admin_routes(config):
 	config.add_view(
 		'columns.views.admin_view',
 		route_name='admin',
-		permission='admin',
 	)
 	config.add_route('admin_no_slash', '/admin')
 	config.add_view(
 		'columns.views.admin_no_slash_view',
 		route_name='admin_no_slash',
-		permission='admin',
 	)
 	
 	config.add_route('settings', '/admin/settings')
