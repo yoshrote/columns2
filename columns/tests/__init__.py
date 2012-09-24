@@ -125,6 +125,7 @@ class DummyCollection(testing.DummyResource):
 
 class DummyRequest(testing.DummyRequest):
 	content_type = 'application/x-form-urlencoded'
+	is_xhr = False
 
 ########################################
 ## Context Collection Tests
@@ -1408,10 +1409,6 @@ class TestAuthViews(unittest.TestCase):
 		self.session.remove()
 		testing.tearDown()
 	
-	def test_login_view(self):
-		from ..auth import login_view
-		response = login_view(self.request)
-	
 	def test_logout_view(self):
 		from ..auth import logout_view
 		response = logout_view(self.request)
@@ -1424,7 +1421,7 @@ class TestAuthViews(unittest.TestCase):
 		from ..auth import xrds_view
 		response = xrds_view(self.request)
 	
-
+'''
 class TestQuickUploadViews(unittest.TestCase):
 	def setUp(self):
 		settings = {
@@ -1472,7 +1469,7 @@ class TestQuickUploadViews(unittest.TestCase):
 			'upload': test_file,
 		}
 		response = quick_image_upload(self.request)
-	
+'''	
 
 class TestBlogViews(unittest.TestCase):
 	def setUp(self):
@@ -1586,7 +1583,8 @@ class TestFunctionalArticle(unittest.TestCase):
 		from .. import main
 		settings = {
 			'test_engine': True,
-			'static_directory': '.:static'
+			'static_directory': '.:static',
+			'enable_auth': False,
 		}
 		main_app = main({},**settings)
 		self.app = TestApp(main_app)
@@ -1595,12 +1593,6 @@ class TestFunctionalArticle(unittest.TestCase):
 		import sqlahelper
 		sqlahelper.reset()
 		self.app.reset()
-	
-	def test_index_html(self):
-		response = self.app.get(
-			'/api/articles/', 
-			headers=[('Accept','text/html')]
-		)
 	
 	def test_index_atom(self):
 		response = self.app.get(
@@ -1614,12 +1606,6 @@ class TestFunctionalArticle(unittest.TestCase):
 			headers=[('Accept','application/json')]
 		)
 	
-	def test_show_html(self):
-		response = self.app.get(
-			'/api/articles/1', 
-			headers=[('Accept','text/html')]
-		)
-	
 	def test_show_atom(self):
 		response = self.app.get(
 			'/api/articles/1', 
@@ -1631,26 +1617,15 @@ class TestFunctionalArticle(unittest.TestCase):
 			'/api/articles/1', 
 			headers=[('Accept','application/json')]
 		)
-	
-	def test_new(self):
-		response = self.app.get(
-			'/api/articles/new', 
-			headers=[('Accept','text/html')]
-		)
-	
-	def test_edit(self):
-		response = self.app.get(
-			'/api/articles/1/edit', 
-			headers=[('Accept','text/html')]
-		)
-	
+		
 
 class TestFunctionalUser(unittest.TestCase):
 	def setUp(self):
 		from .. import main
 		settings = {
 			'test_engine': True,
-			'static_directory': '.:static'
+			'static_directory': '.:static',
+			'enable_auth': False,
 		}
 		main_app = main({},**settings)
 		self.app = TestApp(main_app)
@@ -1659,12 +1634,6 @@ class TestFunctionalUser(unittest.TestCase):
 		import sqlahelper
 		sqlahelper.reset()
 		self.app.reset()
-	
-	def test_index_html(self):
-		response = self.app.get(
-			'/api/users/', 
-			headers=[('Accept','text/html')]
-		)
 	
 	def test_index_atom(self):
 		response = self.app.get(
@@ -1678,12 +1647,6 @@ class TestFunctionalUser(unittest.TestCase):
 			headers=[('Accept','application/json')]
 		)
 	
-	def test_show_html(self):
-		response = self.app.get(
-			'/api/users/1', 
-			headers=[('Accept','text/html')]
-		)
-	
 	def test_show_atom(self):
 		response = self.app.get(
 			'/api/users/1', 
@@ -1694,18 +1657,6 @@ class TestFunctionalUser(unittest.TestCase):
 		response = self.app.get(
 			'/api/users/1', 
 			headers=[('Accept','application/json')]
-		)
-	
-	def test_new(self):
-		response = self.app.get(
-			'/api/users/new', 
-			headers=[('Accept','text/html')]
-		)
-	
-	def test_edit(self):
-		response = self.app.get(
-			'/api/users/1/edit', 
-			headers=[('Accept','text/html')]
 		)
 	
 
@@ -1714,7 +1665,8 @@ class TestFunctionalUpload(unittest.TestCase):
 		from .. import main
 		settings = {
 			'test_engine': True,
-			'static_directory': '.:static'
+			'static_directory': '.:static',
+			'enable_auth': False,
 		}
 		main_app = main({},**settings)
 		self.app = TestApp(main_app)
@@ -1723,12 +1675,6 @@ class TestFunctionalUpload(unittest.TestCase):
 		import sqlahelper
 		sqlahelper.reset()
 		self.app.reset()
-	
-	def test_index_html(self):
-		response = self.app.get(
-			'/api/uploads/', 
-			headers=[('Accept','text/html')]
-		)
 	
 	def test_index_atom(self):
 		response = self.app.get(
@@ -1742,12 +1688,6 @@ class TestFunctionalUpload(unittest.TestCase):
 			headers=[('Accept','application/json')]
 		)
 	
-	def test_show_html(self):
-		response = self.app.get(
-			'/api/uploads/1', 
-			headers=[('Accept','text/html')]
-		)
-	
 	def test_show_atom(self):
 		response = self.app.get(
 			'/api/uploads/1', 
@@ -1758,18 +1698,6 @@ class TestFunctionalUpload(unittest.TestCase):
 		response = self.app.get(
 			'/api/uploads/1', 
 			headers=[('Accept','application/json')]
-		)
-	
-	def test_new(self):
-		response = self.app.get(
-			'/api/uploads/new', 
-			headers=[('Accept','text/html')]
-		)
-	
-	def test_edit(self):
-		response = self.app.get(
-			'/api/uploads/1/edit', 
-			headers=[('Accept','text/html')]
 		)
 	
 
@@ -1778,7 +1706,8 @@ class TestFunctionalPage(unittest.TestCase):
 		from .. import main
 		settings = {
 			'test_engine': True,
-			'static_directory': '.:static'
+			'static_directory': '.:static',
+			'enable_auth': False,
 		}
 		main_app = main({},**settings)
 		self.app = TestApp(main_app)
@@ -1787,12 +1716,6 @@ class TestFunctionalPage(unittest.TestCase):
 		import sqlahelper
 		sqlahelper.reset()
 		self.app.reset()
-	
-	def test_index_html(self):
-		response = self.app.get(
-			'/api/pages/', 
-			headers=[('Accept','text/html')]
-		)
 	
 	def test_index_atom(self):
 		response = self.app.get(
@@ -1806,12 +1729,6 @@ class TestFunctionalPage(unittest.TestCase):
 			headers=[('Accept','application/json')]
 		)
 	
-	def test_show_html(self):
-		response = self.app.get(
-			'/api/pages/1', 
-			headers=[('Accept','text/html')]
-		)
-	
 	def test_show_atom(self):
 		response = self.app.get(
 			'/api/pages/1', 
@@ -1822,18 +1739,6 @@ class TestFunctionalPage(unittest.TestCase):
 		response = self.app.get(
 			'/api/pages/1', 
 			headers=[('Accept','application/json')]
-		)
-	
-	def test_new(self):
-		response = self.app.get(
-			'/api/pages/new', 
-			headers=[('Accept','text/html')]
-		)
-	
-	def test_edit(self):
-		response = self.app.get(
-			'/api/pages/1/edit', 
-			headers=[('Accept','text/html')]
 		)
 	
 
@@ -1846,7 +1751,9 @@ class TestAuthenticationPolicy(unittest.TestCase):
 		self.request = DummyRequest()
 		self.config = testing.setUp(request=self.request)
 		self.session = _initTestingDB()
-	
+		from .. import setup_admin_routes
+		self.config.include(setup_admin_routes)
+
 	def tearDown(self):
 		self.session.remove()
 		testing.tearDown()
@@ -1868,8 +1775,8 @@ class TestAuthenticationPolicy(unittest.TestCase):
 		policy.remember(self.request, 99)
 		
 		session = self.request.session
-		self.assertEquals(session['auth.userid'], 99)
-		self.assertEquals(session['auth.type'], None)
+		self.assert_('auth.userid' not in session)
+		self.assert_('auth.type' not in session)
 	
 	def test_remember_miss_and_create(self):
 		policy = self._makePolicy()
@@ -1930,96 +1837,12 @@ class TestAuthenticationPolicy(unittest.TestCase):
 		response = oid_authentication_callback(None, self.request, success_dict)
 		self.assertEquals(response.status_int, 302)
 	
-	def test_twitter_login_view(self):
-		_populateSettings({'auth':{
-			'FACEBOOK_APP_ID': 'qdefwrth',
-			'FACEBOOK_APP_SECRET': 'qwrtyrt',
-			'FACEBOOK_SCOPE': 'offline_access,publish_stream,read_stream',
-			'TWITTER_CONSUMER_KEY': 'key',
-			'TWITTER_CONSUMER_SECRET': 'secret',
-			'TWITTER_REQUEST_TOKEN_URL': 'http://term.ie/oauth/example/request_token.php',
-			'TWITTER_ACCESS_TOKEN_URL': 'http://term.ie/oauth/example/access_token.php?foo=bar&oauth_token=1234&oauth_token_secret=12345&user_id=1',
-			'TWITTER_AUTHORIZE_URL': 'http://twitter.com/oauth/authorize',
-			'DEFAULT_RETURN': '/',
-		
-		}})
-		from ..auth import twitter_login_view
-		self.config.include('columns.blog')
-		self.config.include('columns.auth')
-		response = twitter_login_view(self.request)
-		self.request.GET['oauth_verifier'] = 'test_auth_verifier'
-		response = twitter_login_view(self.request)
-	
-	def test_twitter_login_view_with_referer(self):
-		_populateSettings({'auth':{
-			'FACEBOOK_APP_ID': 'qdefwrth',
-			'FACEBOOK_APP_SECRET': 'qwrtyrt',
-			'FACEBOOK_SCOPE': 'offline_access,publish_stream,read_stream',
-			'TWITTER_CONSUMER_KEY': 'key',
-			'TWITTER_CONSUMER_SECRET': 'secret',
-			'TWITTER_REQUEST_TOKEN_URL': 'http://term.ie/oauth/example/request_token.php',
-			'TWITTER_ACCESS_TOKEN_URL': 'http://term.ie/oauth/example/access_token.php?foo=bar&oauth_token=1234&oauth_token_secret=12345&user_id=1',
-			'TWITTER_AUTHORIZE_URL': 'http://twitter.com/oauth/authorize',
-			'DEFAULT_RETURN': '/',
-		
-		}})
-		from ..auth import twitter_login_view
-		self.config.include('columns.blog')
-		self.config.include('columns.auth')
-		self.request = DummyRequest()
-		self.request.session.update({
-			'twitter_access_token': '123124',
-			'twitter_access_token_secret': '123124',
-		})
-		response = twitter_login_view(self.request)
-	
-	def test_twitter_login_view_no_oauth_verifier(self):
-		_populateSettings({'auth':{
-			'FACEBOOK_APP_ID': 'qdefwrth',
-			'FACEBOOK_APP_SECRET': 'qwrtyrt',
-			'FACEBOOK_SCOPE': 'offline_access,publish_stream,read_stream',
-			'TWITTER_CONSUMER_KEY': 'key',
-			'TWITTER_CONSUMER_SECRET': 'secret',
-			'TWITTER_REQUEST_TOKEN_URL': 'http://term.ie/oauth/example/request_token.php',
-			'TWITTER_ACCESS_TOKEN_URL': 'http://term.ie/oauth/example/access_token.php?foo=bar&oauth_token=1234&oauth_token_secret=12345&user_id=1',
-			'TWITTER_AUTHORIZE_URL': 'http://twitter.com/oauth/authorize',
-			'DEFAULT_RETURN': '/',
-		
-		}})
-		from ..auth import twitter_login_view
-		self.config.include('columns.blog')
-		self.config.include('columns.auth')
-		response = twitter_login_view(self.request)
-		response = twitter_login_view(self.request)
-	
-	def test_twitter_login_view_bad_request_token(self):
-		_populateSettings({'auth':{
-			'FACEBOOK_APP_ID': 'qdefwrth',
-			'FACEBOOK_APP_SECRET': 'qwrtyrt',
-			'FACEBOOK_SCOPE': 'offline_access,publish_stream,read_stream',
-			'TWITTER_CONSUMER_KEY': 'key',
-			'TWITTER_CONSUMER_SECRET': 'secret',
-			'TWITTER_REQUEST_TOKEN_URL': 'http://term.ie/oauth/example/not_a_request_token.php',
-			'TWITTER_ACCESS_TOKEN_URL': 'http://term.ie/oauth/example/access_token.php?foo=bar&oauth_token=1234&oauth_token_secret=12345&user_id=1',
-			'TWITTER_AUTHORIZE_URL': 'http://twitter.com/oauth/authorize',
-			'DEFAULT_RETURN': '/',
-		
-		}})
-		from ..auth import twitter_login_view
-		self.config.include('columns.blog')
-		self.config.include('columns.auth')
-		response = twitter_login_view(self.request)
-		response = twitter_login_view(self.request)
-	
-	def test_facebook_login_view(self):
-		from ..auth import facebook_login_view
-		#response = facebook_login_view(self.request)
-	
 
 class TestAuthorizationPolicy(unittest.TestCase):
 	def setUp(self):
 		self.request = DummyRequest()
 		self.config = testing.setUp(request=self.request)
+		self.config.include('columns.setup_admin_routes')
 		self.config.include('columns.lib.view')
 		self.config.include('columns.auth')
 		self.config.add_static_view('static', '.:static/')
@@ -2059,12 +1882,6 @@ class TestAuthorizationPolicy(unittest.TestCase):
 	def test_xrds_view(self):
 		from ..auth import xrds_view
 		response = xrds_view(self.request)
-	
-	def test_login_view(self):
-		from ..auth import login_view
-		self.config.testing_add_renderer('templates/auth/login.jinja')
-		response = login_view(self.request)
-		self.assertEquals(response.status_int, 200)
 	
 	def test_logout_view(self):
 		from ..auth import logout_view

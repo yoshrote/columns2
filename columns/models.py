@@ -580,16 +580,6 @@ class User(Base):
 		nullable=True,
 		index=True
 	)
-	fb_id = Column(
-		AlwaysUnicode(length=255),
-		nullable=True,
-		index=True
-	)
-	twitter_id = Column(
-		AlwaysUnicode(length=255),
-		nullable=True,
-		index=True
-	)
 	type = Column(
 		Integer(),
 		nullable=False
@@ -604,8 +594,6 @@ class User(Base):
 			'id': self.id,
 			'name': self.name,
 			'open_id': self.open_id,
-			'fb_id': self.fb_id,
-			'twitter_id': self.twitter_id,
 			'type': self.type,
 			'profile': self.profile,
 		}

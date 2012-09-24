@@ -104,16 +104,6 @@ class CreateUser(colander.MappingSchema):
 		validator=colander.Length(max=255),
 		missing=None
 	)
-	fb_id = colander.SchemaNode(
-		StrippingString(),
-		validator=colander.Length(max=255),
-		missing=None
-	)
-	twitter_id = colander.SchemaNode(
-		StrippingString(),
-		validator=colander.Length(max=255),
-		missing=None
-	)
 	profile = colander.SchemaNode(
 		StrippingString(),
 		validator=colander.Length(max=255),
