@@ -47,35 +47,6 @@ def settings_save(request):
 		location=request.route_url('settings')
 	)
 
-def browse_images_view(request):
-	ckedit_num = request.GET.get('CKEditorFuncNum',None)
-	return render_to_response(
-		'columns:templates/uploads/browse_uploads.jinja',
-		{
-			'ckedit_num': ckedit_num
-		}
-	)
-
-def browse_images_ajax(request):
-	prefix = request.registry.settings.get('static_directory', '')
-	offset = int(request.params.get('offset', '0'))
-	limit = int(request.params.get('limit', '20'))
-	Session = sqlahelper.get_session()
-	uploads = Session.query(Upload).\
-		order_by(Upload.updated.desc()).\
-		offset(offset).\
-		limit(limit).\
-		all()
-	return [
-		{
-			'filepath': request.static_url(
-				'/'.join([prefix, item.filepath]).replace('//', '/')
-			),
-			'date':item.updated.isoformat(),
-			'alt':item.title or ''
-		} for item in uploads
-	]
-
 def imageupload(request):
 	upload_file = request.POST['file']
 	values = {

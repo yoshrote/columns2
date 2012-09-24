@@ -1,8 +1,0 @@
-{% if not request.is_xhr %}{% extends "columns:templates/admin.jinja" %}{% endif %}
-{% block content %}
-<div class="pictures-show">
-	<h2>{{ resource.title }}</h2>
-	<img src="{{ resource.filepath|static_url }} alt="{{ resource.title }}" />
-	<p>{{ resource.content }} </p>
-</div>
-{% endblock %}
