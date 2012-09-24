@@ -190,12 +190,12 @@ var PageFormView = Backbone.View.extend({
 				<label for="content">Content</label>\
 				<textarea name="content" class="redactor">{{content}}</textarea>\
 			</div>\
-			<input type="submit" name="save" value="{{ lang.page.save_button }}" class="form-submit-left"/>\
+			<input type="submit" name="save" value="{{ lang.save_button }}" class="form-submit-left"/>\
 		</form>\
 		{{^is_new}}\
 		<form id="delete-form">\
 			<div>\
-				<input type="submit" value="{{ lang.page.delete_button }}" class="form-submit-right"/>\
+				<input type="submit" value="{{ lang.delete_button }}" class="form-submit-right"/>\
 			</div>\
 		</form>\
 		{{/is_new}}\

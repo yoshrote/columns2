@@ -100,16 +100,16 @@ APP_STATE = {
 		false: 'False',
 		fetch_error: 'Something went wrong',
 		delete_error: 'Something went wrong',
+		save_button: 'Save',
+		delete_button: 'Delete',
 		article:{
 			show_posts: 'Show Posts',
 			show_drafts: 'Show Drafts',
-			save_button: 'Save',
-			delete_button: 'Delete',
 			published_format: 'L LT',
 			drafts: 'Drafts',
 			preview_button: 'Preview Post',
 			publish_button: 'Publish',
-			save_draft_button: ' Save As Draft',
+			save_draft_button: 'Save As Draft',
 			subject_head: 'Subject',
 			published_head: 'Date Published',
 			author_head: 'Author',
@@ -128,8 +128,6 @@ APP_STATE = {
 			can_post_label: 'Enable Posts',
 			in_menu_label: 'Show Page in Menu',
 			in_main_label: 'Show Posts in Main Stream'
-			save_button: 'Save',
-			delete_button: 'Delete',
 		},
 		user:{
 			name_head: 'Name',
@@ -138,8 +136,14 @@ APP_STATE = {
 			type_label: 'User Type',
 			open_id_label: 'OpenID URL',
 			profile_label: 'Profile URL',
-			save_button: 'Save',
-			delete_button: 'Delete',
+		},
+		upload:{
+			filename_head: 'Filename',
+			date_head: 'Date',
+			update_format: 'LLL',
+			file_label: 'File',
+			title_label: 'Alternative Text',
+			content_label: 'Description',
 		}
 	},
 	session: null

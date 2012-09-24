@@ -66,22 +66,23 @@ var UploadIndexView = Backbone.View.extend({
 		$('section#admin-content').unbind()
 		_.bindAll(this, 'render', 'prev_page', 'next_page'); // fixes loss of context for 'this' within methods
 		this.router = options.router;
+		this.lang = options.lang;
 	},
 	render: function(){
 		var tmpl = '\
-		<a href="#/uploads/new" class="new-link">Create New</a>\
+		<a href="#/uploads/new" class="new-link">{{ lang.create_new }}</a>\
 		<table id="admin-resource-list">\
 			<thead>\
 				<tr>\
 					<td class="filler-cell">&nbsp;</td>\
-					<th>Filename</th>\
-					<th>Date</th>\
+					<th>{{ lang.upload.filename_head }}</th>\
+					<th>{{ lang.upload.date_head }}</th>\
 				</tr>\
 			</thead>\
 			<tbody>\
 			{{#resources}}\
 				<tr class="{{zebra}}">\
-					<td><a href="#/uploads/{{id}}/edit">Edit</a></td>\
+					<td><a href="#/uploads/{{id}}/edit">{{ lang.edit }}</a></td>\
 					<td><a href="{{static_base}}{{filepath}}" target="blank_">{{title}}</a></td>\
 					<td>{{updated}}</td>\
 				</tr>\
@@ -89,16 +90,17 @@ var UploadIndexView = Backbone.View.extend({
 			</tbody>\
 		</table>\
 		<div>\
-			<a href="#/uploads/" class="prev-upload-page" >Previous</a>\
-			<a href="#/uploads/" class="next-upload-page" >Next</a>\
+			<a href="#/uploads/" class="prev-upload-page" >{{ lang.previous }}</a>\
+			<a href="#/uploads/" class="next-upload-page" >{{ lang.next }}</a>\
 		</div>\
 		';
 		var template_vars = this.collection.toJSON();
 		for(var i=0;i < template_vars.length; i++){
-			template_vars[i].updated = template_vars[i].updated == null ? 'Draft': moment(template_vars[i].updated).format('LLL');
+			template_vars[i].updated = moment(template_vars[i].updated).format(this.lang.update_format);
 		}
 		Mustache.zebra = true;
 		$(this.el).html(Mustache.to_html(tmpl, {
+			lang: this.lang,
 			resources: template_vars,
 			zebra: function(){
 				var mode = '';
@@ -125,7 +127,7 @@ var UploadIndexView = Backbone.View.extend({
 				view.render();
 			},
 			error: function(model, options){
-				alert('Something went wrong');
+				alert(view.lang.fetch_error);
 				router.navigate('', true);
 			}
 		});
@@ -140,7 +142,7 @@ var UploadIndexView = Backbone.View.extend({
 				view.render();
 			},
 			error: function(model, options){
-				alert('Something went wrong');
+				alert(view.lang.fetch_error);
 				router.navigate('', true);
 			}
 		});
@@ -157,32 +159,34 @@ var UploadFormView = Backbone.View.extend({
 		$('section#admin-content').unbind()
 		_.bindAll(this, 'render', 'save_form', 'delete_form'); // fixes loss of context for 'this' within methods
 		this.router = options.router;
+		this.lang = options.lang;
 	},
 	render: function(){
 		var template_vars = this.model.toJSON();
 		template_vars.is_new = this.model.isNew();
+		template_vars.lang = this.lang;
 		var tmpl = '\
 		<form id="save-form">\
 			{{#is_new}}\
 			<div class="field-n-label">\
-				<label for="upload">File</label>\
+				<label for="upload">{{ lang.upload.file_label }}</label>\
 				<input type="file" name="upload" />\
 			</div>\
 			{{/is_new}}\
 			<div class="field-n-label">\
-				<label for="title">Alternative Text</label>\
+				<label for="title">{{ lang.upload.title_label }}</label>\
 				<input type="text" name="title" value="{{title}}" />\
 			</div>\
 			<div class="field-n-label">\
-				<label for="content">Description</label>\
+				<label for="content">{{ lang.upload.content_label }}</label>\
 				<textarea name="content">{{content}}</textarea>\
 			</div>\
-			<input type="submit" name="save" value="Save" class="form-submit-left"/>\
+			<input type="submit" name="save" value="{{ lang.save_button }}" class="form-submit-left"/>\
 		</form>\
 		{{^is_new}}\
 		<form id="delete-form">\
 			<div>\
-				<input type="submit" value="Delete" class="form-submit-right"/>\
+				<input type="submit" value="{{ lang.delete_button }}" class="form-submit-right"/>\
 			</div>\
 		</form>\
 		{{/is_new}}\
@@ -233,12 +237,13 @@ var UploadFormView = Backbone.View.extend({
 	},
 	delete_form: function(){
 		var router = this.router;
+		var view = this;
 		this.model.destroy({
 			success: function(model, response){
 				router.navigate('//uploads/', true);
 			},
 			error: function(model, response){
-				console.log('Error on delete');
+				console.log(view.lang.delete_error);
 				console.log(model);
 				console.log(response);
 			}
@@ -264,11 +269,11 @@ var UploadCtrl = Backbone.Router.extend({
 		var collection = new UploadList();
 		collection.fetch({
 			success: function(model, resp){
-				var view = new UploadIndexView({collection: collection, router: router});
+				var view = new UploadIndexView({collection: collection, router: router, lang: router.lang});
 				view.render();
 			},
 			error: function(model, options){
-				alert('Something went wrong');
+				alert(router.lang.fetch_error);
 				router.navigate('', true);
 			}
 		});
@@ -276,7 +281,7 @@ var UploadCtrl = Backbone.Router.extend({
 	new: function() {
 		var router = this;
 		var model = new Upload();
-		var view = new UploadFormView({model: model, router: router});
+		var view = new UploadFormView({model: model, router: router, lang: router.lang});
 		view.render();
 	},
 	show: function(id) {
@@ -289,7 +294,7 @@ var UploadCtrl = Backbone.Router.extend({
 				view.render();
 			},
 			error: function(model, options){
-				alert('Something went wrong');
+				alert(router.lang.fetch_error);
 				router.navigate('//uploads/', true);
 			}
 		});
@@ -300,11 +305,11 @@ var UploadCtrl = Backbone.Router.extend({
 		model.set({id: id});
 		model.fetch({
 			success: function(model, resp){
-				var view = new UploadFormView({model: model, router: router});
+				var view = new UploadFormView({model: model, router: router, lang: router.lang});
 				view.render();
 			},
 			error: function(model, options){
-				alert('Something went wrong');
+				alert(router.lang.fetch_error);
 				router.navigate('//uploads/', true);
 			}
 		});

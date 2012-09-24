@@ -243,13 +243,13 @@ var ArticleFormView = Backbone.View.extend({
 			<input type="hidden" name="published" value="{{published}}" />\
 			<input type="button" id="preview-post" value="{{ lang.article.preview_button }}" class="form-submit-left"/>\
 		{{#can_edit}}\
-			<input type="submit" name="save" value="{{#published}}{{ lang.article.save_button }}{{/published}}{{^published}}{{ lang.article.save_draft_button }}{{/published}}"  class="form-submit-left"/>\
+			<input type="submit" name="save" value="{{#published}}{{ lang.save_button }}{{/published}}{{^published}}{{ lang.article.save_draft_button }}{{/published}}"  class="form-submit-left"/>\
 			{{^published}}<input type="button" name="save-publish" id="save-publish" value="{{ lang.article.publish_button }}" class="form-submit-left"/>{{/published}}\
 		</form>\
 		{{^is_new}}\
 		<form id="delete-form">\
 			<div>\
-				<input type="submit" value="Delete" class="form-submit-right"/>\
+				<input type="submit" value="{{ lang.delete_button }}" class="form-submit-right"/>\
 			</div>\
 		</form>\
 		{{/is_new}}\

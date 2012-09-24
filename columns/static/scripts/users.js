@@ -181,12 +181,12 @@ var UserFormView = Backbone.View.extend({
 				<label for="profile">{{ lang.user.profile_label }}</label>\
 				<input type="text" name="profile" value="{{profile}}" />\
 			</div>\
-			<input type="submit" name="save" value="{{ lang.user.save_button }}" class="form-submit-left"/>\
+			<input type="submit" name="save" value="{{ lang.save_button }}" class="form-submit-left"/>\
 		</form>\
 		{{^is_new}}\
 		<form id="delete-form">\
 			<div>\
-				<input type="submit" value="{{ lang.user.delete_button }}" class="form-submit-right"/>\
+				<input type="submit" value="{{ lang.delete_button }}" class="form-submit-right"/>\
 			</div>\
 		</form>\
 		{{/is_new}}\
