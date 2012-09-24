@@ -378,17 +378,6 @@ def includeme(config):
 			factory=collection_factory,
 		)
 		
-		#index (html)
-		#config.add_view(
-		#	route_name=collection,
-		#	context=collection_context,
-		#	name='',
-		#	view=view_class,
-		#	attr='index',
-		#	accept='text/html',
-		#	request_method='GET',
-		#	renderer='columns:templates/{0}/index.jinja'.format(collection)
-		#)
 		#index (json)
 		config.add_view(
 			route_name=collection,
@@ -415,17 +404,6 @@ def includeme(config):
 			)
 		)
 		
-		#new (html)
-		#config.add_view(
-		#	route_name=collection,
-		#	context=collection_context,
-		#	name='new',
-		#	view=view_class,
-		#	attr='new',
-		#	accept='text/html',
-		#	request_method='GET',
-		#	renderer='columns:templates/{0}/new.jinja'.format(collection)
-		#)
 		#new (json)
 		config.add_view(
 			route_name=collection,
@@ -439,17 +417,6 @@ def includeme(config):
 			permission='new',
 		)
 		
-		#show (html)
-		#config.add_view(
-		#	route_name=collection,
-		#	context=member_context,
-		#	name='',
-		#	view=view_class,
-		#	attr='show',
-		#	accept='text/html',
-		#	request_method='GET',
-		#	renderer='columns:templates/{0}/show.jinja'.format(collection)
-		#)
 		#show (json)
 		config.add_view(
 			route_name=collection,
@@ -476,17 +443,6 @@ def includeme(config):
 			),
 			permission='show',
 		)
-		
-		#edit (html)
-		#config.add_view(
-		#	route_name=collection,
-		#	context=member_context,
-		#	name='edit',
-		#	view=view_class,
-		#	attr='show',
-		#	request_method='GET',
-		#	renderer='columns:templates/{0}/edit.jinja'.format(collection)
-		#)
 		
 		#create (x-form-urlencoded)
 		config.add_view(
