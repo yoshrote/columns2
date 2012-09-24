@@ -128,7 +128,19 @@ APP_STATE = {
 			can_post_label: 'Enable Posts',
 			in_menu_label: 'Show Page in Menu',
 			in_main_label: 'Show Posts in Main Stream'
+			save_button: 'Save',
+			delete_button: 'Delete',
 		},
+		user:{
+			name_head: 'Name',
+			type_head: 'Type',
+			name_label: 'Name',
+			type_label: 'User Type',
+			open_id_label: 'OpenID URL',
+			profile_label: 'Profile URL',
+			save_button: 'Save',
+			delete_button: 'Delete',
+		}
 	},
 	session: null
 }

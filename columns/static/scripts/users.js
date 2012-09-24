@@ -60,22 +60,23 @@ var UserIndexView = Backbone.View.extend({
 		$('section#admin-content').unbind()
 		_.bindAll(this, 'render', 'prev_page', 'next_page'); // fixes loss of context for 'this' within methods
 		this.router = options.router;
+		this.lang = options.lang;
 	},
 	render: function(){
 		var tmpl = '\
-		<a href="#/users/new" class="new-link">Create New</a>\
+		<a href="#/users/new" class="new-link">{{ lang.create_new }}</a>\
 		<table id="admin-resource-list">\
 			<thead>\
 				<tr>\
 					<td class="filler-cell">&nbsp;</td>\
-					<th>Name</th>\
-					<th>Type</th>\
+					<th>{{ lang.user.name_head }}</th>\
+					<th>{{ lang.user.type_head }}</th>\
 				</tr>\
 			</thead>\
 			<tbody>\
 			{{#resources}}\
 				<tr class="{{zebra}}">\
-					<td><a href="#/users/{{id}}/edit">Edit</a></td>\
+					<td><a href="#/users/{{id}}/edit">{{ lang.edit }}</a></td>\
 					<td>{{name}}</td>\
 					<td>{{type}}</td>\
 				</tr>\
@@ -83,11 +84,12 @@ var UserIndexView = Backbone.View.extend({
 			</tbody>\
 		</table>\
 		<div>\
-			<a href="#/users/" class="prev-user-page" >Previous</a>\
-			<a href="#/users/" class="next-user-page" >Next</a>\
+			<a href="#/users/" class="prev-user-page" >{{ lang.previous }}</a>\
+			<a href="#/users/" class="next-user-page" >{{ lang.next }}</a>\
 		</div>\
 		';
 		var template_vars = this.collection.toJSON();
+		template_vars.lang = this.lang
 		Mustache.zebra = true;
 		$(this.el).html(Mustache.to_html(tmpl, {
 			resources: template_vars,
@@ -116,7 +118,7 @@ var UserIndexView = Backbone.View.extend({
 				view.render();
 			},
 			error: function(model, options){
-				alert('Something went wrong');
+				alert(view.lang.fetch_error);
 				router.navigate('', true);
 			}
 		});
@@ -131,7 +133,7 @@ var UserIndexView = Backbone.View.extend({
 				view.render();
 			},
 			error: function(model, options){
-				alert('Something went wrong');
+				alert(view.lang.fetch_error);
 				router.navigate('', true);
 			}
 		});
@@ -148,18 +150,20 @@ var UserFormView = Backbone.View.extend({
 		$('section#admin-content').unbind()
 		_.bindAll(this, 'render', 'save_form', 'delete_form'); // fixes loss of context for 'this' within methods
 		this.router = options.router;
+		this.lang = options.lang;
 	},
 	render: function(){
 		var template_vars = this.model.toJSON();
 		template_vars.is_new = this.model.isNew();
+		template_vars.lang = this.lang;
 		var tmpl = '\
 		<form id="save-form">\
 			<div class="field-n-label">\
-				<label for="name">Name</label>\
+				<label for="name">{{ lang.user.name_label }}</label>\
 				<input type="text" name="name" value="{{name}}" />\
 			</div>\
 			<div class="field-n-label">\
-				<label for="type">User Type</label>\
+				<label for="type">{{ lang.user.type_label }}</label>\
 				<select name="type">\
 					<option value="1">Super</option>\
 					<option value="2">Admin</option>\
@@ -170,27 +174,19 @@ var UserFormView = Backbone.View.extend({
 				</select>\
 			</div>\
 			<div class="field-n-label">\
-				<label for="open_id">OpenID URL</label>\
+				<label for="open_id">{{ lang.user.open_id_label }}</label>\
 				<input type="text" name="open_id" value="{{open_id}}" />\
 			</div>\
 			<div class="field-n-label">\
-				<label for="twitter_id">Twitter ID</label>\
-				<input type="text" name="twitter_id" value="{{twitter_id}}" />\
-			</div>\
-			<div class="field-n-label">\
-				<label for="fb_id">Facebook ID</label>\
-				<input type="text" name="fb_id" value="{{fb_id}}" />\
-			</div>\
-			<div class="field-n-label">\
-				<label for="profile">Profile URL</label>\
+				<label for="profile">{{ lang.user.profile_label }}</label>\
 				<input type="text" name="profile" value="{{profile}}" />\
 			</div>\
-			<input type="submit" name="save" value="Save" class="form-submit-left"/>\
+			<input type="submit" name="save" value="{{ lang.user.save_button }}" class="form-submit-left"/>\
 		</form>\
 		{{^is_new}}\
 		<form id="delete-form">\
 			<div>\
-				<input type="submit" value="Delete" class="form-submit-right"/>\
+				<input type="submit" value="{{ lang.user.delete_button }}" class="form-submit-right"/>\
 			</div>\
 		</form>\
 		{{/is_new}}\
@@ -200,13 +196,11 @@ var UserFormView = Backbone.View.extend({
 	save_form: function(){
 		var router = this.router;
 		var model = this.model;
-		var field_names = ['title', 'type', 'open_id', 'twitter_id', 'fb_id', 'profile'];
+		var field_names = ['title', 'type', 'open_id', 'profile'];
 		model.save({
 			name: $('input[name="name"]').val(),
 			type: $('select[name="type"] option:selected').val(),
 			open_id: $('input[name="open_id"]').val(),
-			twitter_id: $('input[name="twitter_id"]').val(),
-			fb_id: $('input[name="fb_id"]').val(),
 			profile: $('input[name="profile"]').val()
 		},
 		{
@@ -244,12 +238,13 @@ var UserFormView = Backbone.View.extend({
 	},
 	delete_form: function(){
 		var router = this.router;
+		var view = this;
 		this.model.destroy({
 			success: function(model, response){
 				router.navigate('//users/', true);
 			},
 			error: function(model, response){
-				console.log('Error on delete');
+				console.log(view.lang.delete_error);
 				console.log(model);
 				console.log(response);
 			}
@@ -274,11 +269,11 @@ var UserCtrl = Backbone.Router.extend({
 		var collection = new UserList();
 		collection.fetch({
 			success: function(model, resp){
-				var view = new UserIndexView({collection: collection, router: router});
+				var view = new UserIndexView({collection: collection, router: router, lang: router.lang});
 				view.render();
 			},
 			error: function(model, options){
-				alert('Something went wrong');
+				alert(router.lang.fetch_error);
 				router.navigate('', true);
 			}
 		});
@@ -286,7 +281,7 @@ var UserCtrl = Backbone.Router.extend({
 	new: function() {
 		var router = this;
 		var model = new User();
-		var view = new UserFormView({model: model, router: router});
+		var view = new UserFormView({model: model, router: router, lang: router.lang});
 		view.render();
 	},
 	show: function(id) {
@@ -299,7 +294,7 @@ var UserCtrl = Backbone.Router.extend({
 				view.render();
 			},
 			error: function(model, options){
-				alert('Something went wrong');
+				alert(router.lang.fetch_error);
 				router.navigate('//users/', true);
 			}
 		});
@@ -310,11 +305,11 @@ var UserCtrl = Backbone.Router.extend({
 		model.set({id: id});
 		model.fetch({
 			success: function(model, resp){
-				var view = new UserFormView({model: model, router: router});
+				var view = new UserFormView({model: model, router: router, lang: router.lang});
 				view.render();
 			},
 			error: function(model, options){
-				alert('Something went wrong');
+				alert(router.lang.fetch_error);
 				router.navigate('//users/', true);
 			}
 		});
