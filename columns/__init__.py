@@ -70,19 +70,6 @@ def setup_admin_routes(config):
 	)
 	
 	
-	config.add_route('browse_images', '/admin/browse_images')
-	config.add_view(
-		'columns.views.browse_images_view',
-		route_name='browse_images',
-		permission='admin',
-	)
-	config.add_route('browse_images_ajax', '/admin/browse_images_ajax')
-	config.add_view(
-		'columns.views.browse_images_ajax',
-		route_name='browse_images_ajax',
-		renderer='json',
-		permission='admin',
-	)
 	config.add_route('wysiwyg_imageupload', '/api/imageupload')
 	config.add_view(
 		'columns.views.imageupload',
