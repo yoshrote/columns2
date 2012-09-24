@@ -1,6 +1,6 @@
 # encoding: utf-8
 import unittest
-
+import re
 import colander
 from pyramid import testing
 from pyramid.config import Configurator
@@ -329,9 +329,10 @@ class TestColanderFormRenderer(unittest.TestCase):
 		request = testing.DummyRequest()
 		form = Form(request, SimpleColanderSchema())
 		renderer = FormRenderer(form)
-		
-		self.assert_(renderer.csrf() == \
-			'<input id="_csrf" name="_csrf" type="hidden" value="csrft" />')
+		self.assert_(re.match(
+			r'<input id="_csrf" name="_csrf" type="hidden" value=".*" />',
+			renderer.csrf()
+		))
 	
 	def test_csrf_token(self):
 		from ...lib.form import Form
@@ -341,9 +342,10 @@ class TestColanderFormRenderer(unittest.TestCase):
 		form = Form(request, SimpleColanderSchema())
 		renderer = FormRenderer(form)
 		
-		self.assert_(renderer.csrf_token() == \
-				'<div style="display:none;"><input id="_csrf" name="_csrf" '
-				'type="hidden" value="csrft" /></div>')
+		self.assert_(re.match(
+			r'<div style="display:none;"><input id="_csrf" name="_csrf" '
+			r'type="hidden" value=".*" /></div>', renderer.csrf_token()
+		))
 	
 	def test_hidden_tag_with_csrf_and_other_names(self):
 		
@@ -354,10 +356,12 @@ class TestColanderFormRenderer(unittest.TestCase):
 		form = Form(request, SimpleColanderSchema(), defaults={'name':'foo'})
 		renderer = FormRenderer(form)
 		
-		self.assert_(renderer.hidden_tag('name') == \
-			'<div style="display:none;"><input id="name" name="name" '
-			'type="hidden" value="foo" /><input id="_csrf" name="_csrf" '
-			'type="hidden" value="csrft" /></div>')
+		self.assert_(re.match(
+			r'<div style="display:none;"><input id="name" name="name" '
+			r'type="hidden" value="foo" /><input id="_csrf" name="_csrf" '
+			r'type="hidden" value=".*" /></div>',
+			renderer.hidden_tag('name')
+		))
 	
 	def test_hidden_tag_with_just_csrf(self):
 		
@@ -368,9 +372,11 @@ class TestColanderFormRenderer(unittest.TestCase):
 		form = Form(request, SimpleColanderSchema())
 		renderer = FormRenderer(form)
 		
-		self.assert_(renderer.hidden_tag() == \
-				'<div style="display:none;"><input id="_csrf" name="_csrf" '
-				'type="hidden" value="csrft" /></div>')
+		self.assert_(re.match(
+				r'<div style="display:none;"><input id="_csrf" name="_csrf" '
+				r'type="hidden" value=".*" /></div>',
+				renderer.hidden_tag()
+		))
 	
 	
 	def test_text(self):

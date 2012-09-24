@@ -1421,12 +1421,12 @@ class TestAuthViews(unittest.TestCase):
 		from ..auth import xrds_view
 		response = xrds_view(self.request)
 	
-'''
-class TestQuickUploadViews(unittest.TestCase):
+class TestQuickImageViews(unittest.TestCase):
 	def setUp(self):
 		settings = {
 			'static_directory':'.:static',
-			'upload_basepath':'test_uploads'
+			'upload_basepath':'test_uploads',
+			'upload_baseurl': 'http://localhost:6543/uploads'
 		}
 		self.request = DummyRequest()
 		self.config = testing.setUp(
@@ -1448,28 +1448,18 @@ class TestQuickUploadViews(unittest.TestCase):
 		self.session.remove()
 		testing.tearDown()
 	
-	def test_browse_images(self):
-		from ..views import browse_images_view
-		request = DummyRequest()
-		response = browse_images_view(request)
-	
-	def test_browse_images_ajax(self):
-		from ..views import browse_images_ajax
-		request = DummyRequest()
-		response = browse_images_ajax(request)
-	
 	def test_quick_image_upload(self):
-		from ..views import quick_image_upload
+		from ..views import imageupload
 		test_file = FieldStorage()
 		test_file.filename = 'example.txt'
 		test_file.file = StringIO('12345')
 		self.request.method = 'POST'
 		self.request.POST = {
 			'title': 'test_create_upload',
-			'upload': test_file,
+			'file': test_file,
 		}
-		response = quick_image_upload(self.request)
-'''	
+		response = imageupload(self.request)
+	
 
 class TestBlogViews(unittest.TestCase):
 	def setUp(self):
