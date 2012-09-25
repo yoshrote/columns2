@@ -89,7 +89,7 @@ class ArticleCollectionContext(SQLACollectionContext):
 		Session.delete(resource)
 		try:
 			Session.commit()
-		except Exception, ex:
+		except Exception, ex: # pragma: no cover
 			Session.rollback()
 			raise ex
 

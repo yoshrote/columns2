@@ -50,9 +50,7 @@ def stream_view(request):
 	page_number = request.GET.get('page')
 	stories_per_page = 10
 	try:
-		page_number = int(page_number)
-		if page_number < 0:
-			page_number = 0
+		page_number = max([int(page_number), 0])
 	except (TypeError, ValueError):
 		page_number = 0
 	
