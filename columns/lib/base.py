@@ -46,7 +46,7 @@ class SQLACollectionContext(object):
 			def is_negative(value):
 				return value is not None and value < 0
 			
-			def offset_negative(lenth, value):
+			def offset_negative(length, value):
 				try:
 					return length + value if int(value) <= 0 else value
 				except TypeError:
@@ -176,14 +176,14 @@ class SQLACollectionContext(object):
 	def build_query(self, query, specs):
 		"parses a specs dictionary (formatted like a mongo query) into a SQLAlchemy query"
 		op_map = {
-			'$eq': lambda val: query.filter(getattr(self.__model__, key) == val),
-			'$ne': lambda val: query.filter(getattr(self.__model__, key) != val),
-			'$gt': lambda val: query.filter(getattr(self.__model__, key) > val),
-			'$gte': lambda val: query.filter(getattr(self.__model__, key) >= val),
-			'$lt': lambda val: query.filter(getattr(self.__model__, key) < val),
-			'$lte': lambda val: query.filter(getattr(self.__model__, key) <= val),
-			'$in': lambda val: query.filter(getattr(self.__model__, key).in_(val)),
-			'$nin': lambda val: query.filter(not_(getattr(self.__model__, key).in_(val))),
+			'$eq': lambda key, val: query.filter(getattr(self.__model__, key) == val),
+			'$ne': lambda key, val: query.filter(getattr(self.__model__, key) != val),
+			'$gt': lambda key, val: query.filter(getattr(self.__model__, key) > val),
+			'$gte': lambda key, val: query.filter(getattr(self.__model__, key) >= val),
+			'$lt': lambda key, val: query.filter(getattr(self.__model__, key) < val),
+			'$lte': lambda key, val: query.filter(getattr(self.__model__, key) <= val),
+			'$in': lambda key, val: query.filter(getattr(self.__model__, key).in_(val)),
+			'$nin': lambda key, val: query.filter(not_(getattr(self.__model__, key).in_(val))),
 		}
 		for key in specs:
 			value = specs[key]
@@ -195,7 +195,7 @@ class SQLACollectionContext(object):
 					))
 			if isinstance(value, dict):
 				for operation, op_value in value.items():
-					query = op_map[operation](op_value)
+					query = op_map[operation](key, op_value)
 			else:
 				query = query.filter(getattr(self.__model__, key) == value)
 		return query

@@ -1,11 +1,6 @@
 # encoding: utf-8
-from pyramid.response import Response
-from pyramid.renderers import get_renderer
 from pyramid.threadlocal import get_current_request
-from pyramid.url import static_url
-from pyramid.traversal import resource_path
 from pyramid.security import has_permission
-from operator import attrgetter as op_attrgetter
 import colander
 import datetime
 import pytz

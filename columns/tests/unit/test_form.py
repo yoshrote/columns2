@@ -3,7 +3,6 @@ import unittest
 import re
 import colander
 from pyramid import testing
-from pyramid.config import Configurator
 
 class SimpleColanderSchema(colander.MappingSchema):
 	name = colander.SchemaNode(

@@ -115,7 +115,6 @@ def find_user(attribute, value, create=False):
 ## Authentication Views 
 #############################
 def settings_module(mod='core'):
-	import sqlahelper
 	from .models import Setting
 	Session = sqlahelper.get_session()
 	module = Session.query(Setting).get(mod)

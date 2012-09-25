@@ -416,7 +416,6 @@ class TestUploadCollection(unittest.TestCase):
 			settings={'upload_basepath':'test_uploads'}
 		)
 		self.session = _initTestingDB()
-		# FIXME: load self.upload_path from DB
 		self.upload_path = 'test_uploads/test/dir/upload.txt'
 		upload_dir = os.path.dirname(self.upload_path)
 		if not os.path.exists(upload_dir): # pragma: no cover
@@ -786,7 +785,6 @@ class TestUploadMember(unittest.TestCase):
 			settings={'upload_basepath':'test_uploads'}
 		)
 		self.session = _initTestingDB()
-		# FIXME: load self.upload_path from DB
 		self.upload_path = 'test_uploads/test/dir/upload.txt'
 		upload_dir = os.path.dirname(self.upload_path)
 		if not os.path.exists(upload_dir): # pragma: no cover

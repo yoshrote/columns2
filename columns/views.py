@@ -1,7 +1,6 @@
 # encoding: utf-8
 from pyramid.renderers import render_to_response
 from pyramid.httpexceptions import exception_response
-from pyramid.response import Response
 
 import sqlahelper
 from .models import Upload

@@ -7,6 +7,7 @@ from sqlalchemy.exc import InvalidRequestError
 from .models import Article
 from .models import Page
 from .models import Tag
+from .models import User
 
 #############################
 ## Blog Views 

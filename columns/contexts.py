@@ -23,9 +23,6 @@ from .models import Upload
 from .models import User
 
 import os.path
-import datetime
-import time
-import shutil
 from lxml import etree
 from urllib import unquote
 
@@ -82,11 +79,11 @@ class ArticleCollectionContext(SQLACollectionContext):
 		return results
 	
 	def __delitem__(self, key):
-		id = self._decode_key(key)
+		id_ = self._decode_key(key)
 		Session = sqlahelper.get_session()
 		resource = Session.query(
 			Article
-		).get(id)
+		).get(id_)
 		if resource is None:
 			raise KeyError(key)
 		Session.delete(resource)
@@ -105,11 +102,11 @@ class UploadCollectionContext(SQLACollectionContext):
 	__name__ = 'uploads'
 	
 	def __delitem__(self, key):
-		id = self._decode_key(key)
+		id_ = self._decode_key(key)
 		Session = sqlahelper.get_session()
 		resource = Session.query(
 			self.__model__
-		).get(id)
+		).get(id_)
 		if resource is None:
 			raise KeyError(key)
 		basepath = self.request.registry.settings.get('upload_basepath')
