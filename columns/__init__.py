@@ -92,7 +92,8 @@ def main(global_config, **settings):
 	config = Configurator(settings=settings)
 	config.include('pyramid_beaker')
 	session_factory = session_factory_from_settings(settings)
-	config.add_static_view('static', settings.get('static_directory'))
+	static_path = settings.get('static_path', 'static')
+	config.add_static_view(static_path, settings.get('static_directory'))
 	config.add_route('favicon.ico', 'favicon.ico')
 	config.add_view(
 		static_view(''.join([settings.get('static_directory'),'favicon.ico']), index='', use_subpath=True),
