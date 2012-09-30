@@ -336,6 +336,7 @@ class Article(Base):
 			'title': self.title,
 			'published': self.published,
 			'content': self.content,
+			'summary': self.summary,
 			'sticky': self.sticky,
 			'permalink': self.permalink,
 			'tags': list(self.tags),

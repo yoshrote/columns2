@@ -1,3 +1,4 @@
+"use strict";
 var User = Backbone.Model.extend({
 	defaults: {
 		name: '',

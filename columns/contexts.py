@@ -48,17 +48,11 @@ class ArticleCollectionContext(SQLACollectionContext):
 	__model__ = 'columns.models:Article'
 	__name__ = 'articles'
 	def index(self, offset=None, limit=None, query_spec=None):
-		def int_or_none(val):
-			try:
-				return int(val)
-			except (TypeError,ValueError):
-				return None
-		
 		Session = sqlahelper.get_session()
 		query = Session.query(self.__model__)
-		drafts = bool(int_or_none(self.request.GET.get('drafts')))
-		query = query.filter(Article.published == None) if drafts \
-			else query.filter(Article.published != None)
+		#query = query.filter(Article.published != None)
+		if query_spec is not None:
+			query = self.build_query(query, query_spec)
 		
 		if 'order' in self.request.GET:
 			order = self.request.GET.get('order')

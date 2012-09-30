@@ -1,3 +1,4 @@
+"use strict";
 var Article = Backbone.Model.extend({
 	defaults: function(){
 		return {
@@ -43,16 +44,19 @@ var ArticleList = Backbone.Collection.extend({
 	model: Article,
 	limit: 20,
 	offset: 0,
+	query_spec: {},
 	sort_order: 'updated.desc',
+	initialize: function(){
+		_.bindAll(this, 'query')
+	},
+	query : function(spec){
+		return this.url+'&q='+encodeURIComponent(JSON.stringify(spec))
+	},
 	comparator: function(article) {
 		return -(new Date(article.get("published")).getTime());
 	},
 	url: function(){
-		if (this.drafts == true){
-			return '/api/articles/?drafts=1&limit='+this.limit+'&offset='+this.offset+'&order='+this.sort_order;
-		} else {
-			return '/api/articles/?limit='+this.limit+'&offset='+this.offset+'&order='+this.sort_order;
-		}
+		return '/api/articles/?limit='+this.limit+'&offset='+this.offset+'&order='+this.sort_order+'&q='+encodeURIComponent(JSON.stringify(this.query_spec));
 	},
     parse : function(resp, xhr) {
       return resp.resources;
@@ -357,6 +361,7 @@ var ArticleCtrl = Backbone.Router.extend({
 	},
 	index: function() {
 		var collection = new ArticleList();
+		collection.query_spec = {'published': {'$ne': null}};
 		var router = this;
 		collection.fetch({
 			success: function(model, resp){
@@ -372,7 +377,7 @@ var ArticleCtrl = Backbone.Router.extend({
 	drafts: function() {
 		var collection = new ArticleList();
 		var router = this;
-		collection.drafts = true;
+		collection.query_spec = {'published': null};
 		collection.fetch({
 			success: function(model, resp){
 				var view = new ArticleIndexView({collection: collection, router: router, lang: router.lang});

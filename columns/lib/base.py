@@ -232,7 +232,7 @@ class BaseViews(object):
 		
 		offset = int_or_none(self.request.GET.get('offset'))
 		limit = int_or_none(self.request.GET.get('limit'))
-		query_spec = self.request.GET.get('q')
+		query_spec = json.loads(self.request.GET.get('q', '{}'))
 		
 		resources = self.context.index(limit=limit, offset=offset, query_spec=query_spec)
 		return {

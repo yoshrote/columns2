@@ -1,3 +1,4 @@
+"use strict";
 var Upload = Backbone.Model.extend({
 	defaults: {
 		title: '',

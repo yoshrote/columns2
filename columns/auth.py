@@ -35,8 +35,8 @@ PERMISSIONS = {
 	'probation': 8,
 	'subscriber': 9
 }
-DEFAULT_PERMISSION = Everyone
 DEFAULT_USER_TYPE = 'subscriber'
+DEFAULT_PERMISSION = [set([Everyone])]
 def get_permissions():
 	return dict([(v,k) for k,v in PERMISSIONS.items()])
 
@@ -183,13 +183,13 @@ def is_author(context):
 
 POLICY_MAP = {
 	None: {
-		'default': set([DEFAULT_PERMISSION]),
+		'default': DEFAULT_PERMISSION,
 		'settings': [minimum_permission('super')],
 		'admin': [minimum_permission('probation')],
 	},
 	'articles': {
-		'index': [minimum_permission('probation')],
-		'show': [minimum_permission('probation')],
+		'index': DEFAULT_PERMISSION, #[minimum_permission('probation')],
+		'show': DEFAULT_PERMISSION, #[minimum_permission('probation')],
 		'new': [minimum_permission('probation')],
 		'create': [minimum_permission('probation')],
 		'edit': [minimum_permission('editor'), is_author],
@@ -198,8 +198,8 @@ POLICY_MAP = {
 		'publish': [minimum_permission('editor'), is_author],
 	},
 	'pages':  {
-		'index': [minimum_permission('probation')],
-		'show': [minimum_permission('probation')],
+		'index': DEFAULT_PERMISSION, #[minimum_permission('probation')],
+		'show': DEFAULT_PERMISSION, #[minimum_permission('probation')],
 		'new': [minimum_permission('admin')],
 		'create': [minimum_permission('admin')],
 		'edit': [minimum_permission('admin')],
@@ -207,8 +207,8 @@ POLICY_MAP = {
 		'delete': [minimum_permission('admin')],
 	},
 	'users':  {
-		'index': [minimum_permission('admin')],
-		'show': [minimum_permission('admin')],
+		'index': DEFAULT_PERMISSION, #[minimum_permission('admin')],
+		'show': DEFAULT_PERMISSION, #[minimum_permission('admin')],
 		'new': [minimum_permission('admin')],
 		'create': [minimum_permission('admin')],
 		'edit': [minimum_permission('admin')],

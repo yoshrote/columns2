@@ -1,3 +1,4 @@
+"use strict";
 var Page = Backbone.Model.extend({
 	defaults: {
 		title: '',
@@ -26,16 +27,17 @@ var PageList = Backbone.Collection.extend({
 	model: Page,
 	limit: 20,
 	offset: 0,
+	query_spec: {},
 	sort_order: 'slug',
 	comparator: function(page) {
 		return page.get("slug");
 	},
 	url: function(){
-		return '/api/pages/?limit='+this.limit+'&offset='+this.offset+'&order='+this.sort_order;
+		return '/api/pages/?limit='+this.limit+'&offset='+this.offset+'&order='+this.sort_order+'&q='+encodeURIComponent(JSON.stringify(this.query_spec));
 	},
     parse : function(resp, xhr) {
       return resp.resources;
-    }
+    },
 });  
 
 var PageView = Backbone.View.extend({ 
