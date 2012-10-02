@@ -207,8 +207,8 @@ POLICY_MAP = {
 		'delete': [minimum_permission('admin')],
 	},
 	'users':  {
-		'index': DEFAULT_PERMISSION, #[minimum_permission('admin')],
-		'show': DEFAULT_PERMISSION, #[minimum_permission('admin')],
+		'index': [minimum_permission('admin')],
+		'show': [minimum_permission('admin')],
 		'new': [minimum_permission('admin')],
 		'create': [minimum_permission('admin')],
 		'edit': [minimum_permission('admin')],
