@@ -149,7 +149,7 @@ APP_STATE = {
 	session: null
 }
 
-main_application = function(){
+main_application = function(options){
 	$('body').append('<div class="loading-modal"></div>');
 	$("body").on({
 		ajaxStart: function() { 
@@ -159,6 +159,7 @@ main_application = function(){
 			$(this).removeClass("loading"); 
 		}
 	});
+	APP_STATE.base_static_url = options.base_static_url;
 	APP_STATE.session = new UserSession();
 	navigation_view = null;
 	APP_STATE.session.fetch().complete(function(){

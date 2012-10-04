@@ -325,7 +325,7 @@ var ArticleFormView = Backbone.View.extend({
 	},
 	show_preview: function(){
 		var tmpl = '\
-		<html><head><link href="/static/stylesheets/styles.css" media="screen" rel="stylesheet" type="text/css">\
+		<html><head><link href="{{base_static_url}}/stylesheets/styles.css" media="screen" rel="stylesheet" type="text/css">\
 		</head><body>\
 		<section id="top-content">\
 		<article class="story-container hentry">\
@@ -342,7 +342,8 @@ var ArticleFormView = Backbone.View.extend({
 		var preview = window.open('');
 		preview.document.write(Mustache.to_html(tmpl, {
 			title: this.$('input[name="title"]').val(),
-			content: this.$('textarea[name="content"]').val()
+			content: this.$('textarea[name="content"]').val(),
+			base_static_url: APP_STATE.base_static_url
 		}))
 	}
 });
