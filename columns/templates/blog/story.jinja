@@ -14,11 +14,6 @@
 			{{ story.published|rfc3339 }}
 		</abbr>
 	</div>
-	{#% if story|story_url('edit') is allowed %}
-	<div class="story-edit">
-		<a href="{{ url('edit_article', id=story.id) }}" title="Edit Article {{ story.id }}">Edit Article</a>
-	</div>
-	{% endif %#}
 	<div class="story-content entry-content">
 		{{ story.content|safe }}
 	</div>
@@ -48,13 +43,13 @@
 {{ super() }}
 <meta name="og:title" content="{{ story.title }}" />
 <meta name="og:description" content="{{ story.metacontent | truncate(length=1000, killwords=False, end='...') }}" />
-<meta name="og:url" content="{{ url('story', permalink=story.permalink, qualified=True) }}" />
+<meta name="og:url" content="{{ 'blog_story'|route_url(permalink=story.permalink) }}" />
 <meta name="description" content="{{ story.metacontent | truncate(length=1000, killwords=False, end='...') }}" />
 <meta name="title" content="{{ story.title }}" />
 {% if story.tags|length > 0 %}
 <meta name="keywords" content="{{ story.tags | join(', ', attribute='label') }}" />
 {% endif %}
-<link rel="canonical" href="{{ url('story', permalink=story.permalink, qualified=True) }}" />
+<link rel="canonical" href="{{ 'blog_story'|route_url(permalink=story.permalink) }}" />
 {% endblock %}
 {% block on_ready %}
 {{ super() }}
