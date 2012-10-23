@@ -2380,13 +2380,13 @@ Redactor.prototype = {
 	},
 	imageSetThumb: function(e)
 	{
-		this._imageSet('<img alt="" src="' + $(e.target).attr('rel') + '" />', true);
+		this._imageSet('<img alt="" src="' + $(e.target).attr('rel') + '" alt="" />', true);
 	},
 	imageUploadCallbackLink: function()
 	{
 		if ($('#redactor_file_link').val() !== '')
 		{
-			var data = '<img src="' + $('#redactor_file_link').val() + '" />';
+			var data = '<img src="' + $('#redactor_file_link').val() + '" alt="" />';
 			this._imageSet(data, true);
 		}
 		else
@@ -2408,7 +2408,7 @@ Redactor.prototype = {
 			if (link !== true)
 			{
 				data = $.parseJSON(json);		
-				html = '<p><img src="' + data.filelink + '" /></p>';
+				html = '<p><img src="' + data.filelink + '" alt="" /></p>';
 			}
 			else
 			{
