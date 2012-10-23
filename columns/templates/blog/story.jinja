@@ -46,32 +46,15 @@
 {% endblock %}
 {% block more_metadata %}	
 {{ super() }}
-<meta name="DC.publisher" content="{{ app_settings('site_name') }}" />
-<meta name="DC.title" content="{{ story.title }}" />
-<meta name="DC.creator.name" content="{{ story.author['name'] }}" />
-<meta name="DC.creator" content="{{ story.author['name'] }}" />
-<meta name="DC.rights.rightsHolder" content="{{ app_settings('site_name') }}" />
-<meta name="DC.language" content="en-US" scheme="rfc1766" />
-{% if story.tags|length > 0 %}{% for tg in story.tags %}
-<meta name="DC.subject" content="{{ tg.label }}" />
-{% endfor %}{% endif %}
-<meta name="DC.rights.license" content="http://creativecommons.org/licenses/by-sa/3.0/" />
-<meta name="DC.license" content="http://creativecommons.org/licenses/by-sa/3.0/" />
-
-<meta name="title" content="{{ story.title }}"/>
-<meta name="description" content="{{ story.metacontent | truncate(length=1000, killwords=False, end='...') }}"/>
+<meta name="og:title" content="{{ story.title }}" />
+<meta name="og:description" content="{{ story.metacontent | truncate(length=1000, killwords=False, end='...') }}" />
+<meta name="og:url" content="{{ url('story', permalink=story.permalink, qualified=True) }}" />
+<meta name="description" content="{{ story.metacontent | truncate(length=1000, killwords=False, end='...') }}" />
+<meta name="title" content="{{ story.title }}" />
 {% if story.tags|length > 0 %}
-<meta name="keywords" content="{{ story.tags | join(', ', attribute='label') }}"/>
+<meta name="keywords" content="{{ story.tags | join(', ', attribute='label') }}" />
 {% endif %}
-{#
-<link rel="pingback" href="{{ url('pingback', qualified=True) }}"/>
-<link rel="canonical" href="{{ url('story', permalink=story.permalink, qualified=True) }}"/>
-<meta name="DC.publisher.url" content="{{ url('main',qualified=True) }}" />
-<meta name="DC.identifier" content="{{ url('story', permalink=story.permalink, qualified=True) }}" />
-<meta name="DC.date.created" scheme="WTN8601" content="{{ story.created|localized_datetime_format }}" />
-<meta name="DC.created" scheme="WTN8601" content="{{ story.created|localized_datetime_format }}" />
-<meta name="DC.date" scheme="WTN8601" content="{{ story.updated|localized_datetime_format }}" />
-#}
+<link rel="canonical" href="{{ url('story', permalink=story.permalink, qualified=True) }}" />
 {% endblock %}
 {% block on_ready %}
 {{ super() }}
