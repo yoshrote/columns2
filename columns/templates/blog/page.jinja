@@ -4,7 +4,8 @@
 {% endblock %}
 {% block more_metadata %}
 {{ super() }}
-<meta name="title" content="{{ app_settings('site_name') }} - {{ page.title }}"/>
+<meta name="og:title" content="{{ app_settings('site_name') }} - {{ page.title }}"/>
+<meta name="og:description" content="{{ app_settings('site_description') }}"/>
 <meta name="description" content="{{ app_settings('site_description') }}"/>
 <meta name="keywords" content="{{ app_settings('site_keywords') }}"/>
 {% endblock %}
