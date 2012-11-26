@@ -406,3 +406,6 @@ a {
     float: left; }
   #stream-pagination a:last-of-type {
     float: right; }
+
+.dsq-comment-header {
+  color: black; }
