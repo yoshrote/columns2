@@ -65,15 +65,3 @@ def imageupload(request):
 	else:
 		return {'filelink': '/'.join([request.registry.settings.get('upload_baseurl'), upload.filepath])}
 
-
-#############################
-## Utility Functions
-#############################
-'''
-def settings_module(mod='core'):
-	Session = sqlahelper.get_session()
-	module = Session.query(Setting).get(mod)
-	setting_dict = getattr(module, 'config', {})
-	return setting_dict
-
-'''

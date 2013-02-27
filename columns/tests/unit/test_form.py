@@ -29,7 +29,6 @@ class SimpleObj(object):
 		self.name = name
 	
 
-
 class TestColanderForm(unittest.TestCase):
 	
 	def test_is_error(self):

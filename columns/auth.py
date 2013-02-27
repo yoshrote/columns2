@@ -112,13 +112,6 @@ def find_user(attribute, value, create=False):
 #############################
 ## Authentication Views 
 #############################
-def settings_module(mod='core'):
-	from .models import Setting
-	Session = sqlahelper.get_session()
-	module = Session.query(Setting).get(mod)
-	setting_dict = getattr(module, 'config', {})
-	return setting_dict
-
 def oid_authentication_callback(context, request, success_dict):
 	"""\
 	success_dict = {

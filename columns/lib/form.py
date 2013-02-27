@@ -416,7 +416,7 @@ class FormRenderer(Renderer):
 		name = name or self.csrf_field
 		
 		token = self.form.request.session.get_csrf_token()
-		if token is None:
+		if token is None: # pragma: no cover
 			token = self.form.request.session.new_csrf_token()
 			
 		return self.hidden(name, value=token)

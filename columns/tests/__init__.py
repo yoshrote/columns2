@@ -1422,6 +1422,13 @@ class TestAuthViews(unittest.TestCase):
 	def test_logout_view(self):
 		from ..auth import logout_view
 		response = logout_view(self.request)
+		self.assertEquals(response.status_int, 302)
+
+	def test_logout_view_xhr(self):
+		from ..auth import logout_view
+		self.request.is_xhr = True
+		response = logout_view(self.request)
+		self.assertEquals(response.status_int, 200)
 
 class TestQuickImageViews(unittest.TestCase):
 	def setUp(self):
