@@ -227,7 +227,7 @@ class BaseViews(object):
 		def int_or_none(val):
 			try:
 				return int(val)
-			except (TypeError,ValueError):
+			except (TypeError, ValueError):
 				return None
 		
 		offset = int_or_none(self.request.GET.get('offset'))
@@ -345,7 +345,7 @@ def includeme(config):
 				'',
 				PATH_PREFIX,
 				info['virtual_path']
-			]).replace('//','/')
+			]).replace('//', '/')
 		
 		collection_class = dotted_resolver.maybe_resolve(collection_context)
 		member_class = dotted_resolver.maybe_resolve(member_context)
@@ -369,8 +369,8 @@ def includeme(config):
 				 view_class_name
 			)
 		
-		setattr(collection_class,'__resource_url__',resource_url)
-		setattr(member_class,'__resource_url__',resource_url)
+		setattr(collection_class, '__resource_url__', resource_url)
+		setattr(member_class, '__resource_url__', resource_url)
 		#base route
 		config.add_route(
 			collection, 
@@ -462,7 +462,7 @@ def includeme(config):
 			view=view_class,
 			attr='create_atom',
 			custom_predicates=[
-				lambda ctxt,req: 'atom' in req.content_type
+				lambda ctxt, req: 'atom' in req.content_type
 			],
 			request_method='POST',
 			permission='create',
@@ -497,7 +497,7 @@ def includeme(config):
 			view=view_class,
 			attr='update_atom',
 			custom_predicates=[
-				lambda ctxt,req: 'atom' in req.content_type
+				lambda ctxt, req: 'atom' in req.content_type
 			],
 			request_method='PUT',
 			permission='update',

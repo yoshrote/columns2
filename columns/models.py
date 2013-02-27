@@ -1,6 +1,5 @@
 # encoding: utf-8
 import sqlahelper
-import copy
 import simplejson
 import re
 import datetime
@@ -11,8 +10,6 @@ from lxml import etree
 from lxml.html.soupparser import fromstring as soup_fromstring
 
 from sqlalchemy.ext.mutable import Mutable
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.exc import StatementError
 from sqlalchemy.types import TypeDecorator
 from sqlalchemy.types import Unicode
 from sqlalchemy.types import UnicodeText
@@ -146,14 +143,14 @@ def initialize_models(config):
 ####################################
 re_slug = re.compile(r'[^a-z0-9\-]')
 def slugify(string):
-	tmp = string.lower().replace(' ','-')
-	return unicode(re_slug.sub(u'',tmp))
+	tmp = string.lower().replace(' ', '-')
+	return unicode(re_slug.sub(u'', tmp))
 
-def create_atom_tag(host,date,value):
+def create_atom_tag(host, date, value):
 	slug = slugify(value)
 	return ':'.join([
 		'tag',
-		','.join([host.partition('/')[0],date.strftime('%Y-%m-%d')]),
+		', '.join([host.partition('/')[0], date.strftime('%Y-%m-%d')]),
 		slug,
 	])
 
@@ -174,7 +171,7 @@ def get_author_data_from_user():
 	session = sqlahelper.get_session()
 	try:
 		user = session.query(User).get(user_id)
-		return {'id':user_id,'name':user.name,'uri':user.profile}
+		return {'id':user_id, 'name':user.name, 'uri':user.profile}
 	except: # pragma: no cover
 		return {}
 
@@ -314,7 +311,7 @@ class Article(Base):
 		tree = soup_fromstring(self.content or '')
 		hr = tree.find(".//hr")
 		if hr is not None:
-			for i,x in enumerate(hr.itersiblings()):
+			for i, x in enumerate(hr.itersiblings()):
 				x.getparent().remove(x)
 				changed = True
 			hr.getparent().remove(hr)
@@ -350,10 +347,10 @@ class Article(Base):
 		self.id = int(key)
 	
 	def update_from_values(self, values):
-		tags = set([Tag(slug=slugify(tag), label=tag) for tag in values.pop('tags',[])])
+		tags = set([Tag(slug=slugify(tag), label=tag) for tag in values.pop('tags', [])])
 		if values.get('published'):
 			values['published'] = values['published'].replace(tzinfo=None)
-		for k,v in values.items():
+		for k, v in values.items():
 			if not k.startswith('_') and hasattr(self, k):
 				setattr(self, k, v)
 		
@@ -439,7 +436,7 @@ class Upload(Base):
 		self.id = int(key)
 	
 	def update_from_values(self, values):
-		for k,v in values.items():
+		for k, v in values.items():
 			if not k.startswith('_') and hasattr(self, k):
 				setattr(self, k, v)
 		
@@ -457,16 +454,16 @@ class Upload(Base):
 		)
 		basename = '_'.join([
 			str(int(time.time())),
-			upload.filename.replace(os.sep,'_')
+			upload.filename.replace(os.sep, '_')
 		])
 		self.filepath = os.path.join(
 			relative_path, basename
 		)
-		absolute_path = os.path.join(basepath,relative_path)
+		absolute_path = os.path.join(basepath, relative_path)
 		if not os.path.exists(absolute_path): # pragma: no cover
 			os.makedirs(absolute_path)
 		full_absolute_path = os.path.join(absolute_path, basename)
-		permanent_file = open(full_absolute_path,'wb')
+		permanent_file = open(full_absolute_path, 'wb')
 		shutil.copyfileobj(upload.file, permanent_file)
 		upload.file.close()
 		permanent_file.close()
@@ -551,7 +548,7 @@ class Page(Base):
 		self.id = int(key)
 	
 	def update_from_values(self, values):
-		for k,v in values.items():
+		for k, v in values.items():
 			if not k.startswith('_') and hasattr(self, k):
 				setattr(self, k, v)
 		
@@ -607,7 +604,7 @@ class User(Base):
 		self.id = int(key)
 	
 	def update_from_values(self, values):
-		for k,v in values.items():
+		for k, v in values.items():
 			if not k.startswith('_') and hasattr(self, k):
 				setattr(self, k, v)
 		
@@ -651,7 +648,7 @@ def trigger_article(mapper, connection, target):
 		slug = slugify(target.title)
 		dt_str = target.published.strftime('%Y-%m-%d')
 		target.permalink = '-'.join([dt_str, slug])
-		target.atom_id = 'tag:{host},{date}:{path}'.format(
+		target.atom_id = 'tag:{host}, {date}:{path}'.format(
 			host=url_host,
 			date=target.published.strftime('%Y-%m-%d'),
 			path=target.permalink,

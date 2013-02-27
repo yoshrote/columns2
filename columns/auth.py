@@ -5,15 +5,13 @@ from pyramid.interfaces import IAuthenticationPolicy
 from pyramid.interfaces import IAuthorizationPolicy
 from pyramid.authentication import CallbackAuthenticationPolicy
 from pyramid.httpexceptions import exception_response
-from pyramid.renderers import render_to_response
 from pyramid.response import Response
-from pyramid.compat import json
 
-from pyramid.security import Allow
-from pyramid.security import Deny
+#from pyramid.security import Allow
+#from pyramid.security import Deny
 from pyramid.security import Everyone
-from pyramid.security import Authenticated
-from pyramid.security import authenticated_userid
+#from pyramid.security import Authenticated
+#from pyramid.security import authenticated_userid
 from pyramid.security import remember
 from pyramid.security import forget
 
@@ -38,7 +36,7 @@ PERMISSIONS = {
 DEFAULT_USER_TYPE = 'subscriber'
 DEFAULT_PERMISSION = [set([Everyone])]
 def get_permissions():
-	return dict([(v,k) for k,v in PERMISSIONS.items()])
+	return dict([(v, k) for k, v in PERMISSIONS.items()])
 
 class SessionAuthenticationPolicy(CallbackAuthenticationPolicy):
 	implements(IAuthenticationPolicy)
@@ -71,7 +69,7 @@ class SessionAuthenticationPolicy(CallbackAuthenticationPolicy):
 		#load user into cache
 		LOG.debug('auth_type = %r', auth_type)
 		if not auth_type:
-			user = find_user('id', principal, create=kw.get('create',False))
+			user = find_user('id', principal, create=kw.get('create', False))
 			if isinstance(user, User):
 				request.session[self.userid_key] = principal
 				request.session['auth.type'] = user.type
@@ -121,21 +119,6 @@ def settings_module(mod='core'):
 	setting_dict = getattr(module, 'config', {})
 	return setting_dict
 
-def xrds_view(request):
-	return Response("""<?xml version="1.0" encoding="UTF-8"?>
-<xrds:XRDS
-	xmlns:xrds="xri://$xrds"
-	xmlns:openid="http://openid.net/xmlns/1.0"
-	xmlns="xri://$xrd*($v*2.0)">
-	<XRD>
-		<Service priority="1">
-			<Type>http://specs.openid.net/auth/2.0/return_to</Type>
-			<URI>{uri}</URI>
-		</Service>
-	</XRD>
-</xrds:XRDS>""".format(uri=request.host_url))
-
-
 def oid_authentication_callback(context, request, success_dict):
 	"""\
 	success_dict = {
@@ -176,7 +159,7 @@ def whoami_view(request):
 #############################
 def minimum_permission(permission_name):
 	val = PERMISSIONS.get(permission_name, DEFAULT_USER_TYPE)
-	return set([k for k,v in PERMISSIONS.items() if v <= val])
+	return set([k for k, v in PERMISSIONS.items() if v <= val])
 
 def is_author(context):
 	return set([context.author_id])
@@ -241,7 +224,7 @@ class AuthorizationPolicy(object):
 	def principals_allowed_by_permission(self, context, permission):
 		if context is None:
 			context_name = None
-		elif getattr(context,'__parent__',None):
+		elif getattr(context, '__parent__', None):
 			context_name = context.__parent__.__name__
 		else:
 			context_name = context.__name__
@@ -300,7 +283,7 @@ def includeme(config):
 	
 	config.add_route('xrds', '/xrds.xml')
 	config.add_view(
-		'columns.auth.xrds_view',
+		renderer='columns:templates/xrds.jinja',
 		route_name='xrds',
 	)
 

@@ -9,13 +9,16 @@ from .models import Setting
 #############################
 ## Other Views 
 #############################
-def admin_view(request):
-	return render_to_response('columns:templates/admin.jinja', {})
-
 def admin_no_slash_view(request): # pragma: no cover
 	raise exception_response(
 		302,
 		location=request.route_url('admin')
+	)
+
+def app_no_slash_view(request): # pragma: no cover
+	raise exception_response(
+		302,
+		location=request.route_url('app')
 	)
 
 def settings_view(request):
@@ -35,7 +38,7 @@ def settings_save(request):
 	module = request.matchdict.get('module')
 	Session = sqlahelper.get_session()
 	setting = Session.query(Setting).get(module)
-	for k,v in request.POST.items():
+	for k, v in request.POST.items():
 		if k == 'save':
 			continue
 		setting.config[k] = v

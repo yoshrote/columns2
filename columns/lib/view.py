@@ -1,7 +1,6 @@
 # encoding: utf-8
 from pyramid.threadlocal import get_current_request
 from pyramid.security import has_permission
-import colander
 import datetime
 import pytz
 from pyramid.compat import json
@@ -45,7 +44,7 @@ def includeme(config):
 #############################################
 def json_renderer_factory(info):
 	def default_encoder(o):
-		if hasattr(o,'to_json'):
+		if hasattr(o, 'to_json'):
 			return o.to_json()
 		elif isinstance(o, datetime.datetime):
 			return o.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -79,8 +78,8 @@ def app_settings(key, mod='core'):
 #############################################
 def static_url_filter(value):
 	request = get_current_request()
-	prefix = request.registry.settings.get('static_directory','')
-	full_value = '/'.join([prefix,value])
+	prefix = request.registry.settings.get('static_directory', '')
+	full_value = '/'.join([prefix, value])
 	try:
 		url = request.static_url(full_value)
 	except ValueError: #pragma: no cover

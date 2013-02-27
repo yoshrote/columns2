@@ -120,7 +120,7 @@ class Form(object):
 			else:
 				params = self.request.params
 			
-		params = NestedVariables.to_python(params,None)
+		params = NestedVariables.to_python(params, None)
 		self.data.update(params)
 		
 		if self.schema:
@@ -369,7 +369,7 @@ class Renderer(object):
 		return id
 	
 	def _get_name(self, name):
-		id = name if not self.id_prefix else '.'.join([self.id_prefix,name])
+		id = name if not self.id_prefix else '.'.join([self.id_prefix, name])
 		return id
 	
 
@@ -466,7 +466,7 @@ class SequenceRenderer(Renderer):
 				
 			errors = [] # to be determined
 			#id_prefix = "%d-" % i
-			id_prefix = "%s-%d" % (self.name,i)
+			id_prefix = "%s-%d" % (self.name, i)
 			
 			yield CompoundRenderer(self.name, d, errors, id_prefix=id_prefix) 
 	

@@ -141,7 +141,8 @@ class TestArticleCollection(unittest.TestCase):
 		sqlahelper.reset()
 		testing.tearDown()
 	
-	def _makeOne(self):
+	@staticmethod
+	def _makeOne():
 		from ..contexts import ArticleCollectionContext
 		request = DummyRequest()
 		return ArticleCollectionContext(request)
@@ -281,7 +282,8 @@ class TestUserCollection(unittest.TestCase):
 		sqlahelper.reset()
 		testing.tearDown()
 	
-	def _makeOne(self):
+	@staticmethod
+	def _makeOne():
 		from ..contexts import UserCollectionContext
 		request = DummyRequest()
 		return UserCollectionContext(request)
@@ -424,7 +426,7 @@ class TestUploadCollection(unittest.TestCase):
 			except OSError:
 				#WTF?
 				pass
-		upload = open(self.upload_path,'wb')
+		upload = open(self.upload_path, 'wb')
 		upload.write('12345')
 		upload.close()
 	
@@ -436,7 +438,8 @@ class TestUploadCollection(unittest.TestCase):
 		if os.path.exists(self.upload_path):
 			os.remove(self.upload_path)
 	
-	def _makeOne(self):
+	@staticmethod
+	def _makeOne():
 		from ..contexts import UploadCollectionContext
 		request = DummyRequest()
 		return UploadCollectionContext(request)
@@ -572,7 +575,8 @@ class TestPageCollection(unittest.TestCase):
 		sqlahelper.reset()
 		testing.tearDown()
 	
-	def _makeOne(self):
+	@staticmethod
+	def _makeOne():
 		from ..contexts import PageCollectionContext
 		request = DummyRequest()
 		return PageCollectionContext(request)
@@ -687,7 +691,7 @@ class TestPageCollection(unittest.TestCase):
 		root = self._makeOne()
 		first = root['1']
 		first.title = 'test_page2'
-		first.slug='test_page2'
+		first.slug = 'test_page2'
 		root['1'] = first
 		
 		first_repeat = root['1']
@@ -793,7 +797,7 @@ class TestUploadMember(unittest.TestCase):
 			except OSError:
 				#WTF?
 				pass
-		upload = open(self.upload_path,'wb')
+		upload = open(self.upload_path, 'wb')
 		upload.write('12345')
 		upload.close()
 	
@@ -877,11 +881,13 @@ class TestArticleView(unittest.TestCase):
 	def tearDown(self):
 		testing.tearDown()
 	
-	def _makeOne(self):
+	@staticmethod
+	def _makeOne():
 		from ..contexts import ArticleViews
 		return ArticleViews
 	
-	def _makeCreateAtom(self):
+	@staticmethod
+	def _makeCreateAtom():
 		xmlstr = """<?xml version="1.0"?>
        <entry xmlns="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app">
          <title>Atom-Powered Robots Run Amok</title>
@@ -894,7 +900,8 @@ class TestArticleView(unittest.TestCase):
        </entry>"""
 		return xmlstr
 	
-	def _makeInvalidCreateAtom(self):
+	@staticmethod
+	def _makeInvalidCreateAtom():
 		xmlstr = """<?xml version="1.0"?>
        <entry xmlns="http://www.w3.org/2005/Atom">
          <id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a</id>
@@ -905,7 +912,8 @@ class TestArticleView(unittest.TestCase):
        </entry>"""
 		return xmlstr
 	
-	def _makeUpdateAtom(self):
+	@staticmethod
+	def _makeUpdateAtom():
 		xmlstr = """<?xml version="1.0"?>
        <entry xmlns="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app">
          <title>Atom-Powered Robots Run Amok</title>
@@ -918,7 +926,8 @@ class TestArticleView(unittest.TestCase):
        </entry>"""
 		return xmlstr
 	
-	def _makeInvalidUpdateAtom(self):
+	@staticmethod
+	def _makeInvalidUpdateAtom():
 		xmlstr = """<?xml version="1.0"?>
        <entry xmlns="http://www.w3.org/2005/Atom">
          <id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a</id>
@@ -940,7 +949,7 @@ class TestArticleView(unittest.TestCase):
 		viewer_cls = self._makeOne()
 		request = DummyRequest()
 		collection = DummyCollection()
-		context = DummyMember(name='1',parent=collection)
+		context = DummyMember(name='1', parent=collection)
 		collection['1'] = DummyMember()
 		viewer = viewer_cls(context, request)
 		response = viewer.show()
@@ -989,7 +998,7 @@ class TestArticleView(unittest.TestCase):
 	def test_update(self):
 		viewer_cls = self._makeOne()
 		collection = DummyCollection()
-		context = DummyMember(name='1',parent=collection)
+		context = DummyMember(name='1', parent=collection)
 		collection['1'] = DummyMember()
 		request = DummyRequest(post={
 			'title': 'next_story',
@@ -1004,7 +1013,7 @@ class TestArticleView(unittest.TestCase):
 	def test_update_invalid(self):
 		viewer_cls = self._makeOne()
 		collection = DummyCollection()
-		context = DummyMember(name='1',parent=collection)
+		context = DummyMember(name='1', parent=collection)
 		collection['1'] = DummyMember()
 		request = DummyRequest()
 		viewer = viewer_cls(context, request)
@@ -1016,7 +1025,7 @@ class TestArticleView(unittest.TestCase):
 	def test_update_atom(self):
 		viewer_cls = self._makeOne()
 		collection = DummyCollection()
-		context = DummyMember(name='1',parent=collection)
+		context = DummyMember(name='1', parent=collection)
 		collection['1'] = DummyMember()
 		request = DummyRequest()
 		request.body = self._makeUpdateAtom()
@@ -1026,7 +1035,7 @@ class TestArticleView(unittest.TestCase):
 	def test_update_atom_invalid(self):
 		viewer_cls = self._makeOne()
 		collection = DummyCollection()
-		context = DummyMember(name='1',parent=collection)
+		context = DummyMember(name='1', parent=collection)
 		collection['1'] = DummyMember()
 		request = DummyRequest()
 		request.body = self._makeInvalidUpdateAtom()
@@ -1037,7 +1046,7 @@ class TestArticleView(unittest.TestCase):
 		viewer_cls = self._makeOne()
 		request = DummyRequest()
 		collection = DummyCollection()
-		context = DummyMember(name='1',parent=collection)
+		context = DummyMember(name='1', parent=collection)
 		collection['1'] = DummyMember()
 		request = DummyRequest()
 		viewer = viewer_cls(context, request)
@@ -1054,7 +1063,8 @@ class TestUserView(unittest.TestCase):
 	def tearDown(self):
 		testing.tearDown()
 	
-	def _makeOne(self):
+	@staticmethod
+	def _makeOne():
 		from ..contexts import UserViews
 		return UserViews
 	
@@ -1069,7 +1079,7 @@ class TestUserView(unittest.TestCase):
 		viewer_cls = self._makeOne()
 		request = DummyRequest()
 		collection = DummyCollection()
-		context = DummyMember(name='1',parent=collection)
+		context = DummyMember(name='1', parent=collection)
 		collection['1'] = DummyMember()
 		viewer = viewer_cls(context, request)
 		response = viewer.show()
@@ -1108,7 +1118,7 @@ class TestUserView(unittest.TestCase):
 	def test_update(self):
 		viewer_cls = self._makeOne()
 		collection = DummyCollection()
-		context = DummyMember(name='1',parent=collection)
+		context = DummyMember(name='1', parent=collection)
 		collection['1'] = DummyMember()
 		request = DummyRequest({
 			'name': 'old_user',
@@ -1123,7 +1133,7 @@ class TestUserView(unittest.TestCase):
 	def test_update_invalid(self):
 		viewer_cls = self._makeOne()
 		collection = DummyCollection()
-		context = DummyMember(name='1',parent=collection)
+		context = DummyMember(name='1', parent=collection)
 		collection['1'] = DummyMember()
 		request = DummyRequest()
 		viewer = viewer_cls(context, request)
@@ -1135,7 +1145,7 @@ class TestUserView(unittest.TestCase):
 	def test_update_atom(self):
 		viewer_cls = self._makeOne()
 		collection = DummyCollection()
-		context = DummyMember(name='1',parent=collection)
+		context = DummyMember(name='1', parent=collection)
 		collection['1'] = DummyMember()
 		request = DummyRequest()
 		viewer = viewer_cls(context, request)
@@ -1145,7 +1155,7 @@ class TestUserView(unittest.TestCase):
 		viewer_cls = self._makeOne()
 		request = DummyRequest()
 		collection = DummyCollection()
-		context = DummyMember(name='1',parent=collection)
+		context = DummyMember(name='1', parent=collection)
 		collection['1'] = DummyMember()
 		request = DummyRequest()
 		viewer = viewer_cls(context, request)
@@ -1163,7 +1173,8 @@ class TestUploadView(unittest.TestCase):
 	def tearDown(self):
 		testing.tearDown()
 	
-	def _makeOne(self):
+	@staticmethod
+	def _makeOne():
 		from ..contexts import UploadViews
 		return UploadViews
 	
@@ -1177,7 +1188,7 @@ class TestUploadView(unittest.TestCase):
 	def test_show(self):
 		viewer_cls = self._makeOne()
 		collection = DummyCollection()
-		context = DummyMember(name='1',parent=collection)
+		context = DummyMember(name='1', parent=collection)
 		collection['1'] = DummyMember()
 		viewer = viewer_cls(context, self.request)
 		response = viewer.show()
@@ -1232,7 +1243,7 @@ class TestUploadView(unittest.TestCase):
 			'title': 'test_update_upload',
 		})
 		collection = DummyCollection()
-		context = DummyMember(name='1',parent=collection)
+		context = DummyMember(name='1', parent=collection)
 		collection['1'] = DummyMember()
 		viewer = viewer_cls(context, request)
 		self.assertRaises(
@@ -1243,7 +1254,7 @@ class TestUploadView(unittest.TestCase):
 	def test_update_invalid(self):
 		viewer_cls = self._makeOne()
 		collection = DummyCollection()
-		context = DummyMember(name='1',parent=collection)
+		context = DummyMember(name='1', parent=collection)
 		collection['1'] = DummyMember()
 		request = DummyRequest()
 		viewer = viewer_cls(context, request)
@@ -1255,7 +1266,7 @@ class TestUploadView(unittest.TestCase):
 	def test_update_atom(self):
 		viewer_cls = self._makeOne()
 		collection = DummyCollection()
-		context = DummyMember(name='1',parent=collection)
+		context = DummyMember(name='1', parent=collection)
 		collection['1'] = DummyMember()
 		request = DummyRequest()
 		viewer = viewer_cls(context, request)
@@ -1265,7 +1276,7 @@ class TestUploadView(unittest.TestCase):
 		viewer_cls = self._makeOne()
 		request = DummyRequest()
 		collection = DummyCollection()
-		context = DummyMember(name='1',parent=collection)
+		context = DummyMember(name='1', parent=collection)
 		collection['1'] = DummyMember()
 		viewer = viewer_cls(context, request)
 		self.assertRaises(
@@ -1281,7 +1292,8 @@ class TestPageView(unittest.TestCase):
 	def tearDown(self):
 		testing.tearDown()
 	
-	def _makeOne(self):
+	@staticmethod
+	def _makeOne():
 		from ..contexts import PageViews
 		return PageViews
 	
@@ -1296,7 +1308,7 @@ class TestPageView(unittest.TestCase):
 		viewer_cls = self._makeOne()
 		request = DummyRequest()
 		collection = DummyCollection()
-		context = DummyMember(name='1',parent=collection)
+		context = DummyMember(name='1', parent=collection)
 		collection['1'] = DummyMember()
 		viewer = viewer_cls(context, request)
 		response = viewer.show()
@@ -1339,7 +1351,7 @@ class TestPageView(unittest.TestCase):
 			'content': '<p>test data</p>',
 		})
 		collection = DummyCollection()
-		context = DummyMember(name='1',parent=collection)
+		context = DummyMember(name='1', parent=collection)
 		collection['1'] = DummyMember()
 		viewer = viewer_cls(context, request)
 		self.assertRaises(
@@ -1350,7 +1362,7 @@ class TestPageView(unittest.TestCase):
 	def test_update_invalid(self):
 		viewer_cls = self._makeOne()
 		collection = DummyCollection()
-		context = DummyMember(name='1',parent=collection)
+		context = DummyMember(name='1', parent=collection)
 		collection['1'] = DummyMember()
 		request = DummyRequest()
 		viewer = viewer_cls(context, request)
@@ -1362,7 +1374,7 @@ class TestPageView(unittest.TestCase):
 	def test_update_atom(self):
 		viewer_cls = self._makeOne()
 		collection = DummyCollection()
-		context = DummyMember(name='1',parent=collection)
+		context = DummyMember(name='1', parent=collection)
 		collection['1'] = DummyMember()
 		request = DummyRequest()
 		viewer = viewer_cls(context, request)
@@ -1372,7 +1384,7 @@ class TestPageView(unittest.TestCase):
 		viewer_cls = self._makeOne()
 		request = DummyRequest()
 		collection = DummyCollection()
-		context = DummyMember(name='1',parent=collection)
+		context = DummyMember(name='1', parent=collection)
 		collection['1'] = DummyMember()
 		viewer = viewer_cls(context, request)
 		self.assertRaises(
@@ -1410,15 +1422,7 @@ class TestAuthViews(unittest.TestCase):
 	def test_logout_view(self):
 		from ..auth import logout_view
 		response = logout_view(self.request)
-	
-	def test_admin_view(self):
-		from ..views import admin_view
-		response = admin_view(self.request)
-	
-	def test_xrds_view(self):
-		from ..auth import xrds_view
-		response = xrds_view(self.request)
-	
+
 class TestQuickImageViews(unittest.TestCase):
 	def setUp(self):
 		settings = {
@@ -1574,7 +1578,7 @@ class TestFunctionalArticle(unittest.TestCase):
 			'static_directory': '.:static',
 			'enable_auth': False,
 		}
-		main_app = main({},**settings)
+		main_app = main({}, **settings)
 		self.app = TestApp(main_app)
 	
 	def tearDown(self):
@@ -1585,25 +1589,25 @@ class TestFunctionalArticle(unittest.TestCase):
 	def test_index_atom(self):
 		response = self.app.get(
 			'/api/articles/', 
-			headers=[('Accept','application/atom+xml')]
+			headers=[('Accept', 'application/atom+xml')]
 		)
 	
 	def test_index_json(self):
 		response = self.app.get(
 			'/api/articles/', 
-			headers=[('Accept','application/json')]
+			headers=[('Accept', 'application/json')]
 		)
 	
 	def test_show_atom(self):
 		response = self.app.get(
 			'/api/articles/1', 
-			headers=[('Accept','application/atom+xml')]
+			headers=[('Accept', 'application/atom+xml')]
 		)
 	
 	def test_show_json(self):
 		response = self.app.get(
 			'/api/articles/1', 
-			headers=[('Accept','application/json')]
+			headers=[('Accept', 'application/json')]
 		)
 		
 
@@ -1615,7 +1619,7 @@ class TestFunctionalUser(unittest.TestCase):
 			'static_directory': '.:static',
 			'enable_auth': False,
 		}
-		main_app = main({},**settings)
+		main_app = main({}, **settings)
 		self.app = TestApp(main_app)
 	
 	def tearDown(self):
@@ -1626,25 +1630,25 @@ class TestFunctionalUser(unittest.TestCase):
 	def test_index_atom(self):
 		response = self.app.get(
 			'/api/users/', 
-			headers=[('Accept','application/atom+xml')]
+			headers=[('Accept', 'application/atom+xml')]
 		)
 	
 	def test_index_json(self):
 		response = self.app.get(
 			'/api/users/', 
-			headers=[('Accept','application/json')]
+			headers=[('Accept', 'application/json')]
 		)
 	
 	def test_show_atom(self):
 		response = self.app.get(
 			'/api/users/1', 
-			headers=[('Accept','application/atom+xml')]
+			headers=[('Accept', 'application/atom+xml')]
 		)
 	
 	def test_show_json(self):
 		response = self.app.get(
 			'/api/users/1', 
-			headers=[('Accept','application/json')]
+			headers=[('Accept', 'application/json')]
 		)
 	
 
@@ -1656,7 +1660,7 @@ class TestFunctionalUpload(unittest.TestCase):
 			'static_directory': '.:static',
 			'enable_auth': False,
 		}
-		main_app = main({},**settings)
+		main_app = main({}, **settings)
 		self.app = TestApp(main_app)
 	
 	def tearDown(self):
@@ -1667,25 +1671,25 @@ class TestFunctionalUpload(unittest.TestCase):
 	def test_index_atom(self):
 		response = self.app.get(
 			'/api/uploads/', 
-			headers=[('Accept','application/atom+xml')]
+			headers=[('Accept', 'application/atom+xml')]
 		)
 	
 	def test_index_json(self):
 		response = self.app.get(
 			'/api/uploads/', 
-			headers=[('Accept','application/json')]
+			headers=[('Accept', 'application/json')]
 		)
 	
 	def test_show_atom(self):
 		response = self.app.get(
 			'/api/uploads/1', 
-			headers=[('Accept','application/atom+xml')]
+			headers=[('Accept', 'application/atom+xml')]
 		)
 	
 	def test_show_json(self):
 		response = self.app.get(
 			'/api/uploads/1', 
-			headers=[('Accept','application/json')]
+			headers=[('Accept', 'application/json')]
 		)
 	
 
@@ -1697,7 +1701,7 @@ class TestFunctionalPage(unittest.TestCase):
 			'static_directory': '.:static',
 			'enable_auth': False,
 		}
-		main_app = main({},**settings)
+		main_app = main({}, **settings)
 		self.app = TestApp(main_app)
 	
 	def tearDown(self):
@@ -1708,25 +1712,25 @@ class TestFunctionalPage(unittest.TestCase):
 	def test_index_atom(self):
 		response = self.app.get(
 			'/api/pages/', 
-			headers=[('Accept','application/atom+xml')]
+			headers=[('Accept', 'application/atom+xml')]
 		)
 	
 	def test_index_json(self):
 		response = self.app.get(
 			'/api/pages/', 
-			headers=[('Accept','application/json')]
+			headers=[('Accept', 'application/json')]
 		)
 	
 	def test_show_atom(self):
 		response = self.app.get(
 			'/api/pages/1', 
-			headers=[('Accept','application/atom+xml')]
+			headers=[('Accept', 'application/atom+xml')]
 		)
 	
 	def test_show_json(self):
 		response = self.app.get(
 			'/api/pages/1', 
-			headers=[('Accept','application/json')]
+			headers=[('Accept', 'application/json')]
 		)
 	
 
@@ -1739,8 +1743,6 @@ class TestAuthenticationPolicy(unittest.TestCase):
 		self.request = DummyRequest()
 		self.config = testing.setUp(request=self.request)
 		self.session = _initTestingDB()
-		from .. import setup_admin_routes
-		self.config.include(setup_admin_routes)
 
 	def tearDown(self):
 		self.session.remove()
@@ -1805,18 +1807,40 @@ class TestAuthenticationPolicy(unittest.TestCase):
 	def test_user_hit(self):
 		policy = self._makePolicy()
 		userid = 1
-		permissions = policy.callback(userid ,self.request)
+		permissions = policy.callback(userid , self.request)
 		self.assert_(1 in permissions)
 		self.assert_('super' in permissions)
 	
 	def test_user_miss(self):
 		policy = self._makePolicy()
 		userid = 234
-		permissions = policy.callback(userid ,self.request)
+		permissions = policy.callback(userid , self.request)
 	
-	def test_oid_callback(self):
+	def test_debug_sessions(self):
+		from ..auth import debug_sessions
+		from pyramid.events import NewResponse
+		self.request.session['_f_'] = "Some error message"
+		event = NewResponse(self.request, None)
+		debug_sessions(event)
+		self.assert_('_f_' not in self.request.session)
+		
+
+
+class TestSessionViews(unittest.TestCase):
+	def setUp(self):
+		self.request = DummyRequest()
+		self.config = testing.setUp(request=self.request)
+		self.session = _initTestingDB()
+		from .. import setup_admin_routes
+		self.config.include('columns.lib.view')
+		self.config.include(setup_admin_routes)
+
+	def tearDown(self):
+		self.session.remove()
+		testing.tearDown()
+	
+	def test_oid_callback_hit(self):
 		from ..auth import oid_authentication_callback
-		self.config.include('columns.blog')
 		success_dict = {
 			'identity_url': 'http://openid.example.com',
 			'ax': {},
@@ -1824,14 +1848,42 @@ class TestAuthenticationPolicy(unittest.TestCase):
 		}
 		response = oid_authentication_callback(None, self.request, success_dict)
 		self.assertEquals(response.status_int, 302)
+
+	def test_oid_callback_miss(self):
+		from ..auth import oid_authentication_callback
+		success_dict = {
+			'identity_url': 'http://fake.example.com',
+			'ax': {},
+			'sreg': {}
+		}
+		response = oid_authentication_callback(None, self.request, success_dict)
+		self.assertEquals(response.status_int, 401)
 	
+	def test_whoami_view(self):
+		from ..auth import whoami_view
+		response = whoami_view(self.request)
+		self.assertDictEqual(response, {})
+
+		self.request.session.update({
+			'auth.userid':'1',
+			'auth.type': 1,
+			'auth.misc': 'foo',
+			'othervar': 'bar'
+		})
+
+		response = whoami_view(self.request)
+		self.assertDictEqual(response, {
+			'id': self.request.session.get('auth.userid'),
+			'user': self.request.session.get('auth.name'),
+			'type': self.request.session.get('auth.type'),
+		})
 
 class TestAuthorizationPolicy(unittest.TestCase):
 	def setUp(self):
 		self.request = DummyRequest()
 		self.config = testing.setUp(request=self.request)
-		self.config.include('columns.setup_admin_routes')
 		self.config.include('columns.lib.view')
+		self.config.include('columns.setup_admin_routes')
 		self.config.include('columns.auth')
 		self.config.add_static_view('static', '.:static/')
 		self.request.registry = self.config.registry
@@ -1867,10 +1919,6 @@ class TestAuthorizationPolicy(unittest.TestCase):
 		return AuthorizationPolicy(POLICY_MAP)
 	
 	
-	def test_xrds_view(self):
-		from ..auth import xrds_view
-		response = xrds_view(self.request)
-	
 	def test_logout_view(self):
 		from ..auth import logout_view
 		response = logout_view(self.request)
@@ -1898,7 +1946,7 @@ class TestAuthorizationPolicy(unittest.TestCase):
 		policy = self._makePolicy()
 		collection = DummyCollection()
 		collection.__name__ = 'test'
-		context = DummyMember(name='1',parent=collection)
+		context = DummyMember(name='1', parent=collection)
 		response = policy.principals_allowed_by_permission(context, 'default')
 		self.assertEquals(response, set([self.DEFAULT_PERMISSION]))
 	
@@ -1906,7 +1954,7 @@ class TestAuthorizationPolicy(unittest.TestCase):
 		policy = self._makePolicy()
 		collection = DummyCollection()
 		collection.__name__ = 'test'
-		context = DummyMember(name='1',parent=collection)
+		context = DummyMember(name='1', parent=collection)
 		context.author_id = 1
 		response = policy.principals_allowed_by_permission(context, 'edit')
 		self.assertEquals(response, set(['admin', 'super', 'editor', 1]))

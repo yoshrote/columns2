@@ -1,7 +1,7 @@
 # encoding: utf-8
 import sqlahelper
 from pyramid.httpexceptions import exception_response
-from pyramid.security import has_permission
+#from pyramid.security import has_permission
 
 from .lib.base import SQLACollectionContext
 from .lib.base import BaseViews
@@ -18,9 +18,9 @@ from .forms import CreateUpload
 from .forms import UpdateUpload
 
 from .models import Article
-from .models import Page
-from .models import Upload
-from .models import User
+#from .models import Page
+#from .models import Upload
+#from .models import User
 
 import os.path
 from lxml import etree
@@ -47,45 +47,6 @@ def UserContextFactory(request):
 class ArticleCollectionContext(SQLACollectionContext):
 	__model__ = 'columns.models:Article'
 	__name__ = 'articles'
-	def index(self, offset=None, limit=None, query_spec=None):
-		Session = sqlahelper.get_session()
-		query = Session.query(self.__model__)
-		#query = query.filter(Article.published != None)
-		if query_spec is not None:
-			query = self.build_query(query, query_spec)
-		
-		if 'order' in self.request.GET:
-			order = self.request.GET.get('order')
-			try:
-				field, direction = order.split('.')
-				query = query.order_by(getattr(getattr(self.__model__, field), direction)())
-			except ValueError:
-				query = query.order_by(getattr(self.__model__, order).asc())
-
-		query = query.offset(offset).limit(limit)
-		
-		results = []
-		for item in query:
-			item.__parent__ = self
-			item.__name__ = item.get_key()
-			results.append(item)
-		
-		return results
-	
-	def __delitem__(self, key):
-		id_ = self._decode_key(key)
-		Session = sqlahelper.get_session()
-		resource = Session.query(
-			Article
-		).get(id_)
-		if resource is None:
-			raise KeyError(key)
-		Session.delete(resource)
-		try:
-			Session.commit()
-		except Exception, ex: # pragma: no cover
-			Session.rollback()
-			raise ex
 
 class PageCollectionContext(SQLACollectionContext):
 	__model__ = 'columns.models:Page'
@@ -104,7 +65,7 @@ class UploadCollectionContext(SQLACollectionContext):
 		if resource is None:
 			raise KeyError(key)
 		basepath = self.request.registry.settings.get('upload_basepath')
-		resource_path = os.path.join(basepath,resource.filepath)
+		resource_path = os.path.join(basepath, resource.filepath)
 		Session.delete(resource)
 		Session.commit()
 		os.remove(resource_path)
@@ -168,12 +129,12 @@ class ArticleViews(BaseViews):
 		if draft_el:
 			values['published'] = draft_el[0].text == "no"
 		values['tags'] = ', '.join([
-			tag.attrib.get('label',tag.attrib.get('term')) for tag in tags_el
+			tag.attrib.get('label', tag.attrib.get('term')) for tag in tags_el
 		])
 		
 		try:
 			values['title'] = unquote(title_el[0].text)
-			formatting = content_el[0].attrib.get('type','text')
+			formatting = content_el[0].attrib.get('type', 'text')
 			values['content'] = \
 				content_el[0].text if formatting == 'xhtml' \
 				else unquote(content_el[0].text)
@@ -212,12 +173,12 @@ class ArticleViews(BaseViews):
 		if draft_el:
 			values['published'] = None
 		values['tags'] = ', '.join([
-			tag.attrib.get('label',tag.attrib.get('term')) for tag in tags_el
+			tag.attrib.get('label', tag.attrib.get('term')) for tag in tags_el
 		])
 		
 		try:
 			values['title'] = unquote(title_el[0].text)
-			formatting = content_el[0].attrib.get('type','text')
+			formatting = content_el[0].attrib.get('type', 'text')
 			values['content'] = \
 				content_el[0].text if formatting == 'xhtml' \
 				else unquote(content_el[0].text)

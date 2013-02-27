@@ -52,7 +52,7 @@ class TestColanderForm(unittest.TestCase):
 		request.method = "POST"
 		
 		form = Form(request, SimpleColanderSchema())
-		form.errors = {"name" : u"Name is missing",}
+		form.errors = {"name" : u"Name is missing", }
 		form.non_field_errors.append(u"Value is missing")
 		self.assert_(form.all_errors() == [
 			u"Value is missing",
@@ -527,7 +527,7 @@ class TestColanderFormRenderer(unittest.TestCase):
 		self.assert_(not(form.validate()))
 		renderer = FormRenderer(form)
 		
-		self.assertEquals(renderer.errors_for('name'),['Required'])
+		self.assertEquals(renderer.errors_for('name'), ['Required'])
 	
 	def test_errorlist(self):
 		
@@ -620,7 +620,7 @@ class TestColanderSequenceRenderer(unittest.TestCase):
 		from ...lib.form import CompoundRenderer
 		request = testing.DummyRequest()
 		form = Form(request, ColanderSchemaWithSequence())
-		form.data = {'name':['bob','alice']}
+		form.data = {'name':['bob', 'alice']}
 		renderer = FormRenderer(form)
 		seq_renderer = renderer.get_sequence('name')
 		for seq in seq_renderer:

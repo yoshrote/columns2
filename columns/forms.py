@@ -40,7 +40,7 @@ class StringList(colander.String):
 			return cstruct
 		return [
 			super(StringList, self).deserialize(node, x).strip() 
-			for x in cstruct.split(",") if x.strip() != ""
+			for x in cstruct.split(", ") if x.strip() != ""
 		]
 	
 
