@@ -1519,6 +1519,16 @@ class TestBlogViews(unittest.TestCase):
 		from ..blog import stream_view
 		response = stream_view(self.request)
 	
+	def test_stream_view_filter_user(self):
+		from ..blog import stream_view
+		self.request.GET['user'] = 'test_user'
+		response = stream_view(self.request)
+	
+	def test_stream_view_filter_tag(self):
+		from ..blog import stream_view
+		self.request.GET['tag'] = 'tag1'
+		response = stream_view(self.request)
+	
 
 class TestSettingsViews(unittest.TestCase):
 	def setUp(self):
@@ -1831,8 +1841,6 @@ class TestAuthenticationPolicy(unittest.TestCase):
 		debug_sessions(event)
 		self.assert_('_f_' not in self.request.session)
 		
-
-
 class TestSessionViews(unittest.TestCase):
 	def setUp(self):
 		self.request = DummyRequest()
