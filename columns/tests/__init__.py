@@ -53,7 +53,7 @@ def _populateDB():
 	)
 	article = Article(
 		title='test_article',
-		content='<p>blah</p>',
+		content='<p>blah</p><hr/><p>blah part 2</p>',
 		published=today,
 		created=today,
 		updated=today,
@@ -159,6 +159,7 @@ class TestArticleCollection(unittest.TestCase):
 		self.assertEqual(first.__class__, Article)
 		self.assertEqual(first.__parent__, root)
 		self.assertEqual(first.__name__, '1')
+		self.assertEqual(first.summary, '<p>blah</p>')
 	
 	def test___getitem__miss(self):
 		root = self._makeOne()
@@ -448,7 +449,6 @@ class TestUserCollection(unittest.TestCase):
 		self.assertEqual(len(items), 1)
 		self.assertEqual(items[0].name, 'test_user')
 		self.assert_(items[0].type < 2)
-	
 	
 
 class TestUploadCollection(unittest.TestCase):

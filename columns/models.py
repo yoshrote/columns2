@@ -313,9 +313,8 @@ class Article(Base):
 		if hr is not None:
 			for i, x in enumerate(hr.itersiblings()):
 				x.getparent().remove(x)
-				changed = True
 			hr.getparent().remove(hr)
-		return etree.tostring(tree)
+		return etree.tostring(tree)[6:-7]
 	
 	@property
 	def metacontent(self):
@@ -351,8 +350,9 @@ class Article(Base):
 		if values.get('published'):
 			values['published'] = values['published'].replace(tzinfo=None)
 		for k, v in values.items():
-			if not k.startswith('_') and hasattr(self, k):
+			if not k.startswith('_') and hasattr(self, k) and k != 'author_id':
 				setattr(self, k, v)
+		alter_contributor_value(self)
 		
 		return self
 	
@@ -648,7 +648,7 @@ def trigger_article(mapper, connection, target):
 		slug = slugify(target.title)
 		dt_str = target.published.strftime('%Y-%m-%d')
 		target.permalink = '-'.join([dt_str, slug])
-		target.atom_id = 'tag:{host}, {date}:{path}'.format(
+		target.atom_id = 'tag:{host},{date}:{path}'.format(
 			host=url_host,
 			date=target.published.strftime('%Y-%m-%d'),
 			path=target.permalink,
