@@ -46,6 +46,11 @@ def _populateDB():
 		type=2,
 		open_id='http://openid2.example.com',
 	)
+	user3 = User(
+		name='test_user3',
+		type=2,
+		open_id='http://openid2.example.com',
+	)
 	article = Article(
 		title='test_article',
 		content='<p>blah</p>',
@@ -303,6 +308,10 @@ class TestUserCollection(unittest.TestCase):
 	def test___getitem__notint(self):
 		root = self._makeOne()
 		self.assertRaises(KeyError, root.__getitem__, 'notint')
+
+	def test___getitem__view(self):
+		root = self._makeOne()
+		self.assertRaises(KeyError, root.__getitem__, 'index')
 	
 	def test_getslice_hit(self):
 		from ..models import User
@@ -386,7 +395,7 @@ class TestUserCollection(unittest.TestCase):
 		from ..models import User
 		root = self._makeOne()
 		model = User(
-			name='test_user3',
+			name='test_user4',
 			type=1,
 			open_id='http://openid.example.com',
 		)
@@ -400,7 +409,7 @@ class TestUserCollection(unittest.TestCase):
 		from ..models import User
 		root = self._makeOne()
 		first = root['1']
-		first.name = 'test_user3'
+		first.name = 'test_user4'
 		first.type = 8
 		root['1'] = first
 		
@@ -408,8 +417,38 @@ class TestUserCollection(unittest.TestCase):
 		self.assertEqual(first_repeat.__class__, User)
 		self.assertEqual(first_repeat.__parent__, root)
 		self.assertEqual(first_repeat.__name__, '1')
-		self.assertEqual(first_repeat.name, 'test_user3')
+		self.assertEqual(first_repeat.name, 'test_user4')
 		self.assertEqual(first_repeat.type, 8)
+	
+	def test_query_order(self):
+		from ..models import User
+		root = self._makeOne()
+		root.request.GET['order'] = 'name'
+		items = root.index()
+		
+		self.assertEqual(len(items), 2)
+		self.assertEqual(items[0].name, 'test_user')
+		self.assertEqual(items[1].name, 'test_user2')
+	
+	def test_query_order_explicit(self):
+		from ..models import User
+		root = self._makeOne()
+		root.request.GET['order'] = 'name.desc'
+		items = root.index()
+		
+		self.assertEqual(len(items), 2)
+		self.assertEqual(items[0].name, 'test_user2')
+		self.assertEqual(items[1].name, 'test_user')
+
+	def test_query_ops(self):
+		from ..models import User
+		root = self._makeOne()
+		items = root.index(query_spec={'name': 'test_user', 'type': {'$lt': 2}})
+		
+		self.assertEqual(len(items), 1)
+		self.assertEqual(items[0].name, 'test_user')
+		self.assert_(items[0].type < 2)
+	
 	
 
 class TestUploadCollection(unittest.TestCase):
@@ -959,7 +998,7 @@ class TestArticleView(unittest.TestCase):
 		request = DummyRequest()
 		context = DummyCollection()
 		viewer = viewer_cls(context, request)
-		response = viewer.show()
+		response = viewer.new()
 	
 	def test_create(self):
 		viewer_cls = self._makeOne()
@@ -1089,7 +1128,7 @@ class TestUserView(unittest.TestCase):
 		request = DummyRequest()
 		context = DummyCollection()
 		viewer = viewer_cls(context, request)
-		response = viewer.show()
+		response = viewer.new()
 	
 	def test_create(self):
 		viewer_cls = self._makeOne()
@@ -1198,7 +1237,7 @@ class TestUploadView(unittest.TestCase):
 		request = DummyRequest()
 		context = DummyCollection()
 		viewer = viewer_cls(context, request)
-		response = viewer.show()
+		response = viewer.new()
 	
 	def test_create(self):
 		viewer_cls = self._makeOne()
@@ -1318,7 +1357,7 @@ class TestPageView(unittest.TestCase):
 		request = DummyRequest()
 		context = DummyCollection()
 		viewer = viewer_cls(context, request)
-		response = viewer.show()
+		response = viewer.new()
 	
 	def test_create(self):
 		viewer_cls = self._makeOne()

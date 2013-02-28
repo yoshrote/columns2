@@ -56,11 +56,11 @@ class SQLACollectionContext(object):
 				length = len(self)
 				key = slice(offset_negative(length, key.start), offset_negative(length, key.stop))
 			return self.index(offset=key.start, limit=key.stop)
-		id = self._decode_key(key)
+		id_ = self._decode_key(key)
 		Session = sqlahelper.get_session()
 		resource = Session.query(
 			self.__model__
-		).get(id)
+		).get(id_)
 		if resource is None:
 			raise KeyError(key)
 			
@@ -79,7 +79,7 @@ class SQLACollectionContext(object):
 		Session.delete(resource)
 		try:
 			Session.commit()
-		except Exception, ex:
+		except Exception, ex: # pragma: no cover
 			Session.rollback()
 			raise ex
 	
@@ -157,7 +157,7 @@ class SQLACollectionContext(object):
 		saved_resource = Session.merge(resource)
 		try:
 			Session.commit()
-		except Exception, ex:
+		except Exception, ex: # pragma: no cover
 			Session.rollback()
 			raise ex
 		else:
@@ -169,7 +169,7 @@ class SQLACollectionContext(object):
 		Session.query(self.__model__).delete()
 		try:
 			Session.commit()
-		except Exception, ex:
+		except Exception, ex: # pragma: no cover
 			Session.rollback()
 			raise ex
 	
@@ -187,12 +187,6 @@ class SQLACollectionContext(object):
 		}
 		for key in specs:
 			value = specs[key]
-			if not hasattr(self.__model__, key):
-				if key == '$or':
-					Session = sqlahelper.get_session()
-					query = query.filter(or_(
-						[self.build_query(Session.query(self.__model__), val) for val in value]
-					))
 			if isinstance(value, dict):
 				for operation, op_value in value.items():
 					query = op_map[operation](key, op_value)

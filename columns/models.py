@@ -58,7 +58,7 @@ class AlwaysUnicodeText(TypeDecorator):
 class MutationList(Mutable, list):
 	@classmethod
 	def coerce(cls, key, value):
-		"Convert plain dictionaries to MutationDict."
+		"Convert plain list to MutationList."
 		if not isinstance(value, MutationList):
 			if isinstance(value, list):
 				return MutationList(value)
