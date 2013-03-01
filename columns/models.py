@@ -358,6 +358,7 @@ class Article(Base):
 		return self
 	
 	def build_from_values(self, values):
+		self.contributors = []
 		return self.update_from_values(values)
 	
 
