@@ -250,7 +250,8 @@ class Article(Base):
 		autoincrement=True
 	)
 	atom_id = Column(
-		AlwaysUnicode(length=255)
+		AlwaysUnicode(length=255),
+		nullable=True,
 	)
 	created = Column(
 		DateTime(),
@@ -357,8 +358,6 @@ class Article(Base):
 		return self
 	
 	def build_from_values(self, values):
-		if values.get('published'):
-			values['published'] = values['published'].replace(tzinfo=None)
 		return self.update_from_values(values)
 	
 
@@ -624,7 +623,6 @@ Article.author = relationship(
 	User,
 	primaryjoin=Article.author_id==User.id,
 	backref=backref('articles', lazy='dynamic'),
-	single_parent=True,
 	uselist=False
 )
 Upload.tags = relationship(
@@ -636,7 +634,6 @@ Upload.tags = relationship(
 Upload.author = relationship(
 	User,
 	backref=backref('uploads', lazy='dynamic'),
-	single_parent=True,
 	uselist=False
 )
 
@@ -644,7 +641,7 @@ Upload.author = relationship(
 ## ORM Event Handlers
 ####################################
 def trigger_article(mapper, connection, target):
-	if target.title and target.published and not target.permalink:
+	if target.published and not target.permalink:
 		slug = slugify(target.title)
 		dt_str = target.published.strftime('%Y-%m-%d')
 		target.permalink = '-'.join([dt_str, slug])
