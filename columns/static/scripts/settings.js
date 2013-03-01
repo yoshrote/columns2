@@ -1,3 +1,21 @@
+UserSession = Backbone.Model.extend({
+	defaults: {
+		id: null,
+		name: '',
+		type: 9,
+	},
+	url: '/auth/whoami',
+	initialize: function(options){
+		_.bindAll(this, 'logged_in', 'settings_access');
+	},
+	logged_in: function(){
+		return _.isNumber(this.get('id')) && _.isNumber(this.get('type')) ? true : false
+	},
+	settings_access: function(){
+		return this.get('type') === 1 ? true : false
+	}
+}); 
+
 ARTICLE_LANGUAGE = {
 	display_date_format: 'LLLL',
 	published_format: 'L LT',
