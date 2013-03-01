@@ -46,11 +46,6 @@ def _populateDB():
 		type=2,
 		open_id='http://openid2.example.com',
 	)
-	user3 = User(
-		name='test_user3',
-		type=2,
-		open_id='http://openid2.example.com',
-	)
 	article = Article(
 		title='test_article',
 		content='<p>blah</p><hr/><p>blah part 2</p>',
@@ -62,6 +57,7 @@ def _populateDB():
 	article.author = user
 	article.tags.add(tag1)
 	article.tags.add(tag2)
+
 	page = Page(title='test_page', slug='test_page', visible=True)
 	upload = Upload(
 		title='test_upload',
@@ -131,6 +127,61 @@ class DummyCollection(testing.DummyResource):
 class DummyRequest(testing.DummyRequest):
 	content_type = 'application/x-form-urlencoded'
 	is_xhr = False
+
+
+########################################
+## Model Collection Tests
+########################################
+class TestArticleModel(unittest.TestCase):
+	def setUp(self):
+		from ..models import Article
+		from ..models import User
+		self.request = DummyRequest()
+		self.config = testing.setUp(request=self.request)
+		self.session = _initTestingDB()
+		today = datetime.datetime.utcnow()
+		unpublished_article = Article(
+			title='unpublished article',
+			content='<p>blah</p><hr/><p>blah part 5</p>',
+			created=today,
+			updated=today,
+		)
+		user = self.session.query(User).first()
+		unpublished_article.author = user
+		unpublished_article = self.session.merge(unpublished_article)
+
+	
+	def tearDown(self):
+		import sqlahelper
+		self.session.remove()
+		sqlahelper.reset()
+		testing.tearDown()
+
+	def test_publish(self):
+		from ..models import Article
+		article = self.session.query(Article).filter(Article.title == 'unpublished article').one()
+		pubtime = datetime.datetime(2013, 2, 28, 13, 14, 15)
+		article.update_from_values({'published': pubtime})
+		updated_article = self.session.merge(article)
+		self.assertEquals(
+			updated_article.permalink, 
+			"2013-02-28-unpublished-article"
+		)
+		self.assertEquals(
+			updated_article.atom_id, 
+			'tag:localhost,2013-02-28:2013-02-28-unpublished-article'
+		)
+
+	def test_add_contributor(self):
+		from ..models import Article
+		self.config.testing_securitypolicy(userid=2)
+		# update the article
+		article = self.session.query(Article).filter(Article.title == 'unpublished article').one()
+		article.update_from_values({'title': 'foobar'})
+		updated_article = self.session.merge(article)
+		self.assertEquals(len(updated_article.contributors), 1)
+		self.assertDictEqual(updated_article.contributors[0], {'uri': None, 'id': 2, 'name': u'test_user2'})
+
 
 ########################################
 ## Context Collection Tests
