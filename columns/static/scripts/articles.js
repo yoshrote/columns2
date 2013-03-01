@@ -260,7 +260,7 @@ var ArticleFormView = Backbone.View.extend({
 		{{/can_edit}}\
 		';
 		$(this.el).html(Mustache.to_html(tmpl, template_vars));
-		$(".redactor").redactor({ fixed: true, imageUpload: '/api/imageupload' });
+		$(".redactor").redactor({ fixed: true, imageUpload: '/admin/imageupload' });
 	},
 	save_publish: function(){
 		$('input[name="published"]').val(moment.utc().format('YYYY-MM-DDTHH:mm:ss\\Z'));

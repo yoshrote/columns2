@@ -203,7 +203,7 @@ var PageFormView = Backbone.View.extend({
 		{{/is_new}}\
 		';
 		$(this.el).html(Mustache.to_html(tmpl, template_vars));
-		$(".redactor").redactor({ fixed: true, imageUpload: '/api/imageupload' });
+		$(".redactor").redactor({ fixed: true, imageUpload: '/admin/imageupload' });
 	},
 	save_form: function(){
 		var router = this.router;

@@ -179,6 +179,7 @@ label{font-weight:bold;}
 .new-link{
 	display:inline-block;
 }
+$form_width: 640px;
 #save-form{
 	text-align:left;
 	vertical-align:bottom;
@@ -188,7 +189,7 @@ label{font-weight:bold;}
 		color:black;
 	}
 	input[type=text]{
-		width:410px;
+		width:$form_width;
 	}
 	textarea{ width:100%;}
 	input[type=submit],input[type=button],button{
@@ -199,18 +200,18 @@ label{font-weight:bold;}
 	label{text-align:left;width:150px;}
 	fieldset{ border:none;}
 	.field-n-label{
-		width: 580px;
+		width: $form_width;
 		margin: 5px;
 		line-height: 1.5em;
 	}
 	.field-n-wide-label{
-		width: 580px;
+		width: $form_width;
 		margin: 5px;
 		margin-top: 15px;
 		line-height: 1.5em;
 		label{
 			display: block;
-			width: 580px;
+			width: $form_width;
 		}
 		&:first{
 			margin-top: 5px;

@@ -167,7 +167,7 @@ label {
     background-color: white;
     color: black; }
   #save-form input[type=text] {
-    width: 410px; }
+    width: 640px; }
   #save-form textarea {
     width: 100%; }
   #save-form input[type=submit], #save-form input[type=button], #save-form button {
@@ -181,17 +181,17 @@ label {
   #save-form fieldset {
     border: none; }
   #save-form .field-n-label {
-    width: 580px;
+    width: 640px;
     margin: 5px;
     line-height: 1.5em; }
   #save-form .field-n-wide-label {
-    width: 580px;
+    width: 640px;
     margin: 5px;
     margin-top: 15px;
     line-height: 1.5em; }
     #save-form .field-n-wide-label label {
       display: block;
-      width: 580px; }
+      width: 640px; }
     #save-form .field-n-wide-label:first {
       margin-top: 5px; }
 
