@@ -245,7 +245,7 @@ class BaseViews(object):
 				body=unicode(ex),
 			)
 		except NotImplementedError: # pragma: no cover
-			raise exception_reponse(501)
+			raise exception_response(501)
 		else:
 			new_resource = self.context.new()
 			new_resource = new_resource.build_from_values(values)
@@ -259,7 +259,7 @@ class BaseViews(object):
 		try:
 			values = self._create_values_from_atom()
 		except NotImplementedError: # pragma: no cover
-			raise exception_reponse(501)
+			raise exception_response(501)
 		except InvalidResource, ex:
 			raise exception_response(
 				400,
@@ -288,7 +288,7 @@ class BaseViews(object):
 		try:
 			values = self._update_values_from_request()
 		except NotImplementedError: # pragma: no cover
-			raise exception_reponse(501)
+			raise exception_response(501)
 		except InvalidResource, ex:
 			raise exception_response(
 				400,
@@ -313,7 +313,7 @@ class BaseViews(object):
 				detail=unicode(ex)
 			)
 		except NotImplementedError: # pragma: no cover
-			raise exception_reponse(501)
+			raise exception_response(501)
 		else:
 			self.context = self.context.update_from_values(values)
 			collection[self.context.__name__] = self.context
