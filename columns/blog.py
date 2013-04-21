@@ -20,6 +20,7 @@ def page_view(request):
 			filter(Page.visible == True).\
 			one()
 	except InvalidRequestError:
+		Session.rollback()
 		raise exception_response(404)
 	else:
 		return render_to_response(
@@ -37,6 +38,7 @@ def story_view(request):
 			filter(Article.published != None).\
 			one()
 	except InvalidRequestError:
+		Session.rollback()
 		raise exception_response(404)
 	else:
 		return render_to_response(
@@ -55,6 +57,7 @@ def stream_view(request):
 		page_number = 0
 	
 	Session = sqlahelper.get_session()
+	Session.rollback()
 	query = Session.query(Article)
 	if tag:
 		query = query.filter(Article.tags.any(Tag.slug == tag))
