@@ -10,7 +10,7 @@ from zope.interface import implements
 from zope.interface.verify import verifyClass
 
 dotted_resolver = DottedNameResolver(None)
-from sqlalchemy import not_, or_
+from sqlalchemy import not_
 class InvalidResource(Exception):
 	def __init__(self, form):
 		self.form = form
@@ -76,12 +76,12 @@ class SQLACollectionContext(object):
 		).get(id)
 		if resource is None:
 			raise KeyError(key)
-		Session.delete(resource)
 		try:
+			Session.delete(resource)
 			Session.commit()
-		except Exception, ex: # pragma: no cover
+		except: # pragma: no cover
 			Session.rollback()
-			raise ex
+			raise
 	
 	def __setitem__(self, key, value):
 		Session = sqlahelper.get_session()
@@ -89,9 +89,9 @@ class SQLACollectionContext(object):
 		try:
 			saved_resource = Session.merge(value)
 			Session.commit()
-		except Exception, ex: # pragma: no cover
+		except: # pragma: no cover
 			Session.rollback()
-			raise ex
+			raise
 		else:
 			saved_resource.__name__ = saved_resource.get_key()
 			return saved_resource
@@ -154,24 +154,24 @@ class SQLACollectionContext(object):
 	
 	def add(self, resource):
 		Session = sqlahelper.get_session()
-		saved_resource = Session.merge(resource)
 		try:
+			saved_resource = Session.merge(resource)
 			Session.commit()
-		except Exception, ex: # pragma: no cover
+		except: # pragma: no cover
 			Session.rollback()
-			raise ex
+			raise
 		else:
 			saved_resource.__name__ = saved_resource.get_key()
 			return saved_resource
 	
 	def clear(self):
 		Session = sqlahelper.get_session()
-		Session.query(self.__model__).delete()
 		try:
+			Session.query(self.__model__).delete()
 			Session.commit()
-		except Exception, ex: # pragma: no cover
+		except: # pragma: no cover
 			Session.rollback()
-			raise ex
+			raise
 	
 	def build_query(self, query, specs):
 		"parses a specs dictionary (formatted like a mongo query) into a SQLAlchemy query"

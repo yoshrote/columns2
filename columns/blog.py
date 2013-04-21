@@ -3,7 +3,7 @@ from pyramid.renderers import render_to_response
 from pyramid.httpexceptions import exception_response
 
 import sqlahelper
-from sqlalchemy.exc import InvalidRequestError
+from sqlalchemy.exc import SQLAlchemyError
 from .models import Article
 from .models import Page
 from .models import Tag
@@ -19,7 +19,7 @@ def page_view(request):
 			filter(Page.slug == request.matchdict.get('page')).\
 			filter(Page.visible == True).\
 			one()
-	except InvalidRequestError:
+	except SQLAlchemyError:
 		Session.rollback()
 		raise exception_response(404)
 	else:
@@ -37,7 +37,7 @@ def story_view(request):
 			).\
 			filter(Article.published != None).\
 			one()
-	except InvalidRequestError:
+	except SQLAlchemyError:
 		Session.rollback()
 		raise exception_response(404)
 	else:

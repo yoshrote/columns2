@@ -5,7 +5,6 @@ from pyramid.interfaces import IAuthenticationPolicy
 from pyramid.interfaces import IAuthorizationPolicy
 from pyramid.authentication import CallbackAuthenticationPolicy
 from pyramid.httpexceptions import exception_response
-from pyramid.response import Response
 
 #from pyramid.security import Allow
 #from pyramid.security import Deny
@@ -17,7 +16,7 @@ from pyramid.security import forget
 
 import logging
 import sqlahelper
-from sqlalchemy.exc import InvalidRequestError
+from sqlalchemy.exc import SQLAlchemyError
 from .models import User
 
 LOG = logging.getLogger(__name__)
@@ -93,7 +92,8 @@ def find_user(attribute, value, create=False):
 	try:
 		LOG.debug('Looking for user where %s=%r', attribute, value)
 		user = DBSession.query(User).filter(getattr(User, attribute)==value).one()
-	except InvalidRequestError:
+	except SQLAlchemyError:
+		DBSession.rollback()
 		if create:
 			# this is a new user
 			user = User()
@@ -120,13 +120,17 @@ def oid_authentication_callback(context, request, success_dict):
 		'sreg': {}
 	}
 	"""
+	LOG.debug("looking for user")
 	user = find_user('open_id', success_dict['identity_url'])
 	if user:
+		LOG.info("found user")
 		# use standard auth callback to populate session
 		#authentication_callback(user.id, request)
 		remember(request, user.id)
+		LOG.debug("redirecting to %s", request.route_url('admin'))
 		return exception_response(302, location=request.route_url('admin'))
 	else:
+		LOG.debug("invalid login")
 		error_response = "This login is not authorized.\nEmail this to josh@nerdblerp.com: '%s'" % success_dict['identity_url']
 		return exception_response(401, body=error_response)
 	
