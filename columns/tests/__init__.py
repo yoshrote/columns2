@@ -969,58 +969,6 @@ class TestArticleView(unittest.TestCase):
 		from ..contexts import ArticleViews
 		return ArticleViews
 	
-	@staticmethod
-	def _makeCreateAtom():
-		xmlstr = """<?xml version="1.0"?>
-       <entry xmlns="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app">
-         <title>Atom-Powered Robots Run Amok</title>
-         <id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a</id>
-         <updated>2003-12-13T18:30:02Z</updated>
-         <app:draft>yes</app:draft>
-         <author><name>John Doe</name></author>
-         <content>Some text.</content>
-         <category term="tag1" label="Tag1" />
-       </entry>"""
-		return xmlstr
-	
-	@staticmethod
-	def _makeInvalidCreateAtom():
-		xmlstr = """<?xml version="1.0"?>
-       <entry xmlns="http://www.w3.org/2005/Atom">
-         <id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a</id>
-         <updated>2003-12-13T18:30:02Z</updated>
-         <author><name>John Doe</name></author>
-         <content>Some text.</content>
-         <category term="tag1" label="Tag1" />
-       </entry>"""
-		return xmlstr
-	
-	@staticmethod
-	def _makeUpdateAtom():
-		xmlstr = """<?xml version="1.0"?>
-       <entry xmlns="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app">
-         <title>Atom-Powered Robots Run Amok</title>
-         <id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a</id>
-         <updated>2003-12-13T18:30:02Z</updated>
-         <app:draft>no</app:draft>
-         <author><name>John Doe</name></author>
-         <content>Some text.</content>
-         <category term="tag1" label="Tag1" />
-       </entry>"""
-		return xmlstr
-	
-	@staticmethod
-	def _makeInvalidUpdateAtom():
-		xmlstr = """<?xml version="1.0"?>
-       <entry xmlns="http://www.w3.org/2005/Atom">
-         <id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a</id>
-         <updated>2003-12-13T18:30:02Z</updated>
-         <author><name>John Doe</name></author>
-         <content>Some text.</content>
-         <category term="tag1" label="Tag1" />
-       </entry>"""
-		return xmlstr
-	
 	def test_index(self):
 		viewer_cls = self._makeOne()
 		request = DummyRequest()
