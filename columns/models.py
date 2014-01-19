@@ -137,28 +137,23 @@ url_host = None
 def initialize_models(config):
 	global url_host
 	url_host = config['hostname']
-	engine = sqlahelper.get_engine()
-	Base.metadata.create_all(engine)
 
-def db_session_request(request):
+def db_session_request(event):
     session = sqlahelper.get_session()
     def cleanup(_):
     	try:
     		session.rollback()
     	except:
     		pass
-    request.add_finished_callback(cleanup)
+    event.request.add_finished_callback(cleanup)
     return session
 
 def setup_models(config):
-	if config.registry.settings.get('test_engine'):
-		from columns.tests import _initTestingDB
-		_initTestingDB()
-	else: # pragma: no cover
-		engine = engine_from_config(config.settings, 'sqlalchemy.')
-		sqlahelper.add_engine(engine)
-		sqlahelper.get_session().configure(extension=None)
-		config.add_request_method(callable=db_session_request, name='db_session', reify=True)
+	engine = engine_from_config(config.registry.settings, 'sqlalchemy.')
+	sqlahelper.add_engine(engine)
+	sqlahelper.get_session().configure(extension=None)
+	Base.metadata.create_all(engine, checkfirst=True)
+	config.add_subscriber(db_session_request, 'pyramid.events.NewRequest')
 
 
 ####################################

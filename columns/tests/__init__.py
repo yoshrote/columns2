@@ -1,12 +1,10 @@
 # encoding: utf-8
 import unittest
 from pyramid import testing
-from pyramid.request import Request
 from webtest import TestApp
 from pyramid.httpexceptions import HTTPOk
 from pyramid.httpexceptions import HTTPCreated
 from pyramid.httpexceptions import HTTPFound
-from pyramid.httpexceptions import HTTPNotImplemented
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPClientError
 # SQLACollectionContext.__setitem__
@@ -47,6 +45,7 @@ def _populateDB():
 		open_id='http://openid2.example.com',
 	)
 	article = Article(
+		id=1,
 		title='test_article',
 		content='<p>blah</p><hr/><p>blah part 2</p>',
 		published=today,
@@ -85,15 +84,21 @@ def _populateSettings(settings_dict):
 	
 	Session.commit()
 
-def _initTestingDB():
+SETTINGS = {
+	'hostname': 'localhost',
+	'sqlalchemy.url':'sqlite://',
+	'upload_basepath':'test_uploads',
+	'static_directory':'.:static',
+	'upload_baseurl': 'http://localhost:6543/uploads',
+}
+
+def _initTestingDB(config):
 	import sqlahelper
-	from sqlalchemy import create_engine
-	from sqlalchemy.exc import IntegrityError
+	from ..models import setup_models
 	from ..models import initialize_models
-	sqlahelper.add_engine(create_engine('sqlite://'))
-	sqlahelper.get_session().configure(extension=None)
-	session = sqlahelper.get_session()
 	initialize_models({'hostname':'localhost'})
+	setup_models(config)
+	session = sqlahelper.get_session()
 	_populateDB()
 	return session
 
@@ -137,8 +142,8 @@ class TestArticleModel(unittest.TestCase):
 		from ..models import Article
 		from ..models import User
 		self.request = DummyRequest()
-		self.config = testing.setUp(request=self.request)
-		self.session = _initTestingDB()
+		self.config = testing.setUp(request=self.request, settings=SETTINGS)
+		self.session = _initTestingDB(self.config)
 		today = datetime.datetime.utcnow()
 		unpublished_article = Article(
 			title='unpublished article',
@@ -188,8 +193,8 @@ class TestArticleModel(unittest.TestCase):
 ########################################
 class TestArticleCollection(unittest.TestCase):
 	def setUp(self):
-		self.config = testing.setUp()
-		self.session = _initTestingDB()
+		self.config = testing.setUp(settings=SETTINGS)
+		self.session = _initTestingDB(self.config)
 	
 	def tearDown(self):
 		import sqlahelper
@@ -330,8 +335,8 @@ class TestArticleCollection(unittest.TestCase):
 
 class TestUserCollection(unittest.TestCase):
 	def setUp(self):
-		self.config = testing.setUp()
-		self.session = _initTestingDB()
+		self.config = testing.setUp(settings=SETTINGS)
+		self.session = _initTestingDB(self.config)
 	
 	def tearDown(self):
 		import sqlahelper
@@ -473,7 +478,6 @@ class TestUserCollection(unittest.TestCase):
 		self.assertEqual(first_repeat.type, 8)
 	
 	def test_query_order(self):
-		from ..models import User
 		root = self._makeOne()
 		root.request.GET['order'] = 'name'
 		items = root.index()
@@ -483,7 +487,6 @@ class TestUserCollection(unittest.TestCase):
 		self.assertEqual(items[1].name, 'test_user2')
 	
 	def test_query_order_explicit(self):
-		from ..models import User
 		root = self._makeOne()
 		root.request.GET['order'] = 'name.desc'
 		items = root.index()
@@ -493,7 +496,6 @@ class TestUserCollection(unittest.TestCase):
 		self.assertEqual(items[1].name, 'test_user')
 
 	def test_query_ops(self):
-		from ..models import User
 		root = self._makeOne()
 		items = root.index(query_spec={'name': 'test_user', 'type': {'$lt': 2}})
 		
@@ -504,10 +506,8 @@ class TestUserCollection(unittest.TestCase):
 
 class TestUploadCollection(unittest.TestCase):
 	def setUp(self):
-		self.config = testing.setUp(
-			settings={'upload_basepath':'test_uploads'}
-		)
-		self.session = _initTestingDB()
+		self.config = testing.setUp(settings=SETTINGS)
+		self.session = _initTestingDB(self.config)
 		self.upload_path = 'test_uploads/test/dir/upload.txt'
 		upload_dir = os.path.dirname(self.upload_path)
 		if not os.path.exists(upload_dir): # pragma: no cover
@@ -656,8 +656,8 @@ class TestUploadCollection(unittest.TestCase):
 
 class TestPageCollection(unittest.TestCase):
 	def setUp(self):
-		self.config = testing.setUp()
-		self.session = _initTestingDB()
+		self.config = testing.setUp(settings=SETTINGS)
+		self.session = _initTestingDB(self.config)
 	
 	def tearDown(self):
 		import sqlahelper
@@ -799,18 +799,16 @@ class TestPageCollection(unittest.TestCase):
 class TestArticleMember(unittest.TestCase):
 	def setUp(self):
 		self.request = DummyRequest()
-		self.config = testing.setUp(request=self.request)
+		self.config = testing.setUp(request=self.request, settings=SETTINGS)
 		self.config.testing_securitypolicy(userid=2)
-		self.session = _initTestingDB()
+		self.session = _initTestingDB(self.config)
 	
 	def tearDown(self):
 		self.session.remove()
 		testing.tearDown()
 	
 	def _makeOne(self):
-		from ..contexts import ArticleCollectionContext
-		from ..models import Article
-		
+		from ..contexts import ArticleCollectionContext		
 		collection = ArticleCollectionContext(self.request)
 		return collection.index()[0]
 	
@@ -838,8 +836,8 @@ class TestArticleMember(unittest.TestCase):
 
 class TestUserMember(unittest.TestCase):
 	def setUp(self):
-		self.config = testing.setUp()
-		self.session = _initTestingDB()
+		self.config = testing.setUp(settings=SETTINGS)
+		self.session = _initTestingDB(self.config)
 	
 	def tearDown(self):
 		self.session.remove()
@@ -847,7 +845,6 @@ class TestUserMember(unittest.TestCase):
 	
 	def _makeOne(self):
 		from ..contexts import UserCollectionContext
-		from ..models import User
 		request = DummyRequest()
 		collection = UserCollectionContext(request)
 		return collection.index()[0]
@@ -875,10 +872,8 @@ class TestUserMember(unittest.TestCase):
 
 class TestUploadMember(unittest.TestCase):
 	def setUp(self):
-		self.config = testing.setUp(
-			settings={'upload_basepath':'test_uploads'}
-		)
-		self.session = _initTestingDB()
+		self.config = testing.setUp(settings=SETTINGS)
+		self.session = _initTestingDB(self.config)
 		self.upload_path = 'test_uploads/test/dir/upload.txt'
 		upload_dir = os.path.dirname(self.upload_path)
 		if not os.path.exists(upload_dir): # pragma: no cover
@@ -899,7 +894,6 @@ class TestUploadMember(unittest.TestCase):
 	
 	def _makeOne(self):
 		from ..contexts import UploadCollectionContext
-		from ..models import Upload
 		request = DummyRequest()
 		collection = UploadCollectionContext(request)
 		return collection.index()[0]
@@ -929,8 +923,8 @@ class TestUploadMember(unittest.TestCase):
 
 class TestPageMember(unittest.TestCase):
 	def setUp(self):
-		self.config = testing.setUp()
-		self.session = _initTestingDB()
+		self.config = testing.setUp(settings=SETTINGS)
+		self.session = _initTestingDB(self.config)
 	
 	def tearDown(self):
 		self.session.remove()
@@ -938,7 +932,6 @@ class TestPageMember(unittest.TestCase):
 	
 	def _makeOne(self):
 		from ..contexts import PageCollectionContext
-		from ..models import Page
 		request = DummyRequest()
 		collection = PageCollectionContext(request)
 		return collection.index()[0]
@@ -966,7 +959,7 @@ class TestPageMember(unittest.TestCase):
 ########################################
 class TestArticleView(unittest.TestCase):
 	def setUp(self):
-		self.config = testing.setUp()
+		self.config = testing.setUp(settings=SETTINGS)
 	
 	def tearDown(self):
 		testing.tearDown()
@@ -1112,7 +1105,7 @@ class TestArticleView(unittest.TestCase):
 
 class TestUserView(unittest.TestCase):
 	def setUp(self):
-		self.config = testing.setUp()
+		self.config = testing.setUp(settings=SETTINGS)
 	
 	def tearDown(self):
 		testing.tearDown()
@@ -1206,7 +1199,7 @@ class TestUserView(unittest.TestCase):
 class TestUploadView(unittest.TestCase):
 	def setUp(self):
 		self.request = DummyRequest()
-		self.config = testing.setUp()
+		self.config = testing.setUp(settings=SETTINGS)
 	
 	def tearDown(self):
 		testing.tearDown()
@@ -1309,7 +1302,7 @@ class TestUploadView(unittest.TestCase):
 
 class TestPageView(unittest.TestCase):
 	def setUp(self):
-		self.config = testing.setUp()
+		self.config = testing.setUp(settings=SETTINGS)
 	
 	def tearDown(self):
 		testing.tearDown()
@@ -1401,14 +1394,11 @@ class TestPageView(unittest.TestCase):
 
 class TestAuthViews(unittest.TestCase):
 	def setUp(self):
-		settings = {
-			'static_directory':'.:static',
-			'upload_basepath':'test_uploads'
-		}
+
 		self.request = DummyRequest()
 		self.config = testing.setUp(
 			request=self.request,
-			settings=settings
+			settings=SETTINGS
 		)
 		self.config.include('columns.lib.view')
 		self.config.include('columns.auth')
@@ -1416,10 +1406,10 @@ class TestAuthViews(unittest.TestCase):
 		self.config.include('columns.setup_admin_routes')
 		self.config.add_static_view(
 			'static', 
-			settings.get('static_directory')
+			SETTINGS.get('static_directory')
 		)
 		self.request.registry = self.config.registry
-		self.session = _initTestingDB()
+		self.session = _initTestingDB(self.config)
 	
 	def tearDown(self):
 		self.session.remove()
@@ -1438,15 +1428,10 @@ class TestAuthViews(unittest.TestCase):
 
 class TestQuickImageViews(unittest.TestCase):
 	def setUp(self):
-		settings = {
-			'static_directory':'.:static',
-			'upload_basepath':'test_uploads',
-			'upload_baseurl': 'http://localhost:6543/uploads'
-		}
 		self.request = DummyRequest()
 		self.config = testing.setUp(
 			request=self.request,
-			settings=settings
+			settings=SETTINGS
 		)
 		self.config.include('columns.lib.view')
 		self.config.include('columns.auth')
@@ -1454,10 +1439,10 @@ class TestQuickImageViews(unittest.TestCase):
 		self.config.include('columns.setup_admin_routes')
 		self.config.add_static_view(
 			'static', 
-			settings.get('static_directory')
+			SETTINGS.get('static_directory')
 		)
 		self.request.registry = self.config.registry
-		self.session = _initTestingDB()
+		self.session = _initTestingDB(self.config)
 	
 	def tearDown(self):
 		self.session.remove()
@@ -1478,13 +1463,10 @@ class TestQuickImageViews(unittest.TestCase):
 
 class TestBlogViews(unittest.TestCase):
 	def setUp(self):
-		settings = {
-			'static_directory':'.:static',
-		}
 		self.request = DummyRequest()
 		self.config = testing.setUp(
 			request=self.request,
-			settings=settings
+			settings=SETTINGS
 		)
 		self.config.include('columns.lib.view')
 		self.config.include('columns.auth')
@@ -1492,10 +1474,10 @@ class TestBlogViews(unittest.TestCase):
 		self.config.include('columns.setup_admin_routes')
 		self.config.add_static_view(
 			'static', 
-			settings.get('static_directory')
+			SETTINGS.get('static_directory')
 		)
 		self.request.registry = self.config.registry
-		self.session = _initTestingDB()
+		self.session = _initTestingDB(self.config)
 	
 	def tearDown(self):
 		self.session.remove()
@@ -1538,13 +1520,10 @@ class TestBlogViews(unittest.TestCase):
 
 class TestSettingsViews(unittest.TestCase):
 	def setUp(self):
-		settings = {
-			'static_directory':'.:static',
-		}
 		self.request = DummyRequest()
 		self.config = testing.setUp(
 			request=self.request,
-			settings=settings
+			settings=SETTINGS
 		)
 		self.config.include('columns.lib.view')
 		self.config.include('columns.auth')
@@ -1552,10 +1531,10 @@ class TestSettingsViews(unittest.TestCase):
 		self.config.include('columns.setup_admin_routes')
 		self.config.add_static_view(
 			'static', 
-			settings.get('static_directory')
+			SETTINGS.get('static_directory')
 		)
 		self.request.registry = self.config.registry
-		self.session = _initTestingDB()
+		self.session = _initTestingDB(self.config)
 	
 	def tearDown(self):
 		self.session.remove()
@@ -1601,8 +1580,10 @@ class TestFunctionalArticle(unittest.TestCase):
 			'static_directory': '.:static',
 			'enable_auth': False,
 		}
+		settings.update(SETTINGS)
 		main_app = main({}, **settings)
 		self.app = TestApp(main_app)
+		_populateDB()
 	
 	def tearDown(self):
 		import sqlahelper
@@ -1630,8 +1611,10 @@ class TestFunctionalUser(unittest.TestCase):
 			'static_directory': '.:static',
 			'enable_auth': False,
 		}
+		settings.update(SETTINGS)
 		main_app = main({}, **settings)
 		self.app = TestApp(main_app)
+		_populateDB()
 	
 	def tearDown(self):
 		import sqlahelper
@@ -1659,8 +1642,10 @@ class TestFunctionalUpload(unittest.TestCase):
 			'static_directory': '.:static',
 			'enable_auth': False,
 		}
+		settings.update(SETTINGS)
 		main_app = main({}, **settings)
 		self.app = TestApp(main_app)
+		_populateDB()
 	
 	def tearDown(self):
 		import sqlahelper
@@ -1688,8 +1673,10 @@ class TestFunctionalPage(unittest.TestCase):
 			'static_directory': '.:static',
 			'enable_auth': False,
 		}
+		settings.update(SETTINGS)
 		main_app = main({}, **settings)
 		self.app = TestApp(main_app)
+		_populateDB()
 	
 	def tearDown(self):
 		import sqlahelper
@@ -1716,8 +1703,8 @@ class TestFunctionalPage(unittest.TestCase):
 class TestAuthenticationPolicy(unittest.TestCase):
 	def setUp(self):
 		self.request = DummyRequest()
-		self.config = testing.setUp(request=self.request)
-		self.session = _initTestingDB()
+		self.config = testing.setUp(request=self.request, settings=SETTINGS)
+		self.session = _initTestingDB(self.config)
 
 	def tearDown(self):
 		self.session.remove()
@@ -1802,8 +1789,8 @@ class TestAuthenticationPolicy(unittest.TestCase):
 class TestSessionViews(unittest.TestCase):
 	def setUp(self):
 		self.request = DummyRequest()
-		self.config = testing.setUp(request=self.request)
-		self.session = _initTestingDB()
+		self.config = testing.setUp(request=self.request, settings=SETTINGS)
+		self.session = _initTestingDB(self.config)
 		from .. import setup_admin_routes
 		self.config.include('columns.lib.view')
 		self.config.include(setup_admin_routes)
@@ -1854,13 +1841,13 @@ class TestSessionViews(unittest.TestCase):
 class TestAuthorizationPolicy(unittest.TestCase):
 	def setUp(self):
 		self.request = DummyRequest()
-		self.config = testing.setUp(request=self.request)
+		self.config = testing.setUp(request=self.request, settings=SETTINGS)
 		self.config.include('columns.lib.view')
 		self.config.include('columns.setup_admin_routes')
 		self.config.include('columns.auth')
 		self.config.add_static_view('static', '.:static/')
 		self.request.registry = self.config.registry
-		self.session = _initTestingDB()
+		self.session = _initTestingDB(self.config)
 	
 	def tearDown(self):
 		self.session.remove()
@@ -1936,7 +1923,7 @@ class TestAuthorizationPolicy(unittest.TestCase):
 class TestJinjaFuncs(unittest.TestCase):
 	def setUp(self):
 		self.request = DummyRequest()
-		self.config = testing.setUp(request=self.request)
+		self.config = testing.setUp(request=self.request, settings=SETTINGS)
 		self.config.testing_securitypolicy(userid='1', permissive=True)
 	
 	def test_is_allowed(self):
