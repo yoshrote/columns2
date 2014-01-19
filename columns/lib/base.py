@@ -234,9 +234,10 @@ def includeme(config):
             view=view_class,
             attr='delete',
             request_method='POST',
-            request_param='_method=PUT',
+            request_param='_method=DELETE',
             permission='delete',
         )
+
     
     config.add_directive('add_resource', generate_routing)
 
