@@ -1,13 +1,15 @@
 # -*- coding: UTF-8 -*-
 import unittest
+import textwrap
 
 class TestStripHTML(unittest.TestCase):
     def setUp(self):
-        self.content = u"""This is a <div>
+        self.content = textwrap.dedent(u"""
+            This is a <div>
             <script type="text/javascript">var a=14;</script>
             <a href="">test link</a>.
             <script src=""/>
-            <p>dolor ipsum</p>"""
+            <p>dolor ipsum</p>""")
         self.response = u'This is a test link.dolor ipsum'
     
     def test_basic(self):
