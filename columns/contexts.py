@@ -1,7 +1,7 @@
 # encoding: utf-8
 import sqlahelper
 
-from .lib.base import SQLACollectionContext
+from .lib.context_impl.sqla import SQLACollectionContext
 from .lib.base import BaseViews
 from .lib.base import InvalidResource
 
