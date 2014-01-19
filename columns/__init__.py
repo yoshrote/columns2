@@ -2,8 +2,7 @@
 from pyramid.config import Configurator
 from pyramid_beaker import session_factory_from_settings
 from pyramid.static import static_view
-from sqlalchemy import engine_from_config
-import sqlahelper
+from .models import setup_models
 
 def setup_resource_routes(config):
 	config.include('columns.lib.base')
@@ -93,15 +92,9 @@ def setup_admin_routes(config):
 def main(global_config, **settings):
 	""" This function returns a Pyramid WSGI application.
 	"""
-	if settings.get('test_engine'):
-		from columns.tests import _initTestingDB
-		_initTestingDB()
-	else: # pragma: no cover
-		engine = engine_from_config(settings, 'sqlalchemy.')
-		sqlahelper.add_engine(engine)
-		sqlahelper.get_session().configure(extension=None)
 	config = Configurator(settings=settings)
 	config.include('pyramid_beaker')
+	setup_models(config)
 	session_factory = session_factory_from_settings(settings)
 	static_path = settings.get('static_path', 'static')
 	config.add_static_view(static_path, settings.get('static_directory'))

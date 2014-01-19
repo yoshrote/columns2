@@ -21,6 +21,7 @@ from sqlalchemy.schema import Column
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.orm import backref
 from sqlalchemy.orm import relationship
+from sqlalchemy import engine_from_config
 from sqlalchemy import event
 from pyramid.threadlocal import get_current_request
 from pyramid.security import authenticated_userid
@@ -28,6 +29,7 @@ from zope.interface import implements
 from .lib.interfaces import IMemberContext
 
 from .lib import html
+
 
 class AlwaysUnicode(TypeDecorator):
 	impl = Unicode
@@ -137,6 +139,27 @@ def initialize_models(config):
 	url_host = config['hostname']
 	engine = sqlahelper.get_engine()
 	Base.metadata.create_all(engine)
+
+def db_session_request(request):
+    session = sqlahelper.get_session()
+    def cleanup(_):
+    	try:
+    		session.rollback()
+    	except:
+    		pass
+    request.add_finished_callback(cleanup)
+    return session
+
+def setup_models(config):
+	if config.registry.settings.get('test_engine'):
+		from columns.tests import _initTestingDB
+		_initTestingDB()
+	else: # pragma: no cover
+		engine = engine_from_config(config.settings, 'sqlalchemy.')
+		sqlahelper.add_engine(engine)
+		sqlahelper.get_session().configure(extension=None)
+		config.add_request_method(callable=db_session_request, name='db_session', reify=True)
+
 
 ####################################
 ## Article Functions
