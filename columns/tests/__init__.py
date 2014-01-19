@@ -1069,22 +1069,6 @@ class TestArticleView(unittest.TestCase):
 		viewer = viewer_cls(context, request)
 		self.assertRaises(HTTPClientError, viewer.create)
 	
-	def test_create_atom(self):
-		viewer_cls = self._makeOne()
-		request = DummyRequest()
-		request.body = self._makeCreateAtom()
-		context = DummyCollection()
-		viewer = viewer_cls(context, request)
-		self.assertRaises(HTTPCreated, viewer.create_atom)
-	
-	def test_create_atom_invalid(self):
-		viewer_cls = self._makeOne()
-		request = DummyRequest()
-		request.body = self._makeInvalidCreateAtom()
-		context = DummyCollection()
-		viewer = viewer_cls(context, request)
-		self.assertRaises(HTTPClientError, viewer.create_atom)
-	
 	def test_update(self):
 		viewer_cls = self._makeOne()
 		collection = DummyCollection()
@@ -1111,26 +1095,6 @@ class TestArticleView(unittest.TestCase):
 		 	HTTPClientError,
 			viewer.update
 		)
-	
-	def test_update_atom(self):
-		viewer_cls = self._makeOne()
-		collection = DummyCollection()
-		context = DummyMember(name='1', parent=collection)
-		collection['1'] = DummyMember()
-		request = DummyRequest()
-		request.body = self._makeUpdateAtom()
-		viewer = viewer_cls(context, request)
-		self.assertRaises(HTTPOk, viewer.update_atom)
-	
-	def test_update_atom_invalid(self):
-		viewer_cls = self._makeOne()
-		collection = DummyCollection()
-		context = DummyMember(name='1', parent=collection)
-		collection['1'] = DummyMember()
-		request = DummyRequest()
-		request.body = self._makeInvalidUpdateAtom()
-		viewer = viewer_cls(context, request)
-		self.assertRaises(HTTPClientError, viewer.update_atom)
 	
 	def test_delete(self):
 		viewer_cls = self._makeOne()
@@ -1198,13 +1162,6 @@ class TestUserView(unittest.TestCase):
 		viewer = viewer_cls(context, request)
 		self.assertRaises(HTTPClientError, viewer.create)
 	
-	def test_create_atom(self):
-		viewer_cls = self._makeOne()
-		request = DummyRequest()
-		context = DummyCollection()
-		viewer = viewer_cls(context, request)
-		self.assertRaises(HTTPNotImplemented, viewer.create_atom)
-	
 	def test_update(self):
 		viewer_cls = self._makeOne()
 		collection = DummyCollection()
@@ -1231,15 +1188,6 @@ class TestUserView(unittest.TestCase):
 		 	HTTPClientError,
 			viewer.update
 		)
-	
-	def test_update_atom(self):
-		viewer_cls = self._makeOne()
-		collection = DummyCollection()
-		context = DummyMember(name='1', parent=collection)
-		collection['1'] = DummyMember()
-		request = DummyRequest()
-		viewer = viewer_cls(context, request)
-		self.assertRaises(HTTPNotImplemented, viewer.update_atom)
 	
 	def test_delete(self):
 		viewer_cls = self._makeOne()
@@ -1320,13 +1268,6 @@ class TestUploadView(unittest.TestCase):
 		viewer = viewer_cls(context, request)
 		self.assertRaises(HTTPClientError, viewer.create)
 	
-	def test_create_atom(self):
-		viewer_cls = self._makeOne()
-		request = DummyRequest()
-		context = DummyCollection()
-		viewer = viewer_cls(context, request)
-		self.assertRaises(HTTPNotImplemented, viewer.create_atom)
-	
 	def test_update(self):
 		viewer_cls = self._makeOne()
 		request = DummyRequest(post={
@@ -1352,15 +1293,6 @@ class TestUploadView(unittest.TestCase):
 		 	HTTPClientError,
 			viewer.update
 		)
-	
-	def test_update_atom(self):
-		viewer_cls = self._makeOne()
-		collection = DummyCollection()
-		context = DummyMember(name='1', parent=collection)
-		collection['1'] = DummyMember()
-		request = DummyRequest()
-		viewer = viewer_cls(context, request)
-		self.assertRaises(HTTPNotImplemented, viewer.update_atom)
 	
 	def test_delete(self):
 		viewer_cls = self._makeOne()
@@ -1427,13 +1359,6 @@ class TestPageView(unittest.TestCase):
 		viewer = viewer_cls(context, request)
 		self.assertRaises(HTTPClientError, viewer.create)
 	
-	def test_create_atom(self):
-		viewer_cls = self._makeOne()
-		request = DummyRequest()
-		context = DummyCollection()
-		viewer = viewer_cls(context, request)
-		self.assertRaises(HTTPNotImplemented, viewer.create_atom)
-	
 	def test_update(self):
 		viewer_cls = self._makeOne()
 		request = DummyRequest(post={
@@ -1460,15 +1385,6 @@ class TestPageView(unittest.TestCase):
 		 	HTTPClientError,
 			viewer.update
 		)
-	
-	def test_update_atom(self):
-		viewer_cls = self._makeOne()
-		collection = DummyCollection()
-		context = DummyMember(name='1', parent=collection)
-		collection['1'] = DummyMember()
-		request = DummyRequest()
-		viewer = viewer_cls(context, request)
-		self.assertRaises(HTTPNotImplemented, viewer.update_atom)
 	
 	def test_delete(self):
 		viewer_cls = self._makeOne()
@@ -1693,22 +1609,10 @@ class TestFunctionalArticle(unittest.TestCase):
 		sqlahelper.reset()
 		self.app.reset()
 	
-	def test_index_atom(self):
-		response = self.app.get(
-			'/api/articles/', 
-			headers=[('Accept', 'application/atom+xml')]
-		)
-	
 	def test_index_json(self):
 		response = self.app.get(
 			'/api/articles/', 
 			headers=[('Accept', 'application/json')]
-		)
-	
-	def test_show_atom(self):
-		response = self.app.get(
-			'/api/articles/1', 
-			headers=[('Accept', 'application/atom+xml')]
 		)
 	
 	def test_show_json(self):
@@ -1734,22 +1638,10 @@ class TestFunctionalUser(unittest.TestCase):
 		sqlahelper.reset()
 		self.app.reset()
 	
-	def test_index_atom(self):
-		response = self.app.get(
-			'/api/users/', 
-			headers=[('Accept', 'application/atom+xml')]
-		)
-	
 	def test_index_json(self):
 		response = self.app.get(
 			'/api/users/', 
 			headers=[('Accept', 'application/json')]
-		)
-	
-	def test_show_atom(self):
-		response = self.app.get(
-			'/api/users/1', 
-			headers=[('Accept', 'application/atom+xml')]
 		)
 	
 	def test_show_json(self):
@@ -1775,22 +1667,10 @@ class TestFunctionalUpload(unittest.TestCase):
 		sqlahelper.reset()
 		self.app.reset()
 	
-	def test_index_atom(self):
-		response = self.app.get(
-			'/api/uploads/', 
-			headers=[('Accept', 'application/atom+xml')]
-		)
-	
 	def test_index_json(self):
 		response = self.app.get(
 			'/api/uploads/', 
 			headers=[('Accept', 'application/json')]
-		)
-	
-	def test_show_atom(self):
-		response = self.app.get(
-			'/api/uploads/1', 
-			headers=[('Accept', 'application/atom+xml')]
 		)
 	
 	def test_show_json(self):
@@ -1816,22 +1696,10 @@ class TestFunctionalPage(unittest.TestCase):
 		sqlahelper.reset()
 		self.app.reset()
 	
-	def test_index_atom(self):
-		response = self.app.get(
-			'/api/pages/', 
-			headers=[('Accept', 'application/atom+xml')]
-		)
-	
 	def test_index_json(self):
 		response = self.app.get(
 			'/api/pages/', 
 			headers=[('Accept', 'application/json')]
-		)
-	
-	def test_show_atom(self):
-		response = self.app.get(
-			'/api/pages/1', 
-			headers=[('Accept', 'application/atom+xml')]
 		)
 	
 	def test_show_json(self):

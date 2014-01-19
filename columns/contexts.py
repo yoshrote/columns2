@@ -1,7 +1,5 @@
 # encoding: utf-8
 import sqlahelper
-from pyramid.httpexceptions import exception_response
-#from pyramid.security import has_permission
 
 from .lib.base import SQLACollectionContext
 from .lib.base import BaseViews
@@ -17,14 +15,7 @@ from .forms import UpdatePage
 from .forms import CreateUpload
 from .forms import UpdateUpload
 
-from .models import Article
-#from .models import Page
-#from .models import Upload
-#from .models import User
-
 import os.path
-from lxml import etree
-from urllib import unquote
 
 ########################################
 ## Context Factory Functions
@@ -103,94 +94,6 @@ class ArticleViews(BaseViews):
 		else:
 			raise InvalidResource(update_form)
 	
-	def _create_values_from_atom(self):
-		tree = etree.fromstring(self.request.body)
-		values = {}
-		title_el = tree.xpath(
-			"/atom:entry/atom:title",
-			namespaces={'atom':"http://www.w3.org/2005/Atom"}
-		)
-		content_el = tree.xpath(
-			"/atom:entry/atom:content",
-			namespaces={'atom':"http://www.w3.org/2005/Atom"}
-		)
-		tags_el = tree.xpath(
-			"/atom:entry/atom:category",
-			namespaces={'atom':"http://www.w3.org/2005/Atom"}
-		)
-		draft_el = tree.xpath(
-			"/atom:entry/app:draft",
-			namespaces={
-				'atom':"http://www.w3.org/2005/Atom",
-				'app':"http://www.w3.org/2007/app"
-			}
-		)
-		
-		if draft_el:
-			values['published'] = draft_el[0].text == "no"
-		values['tags'] = ', '.join([
-			tag.attrib.get('label', tag.attrib.get('term')) for tag in tags_el
-		])
-		
-		try:
-			values['title'] = unquote(title_el[0].text)
-			formatting = content_el[0].attrib.get('type', 'text')
-			values['content'] = \
-				content_el[0].text if formatting == 'xhtml' \
-				else unquote(content_el[0].text)
-		except IndexError:
-			pass
-		
-		create_form = Form(self.request, schema=CreateArticle())
-		if create_form.validate(force_validate=True, params=values):
-			return create_form.data
-		else:
-			raise InvalidResource(create_form)
-	
-	def _update_values_from_atom(self):
-		tree = etree.fromstring(self.request.body)
-		values = {}
-		title_el = tree.xpath(
-			"/atom:entry/atom:title",
-			namespaces={'atom':"http://www.w3.org/2005/Atom"}
-		)
-		content_el = tree.xpath(
-			"/atom:entry/atom:content",
-			namespaces={'atom':"http://www.w3.org/2005/Atom"}
-		)
-		tags_el = tree.xpath(
-			"/atom:entry/atom:category",
-			namespaces={'atom':"http://www.w3.org/2005/Atom"}
-		)
-		draft_el = tree.xpath(
-			"/atom:entry/app:draft",
-			namespaces={
-				'atom':"http://www.w3.org/2005/Atom",
-				'app':"http://www.w3.org/2007/app"
-			}
-		)
-		
-		if draft_el:
-			values['published'] = None
-		values['tags'] = ', '.join([
-			tag.attrib.get('label', tag.attrib.get('term')) for tag in tags_el
-		])
-		
-		try:
-			values['title'] = unquote(title_el[0].text)
-			formatting = content_el[0].attrib.get('type', 'text')
-			values['content'] = \
-				content_el[0].text if formatting == 'xhtml' \
-				else unquote(content_el[0].text)
-		except IndexError:
-			pass
-		
-		update_form = Form(self.request, schema=UpdateArticle())
-		if update_form.validate(force_validate=True, params=values):
-			return update_form.data
-		else:
-			raise InvalidResource(update_form)
-
 class PageViews(BaseViews):
 	def _create_values_from_request(self):
 		create_form = Form(
@@ -218,12 +121,6 @@ class PageViews(BaseViews):
 		else:
 			raise InvalidResource(update_form)
 	
-	def _create_values_from_atom(self):
-		raise exception_response(501)
-	
-	def _update_values_from_atom(self):
-		raise exception_response(501)
-
 class UploadViews(BaseViews):
 	def _create_values_from_request(self):
 		create_form = Form(
@@ -251,12 +148,6 @@ class UploadViews(BaseViews):
 		else:
 			raise InvalidResource(update_form)
 	
-	def _create_values_from_atom(self):
-		raise exception_response(501)
-	
-	def _update_values_from_atom(self):
-		raise exception_response(501)
-
 class UserViews(BaseViews):
 	def _create_values_from_request(self):
 		create_form = Form(
@@ -283,9 +174,3 @@ class UserViews(BaseViews):
 			return update_form.data
 		else:
 			raise InvalidResource(update_form)
-	
-	def _create_values_from_atom(self):
-		raise exception_response(501)
-	
-	def _update_values_from_atom(self):
-		raise exception_response(501)

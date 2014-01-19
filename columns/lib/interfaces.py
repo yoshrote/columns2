@@ -76,12 +76,8 @@ class IResourceView(zope.interface.Interface):
 	def create():
 		"Create a new resource"
 	
-	def create_atom():
-		"Create a new resource via ATOMPUB"
-	
 	def new():
 		"Display a new instance of a resource type"
-	
 	
 	# member views
 	def show():
@@ -89,9 +85,6 @@ class IResourceView(zope.interface.Interface):
 	
 	def update():
 		"Update a resources in a collection"
-	
-	def update_atom():
-		"Update a resources in a collection via ATOMPUB"
 	
 	def delete():
 		"Delete a resources from a collection"

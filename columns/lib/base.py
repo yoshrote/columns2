@@ -209,13 +209,6 @@ class BaseViews(object):
 	def _update_values_from_request(self): # pragma: no cover
 		raise NotImplementedError
 	
-	def _create_values_from_atom(self): # pragma: no cover
-		raise NotImplementedError
-	
-	def _update_values_from_atom(self): # pragma: no cover
-		raise NotImplementedError
-	
-	
 	# collection views
 	def index(self):
 		def int_or_none(val):
@@ -255,25 +248,6 @@ class BaseViews(object):
 				location=self.request.resource_url(resource)
 			)
 	
-	def create_atom(self):
-		try:
-			values = self._create_values_from_atom()
-		except NotImplementedError: # pragma: no cover
-			raise exception_response(501)
-		except InvalidResource, ex:
-			raise exception_response(
-				400,
-				detail=unicode(ex)
-			)
-		else:
-			new_resource = self.context.new()
-			new_resource = new_resource.build_from_values(values)
-			resource = self.context.add(new_resource)
-			raise exception_response(
-				201,
-				location=self.request.resource_url(resource)
-			)
-	
 	def new(self):
 		new_resource = self.context.new()
 		return {'context':self.context, 'resource': new_resource}
@@ -303,34 +277,11 @@ class BaseViews(object):
 				location=self.request.resource_url(self.context)
 			)
 	
-	def update_atom(self):
-		collection = self.context.__parent__
-		try:
-			values = self._update_values_from_atom()
-		except InvalidResource, ex:
-			raise exception_response(
-				400,
-				detail=unicode(ex)
-			)
-		except NotImplementedError: # pragma: no cover
-			raise exception_response(501)
-		else:
-			self.context = self.context.update_from_values(values)
-			collection[self.context.__name__] = self.context
-			
-			raise exception_response(
-				200,
-				location=self.request.resource_url(self.context)
-			)
-	
 	def delete(self):
 		collection = self.context.__parent__
-		collection_name = collection.__name__
 		del collection[self.context.__name__]
 		raise exception_response(200, body='{}')
 	
-
-
 def includeme(config):
 	def generate_routing(config, collection, view_class_name, collection_factory, collection_context, member_context):
 		PATH_PREFIX = config.route_prefix
@@ -384,19 +335,6 @@ def includeme(config):
 			renderer='json',
 			permission='index',
 		)
-		#index (atom)
-		config.add_view(
-			route_name=collection,
-			context=collection_context,
-			name='',
-			view=view_class,
-			attr='index',
-			accept='application/atom+xml', #[does_accept_atom],
-			request_method='GET',
-			renderer='columns:templates/{0}/index.atom.jinja'.format(
-				collection
-			)
-		)
 		
 		#new (json)
 		config.add_view(
@@ -423,20 +361,6 @@ def includeme(config):
 			renderer='json',
 			permission='show',
 		)
-		#show (atom)
-		config.add_view(
-			route_name=collection,
-			context=member_context,
-			name='',
-			view=view_class,
-			attr='show',
-			accept='application/atom+xml', #[does_accept_atom],
-			request_method='GET',
-			renderer='columns:templates/{0}/show.atom.jinja'.format(
-				collection
-			),
-			permission='show',
-		)
 		
 		#create (x-form-urlencoded)
 		config.add_view(
@@ -445,19 +369,6 @@ def includeme(config):
 			name='',
 			view=view_class,
 			attr='create',
-			request_method='POST',
-			permission='create',
-		)
-		#create (atom)
-		config.add_view(
-			route_name=collection,
-			context=collection_context,
-			name='',
-			view=view_class,
-			attr='create_atom',
-			custom_predicates=[
-				lambda ctxt, req: 'atom' in req.content_type
-			],
 			request_method='POST',
 			permission='create',
 		)
@@ -481,19 +392,6 @@ def includeme(config):
 			attr='update',
 			request_method='POST',
 			request_param='_method=PUT',
-			permission='update',
-		)
-		#update (atom)
-		config.add_view(
-			route_name=collection,
-			context=member_context,
-			name='',
-			view=view_class,
-			attr='update_atom',
-			custom_predicates=[
-				lambda ctxt, req: 'atom' in req.content_type
-			],
-			request_method='PUT',
 			permission='update',
 		)
 		
