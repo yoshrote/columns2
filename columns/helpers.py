@@ -25,42 +25,42 @@ from .auth import get_permissions
 ## Blog Helpers
 #############################
 def main_pages():
-	import sqlahelper
-	from columns.models import Page
-	Session = sqlahelper.get_session()
-	pages = Session.query(Page.slug, Page.title).\
-		filter(Page.in_menu == True).\
-		filter(Page.visible == True).\
-		order_by(Page.in_main.desc(), Page.title.asc())
-	return [(slug, title) for slug, title in pages]
+    import sqlahelper
+    from columns.models import Page
+    Session = sqlahelper.get_session()
+    pages = Session.query(Page.slug, Page.title).\
+        filter(Page.in_menu == True).\
+        filter(Page.visible == True).\
+        order_by(Page.in_main.desc(), Page.title.asc())
+    return [(slug, title) for slug, title in pages]
 
 '''
 def top_tags(top_count=5):
-	import sqlahelper
-	from sqlalchemy import sql
-	from columns.models import Tag
-	from columns.models import article_tag_t
-	Session = sqlahelper.get_session()
-	
-	tag_counts = Session.query(Tag, sql.func.count('*').label('counter')).\
-		join(article_tag_t).\
-		group_by(Tag.slug).\
-		order_by('counter DESC').\
-		limit(top_count).all()
-	return [(tag.slug, tag.label) for tag, counter in tag_counts]
+    import sqlahelper
+    from sqlalchemy import sql
+    from columns.models import Tag
+    from columns.models import article_tag_t
+    Session = sqlahelper.get_session()
+    
+    tag_counts = Session.query(Tag, sql.func.count('*').label('counter')).\
+        join(article_tag_t).\
+        group_by(Tag.slug).\
+        order_by('counter DESC').\
+        limit(top_count).all()
+    return [(tag.slug, tag.label) for tag, counter in tag_counts]
 
 def top_authors(top_count=5):
-	import sqlahelper
-	from sqlalchemy import sql
-	from columns.models import User
-	from columns.models import Article
-	Session = sqlahelper.get_session()
-	
-	user_counts = Session.query(User, sql.func.count().label('counter')).\
-		join(Article).\
-		group_by(Article.author_id).\
-		order_by('counter DESC').\
-		limit(top_count).all()
-	return [user.name for user, counter in user_counts]
+    import sqlahelper
+    from sqlalchemy import sql
+    from columns.models import User
+    from columns.models import Article
+    Session = sqlahelper.get_session()
+    
+    user_counts = Session.query(User, sql.func.count().label('counter')).\
+        join(Article).\
+        group_by(Article.author_id).\
+        order_by('counter DESC').\
+        limit(top_count).all()
+    return [user.name for user, counter in user_counts]
 
 '''
