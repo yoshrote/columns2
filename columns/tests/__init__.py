@@ -4,7 +4,6 @@ from pyramid import testing
 from webtest import TestApp
 from pyramid.httpexceptions import HTTPOk
 from pyramid.httpexceptions import HTTPCreated
-from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPClientError
 # SQLACollectionContext.__setitem__
@@ -16,14 +15,29 @@ import os.path
 import datetime
 from cgi import FieldStorage
 from StringIO import StringIO
+from pyramid.util import DottedNameResolver
+dotted_resolver = DottedNameResolver(None)
+
+SETTINGS = {
+    'hostname': 'localhost',
+    'sqlalchemy.url':'sqlite://',
+    'upload_basepath':'test_uploads',
+    'static_directory':'.:static',
+    'upload_baseurl': 'http://localhost:6543/uploads',
+    'models.module': 'columns.models',
+    'models.setup': 'columns.lib.context_impl.sqla:setup_models',
+    'models.find_user': 'columns.lib.context_impl.sqla:find_user',
+    'models.session_policy': 'columns.lib.context_impl.sqla:SessionAuthenticationPolicy'
+}
 
 def _populateDB():
     import sqlahelper
-    from ..models import Article
-    from ..models import Page
-    from ..models import Upload
-    from ..models import User
-    from ..models import Tag
+    models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+    Article = models.Article
+    Page = models.Page
+    Upload = models.Upload
+    User = models.User
+    Tag = models.Tag
     from sqlalchemy.exc import IntegrityError
     Session = sqlahelper.get_session()
     today = datetime.datetime.utcnow()
@@ -75,28 +89,11 @@ def _populateDB():
     except IntegrityError: # pragma: no cover
         Session.rollback()
 
-def _populateSettings(settings_dict):
-    import sqlahelper
-    from ..models import Setting
-    Session = sqlahelper.get_session()
-    for k, v in settings_dict.items():
-        Session.add(Setting(module=k, config=v))
-    
-    Session.commit()
-
-SETTINGS = {
-    'hostname': 'localhost',
-    'sqlalchemy.url':'sqlite://',
-    'upload_basepath':'test_uploads',
-    'static_directory':'.:static',
-    'upload_baseurl': 'http://localhost:6543/uploads',
-}
-
 def _initTestingDB(config):
     import sqlahelper
-    from ..models import setup_models
-    from ..models import initialize_models
-    initialize_models({'hostname':'localhost'})
+    setup_models = dotted_resolver.maybe_resolve(SETTINGS['models.setup'])    
+    models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+    models.url_host = SETTINGS['hostname']
     setup_models(config)
     session = sqlahelper.get_session()
     _populateDB()
@@ -139,8 +136,9 @@ class DummyRequest(testing.DummyRequest):
 ########################################
 class TestArticleModel(unittest.TestCase):
     def setUp(self):
-        from ..models import Article
-        from ..models import User
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        Article = models.Article
+        User = models.User
         self.request = DummyRequest()
         self.config = testing.setUp(request=self.request, settings=SETTINGS)
         self.session = _initTestingDB(self.config)
@@ -163,7 +161,8 @@ class TestArticleModel(unittest.TestCase):
         testing.tearDown()
 
     def test_publish(self):
-        from ..models import Article
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        Article = models.Article
         article = self.session.query(Article).filter(Article.title == 'unpublished article').one()
         pubtime = datetime.datetime(2013, 2, 28, 13, 14, 15)
         article.update_from_values({'published': pubtime})
@@ -178,7 +177,8 @@ class TestArticleModel(unittest.TestCase):
         )
 
     def test_add_contributor(self):
-        from ..models import Article
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        Article = models.Article
         self.config.testing_securitypolicy(userid=2)
         # update the article
         article = self.session.query(Article).filter(Article.title == 'unpublished article').one()
@@ -209,7 +209,8 @@ class TestArticleCollection(unittest.TestCase):
         return ArticleCollectionContext(request)
     
     def test___getitem__hit(self):
-        from ..models import Article
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        Article = models.Article
         root = self._makeOne()
         first = root['1']
         self.assertEqual(first.__class__, Article)
@@ -226,7 +227,8 @@ class TestArticleCollection(unittest.TestCase):
         self.assertRaises(KeyError, root.__getitem__, 'notint')
     
     def test_getslice_hit(self):
-        from ..models import Article
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        Article = models.Article
         root = self._makeOne()
         result = root[:2]
         self.assertEquals(len(result), 1)
@@ -243,7 +245,8 @@ class TestArticleCollection(unittest.TestCase):
         self.assertEquals(len(result), 0)
     
     def test_get_hit(self):
-        from ..models import Article
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        Article = models.Article
         root = self._makeOne()
         first = root.get('1')
         self.assertEqual(first.__class__, Article)
@@ -264,7 +267,8 @@ class TestArticleCollection(unittest.TestCase):
         self.assertEqual(model.id, 1)
     
     def test_new(self):
-        from ..models import Article
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        Article = models.Article
         root = self._makeOne()
         model = root.new()
         self.assertEqual(model.__class__, Article)
@@ -303,7 +307,8 @@ class TestArticleCollection(unittest.TestCase):
         self.assertEquals(root.__len__(), 0)
     
     def test_add(self):
-        from ..models import Article
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        Article = models.Article
         root = self._makeOne()
         first = root['1']
         
@@ -318,7 +323,8 @@ class TestArticleCollection(unittest.TestCase):
         self.assertEqual(second.__name__, '2')
     
     def test___setitem__(self):
-        from ..models import Article
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        Article = models.Article
         root = self._makeOne()
         first = root['1']
         first.title = 'test_article2'
@@ -351,7 +357,8 @@ class TestUserCollection(unittest.TestCase):
         return UserCollectionContext(request)
     
     def test___getitem__hit(self):
-        from ..models import User
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        User = models.User
         root = self._makeOne()
         first = root['1']
         self.assertEqual(first.__class__, User)
@@ -371,7 +378,8 @@ class TestUserCollection(unittest.TestCase):
         self.assertRaises(KeyError, root.__getitem__, 'index')
     
     def test_getslice_hit(self):
-        from ..models import User
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        User = models.User
         root = self._makeOne()
         result = root[:2]
         self.assertEquals(len(result), 2)
@@ -389,7 +397,8 @@ class TestUserCollection(unittest.TestCase):
         self.assertEquals(len(result), 0)
     
     def test_get_hit(self):
-        from ..models import User
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        User = models.User
         root = self._makeOne()
         first = root.get('1')
         self.assertEqual(first.__class__, User)
@@ -410,7 +419,8 @@ class TestUserCollection(unittest.TestCase):
         self.assertEqual(model.id, 1)
     
     def test_new(self):
-        from ..models import User
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        User = models.User
         root = self._makeOne()
         model = root.new()
         self.assertEqual(model.__class__, User)
@@ -449,7 +459,8 @@ class TestUserCollection(unittest.TestCase):
         self.assertEquals(root.__len__(), 0)
     
     def test_add(self):
-        from ..models import User
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        User = models.User
         root = self._makeOne()
         model = User(
             name='test_user4',
@@ -463,7 +474,8 @@ class TestUserCollection(unittest.TestCase):
         self.assertEqual(second.__name__, '2')
     
     def test___setitem__(self):
-        from ..models import User
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        User = models.User
         root = self._makeOne()
         first = root['1']
         first.name = 'test_user4'
@@ -535,7 +547,8 @@ class TestUploadCollection(unittest.TestCase):
         return UploadCollectionContext(request)
     
     def test___getitem__hit(self):
-        from ..models import Upload
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        Upload = models.Upload
         root = self._makeOne()
         first = root['1']
         self.assertEqual(first.__class__, Upload)
@@ -551,7 +564,8 @@ class TestUploadCollection(unittest.TestCase):
         self.assertRaises(KeyError, root.__getitem__, 'notint')
     
     def test_getslice_hit(self):
-        from ..models import Upload
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        Upload = models.Upload
         root = self._makeOne()
         result = root[:2]
         self.assertEquals(len(result), 1)
@@ -568,7 +582,8 @@ class TestUploadCollection(unittest.TestCase):
         self.assertEquals(len(result), 0)
     
     def test_get_hit(self):
-        from ..models import Upload
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        Upload = models.Upload
         root = self._makeOne()
         first = root.get('1')
         self.assertEqual(first.__class__, Upload)
@@ -589,7 +604,8 @@ class TestUploadCollection(unittest.TestCase):
         self.assertEqual(model.id, 1)
     
     def test_new(self):
-        from ..models import Upload
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        Upload = models.Upload
         root = self._makeOne()
         model = root.new()
         self.assertEqual(model.__class__, Upload)
@@ -628,7 +644,8 @@ class TestUploadCollection(unittest.TestCase):
         self.assertEquals(root.__len__(), 0)
     
     def test_add(self):
-        from ..models import Upload
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        Upload = models.Upload
         root = self._makeOne()
         model = Upload(
             title='test_upload2',
@@ -641,7 +658,8 @@ class TestUploadCollection(unittest.TestCase):
         self.assertEqual(second.__name__, '2')
     
     def test___setitem__(self):
-        from ..models import Upload
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        Upload = models.Upload
         root = self._makeOne()
         first = root['1']
         first.title = 'test_upload2'
@@ -672,7 +690,8 @@ class TestPageCollection(unittest.TestCase):
         return PageCollectionContext(request)
     
     def test___getitem__hit(self):
-        from ..models import Page
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        Page = models.Page
         root = self._makeOne()
         first = root['1']
         self.assertEqual(first.__class__, Page)
@@ -688,7 +707,8 @@ class TestPageCollection(unittest.TestCase):
         self.assertRaises(KeyError, root.__getitem__, 'notint')
     
     def test_getslice_hit(self):
-        from ..models import Page
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        Page = models.Page
         root = self._makeOne()
         result = root[:2]
         self.assertEquals(len(result), 1)
@@ -705,7 +725,8 @@ class TestPageCollection(unittest.TestCase):
         self.assertEquals(len(result), 0)
     
     def test_get_hit(self):
-        from ..models import Page
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        Page = models.Page
         root = self._makeOne()
         first = root.get('1')
         self.assertEqual(first.__class__, Page)
@@ -726,7 +747,8 @@ class TestPageCollection(unittest.TestCase):
         self.assertEqual(model.id, 1)
     
     def test_new(self):
-        from ..models import Page
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        Page = models.Page
         root = self._makeOne()
         model = root.new()
         self.assertEqual(model.__class__, Page)
@@ -765,7 +787,8 @@ class TestPageCollection(unittest.TestCase):
         self.assertEquals(root.__len__(), 0)
     
     def test_add(self):
-        from ..models import Page
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        Page = models.Page
         root = self._makeOne()
         model = Page(
             title='test_page2'
@@ -777,7 +800,8 @@ class TestPageCollection(unittest.TestCase):
         self.assertEqual(second.__name__, '2')
     
     def test___setitem__(self):
-        from ..models import Page
+        models = dotted_resolver.maybe_resolve(SETTINGS['models.module'])
+        Page = models.Page
         root = self._makeOne()
         first = root['1']
         first.title = 'test_page2'
@@ -1351,7 +1375,6 @@ class TestAuthViews(unittest.TestCase):
         self.config.include('columns.lib.view')
         self.config.include('columns.auth')
         self.config.include('columns.setup_resource_routes')
-        self.config.include('columns.setup_admin_routes')
         self.config.add_static_view(
             'static', 
             SETTINGS.get('static_directory')
@@ -1366,155 +1389,7 @@ class TestAuthViews(unittest.TestCase):
     def test_logout_view(self):
         from ..auth import logout_view
         response = logout_view(self.request)
-        self.assertEquals(response.status_int, 302)
-
-    def test_logout_view_xhr(self):
-        from ..auth import logout_view
-        self.request.is_xhr = True
-        response = logout_view(self.request)
         self.assertEquals(response.status_int, 200)
-
-class TestQuickImageViews(unittest.TestCase):
-    def setUp(self):
-        self.request = DummyRequest()
-        self.config = testing.setUp(
-            request=self.request,
-            settings=SETTINGS
-        )
-        self.config.include('columns.lib.view')
-        self.config.include('columns.auth')
-        self.config.include('columns.setup_resource_routes')
-        self.config.include('columns.setup_admin_routes')
-        self.config.add_static_view(
-            'static', 
-            SETTINGS.get('static_directory')
-        )
-        self.request.registry = self.config.registry
-        self.session = _initTestingDB(self.config)
-    
-    def tearDown(self):
-        self.session.remove()
-        testing.tearDown()
-    
-    def test_quick_image_upload(self):
-        from ..views import imageupload
-        test_file = FieldStorage()
-        test_file.filename = 'example.txt'
-        test_file.file = StringIO('12345')
-        self.request.method = 'POST'
-        self.request.POST = {
-            'title': 'test_create_upload',
-            'file': test_file,
-        }
-        response = imageupload(self.request)
-    
-
-class TestBlogViews(unittest.TestCase):
-    def setUp(self):
-        self.request = DummyRequest()
-        self.config = testing.setUp(
-            request=self.request,
-            settings=SETTINGS
-        )
-        self.config.include('columns.lib.view')
-        self.config.include('columns.auth')
-        self.config.include('columns.blog')
-        self.config.include('columns.setup_admin_routes')
-        self.config.add_static_view(
-            'static', 
-            SETTINGS.get('static_directory')
-        )
-        self.request.registry = self.config.registry
-        self.session = _initTestingDB(self.config)
-    
-    def tearDown(self):
-        self.session.remove()
-        testing.tearDown()
-    
-    def test_page_view(self):
-        from ..blog import page_view
-        self.request.matchdict = {'page': 'test_page'}
-        response = page_view(self.request)
-    
-    def test_page_view_invalid(self):
-        from ..blog import page_view
-        self.request.matchdict = {'page': 'not_a_real_page'}
-        self.assertRaises(HTTPNotFound, page_view, self.request)
-    
-    def test_story_view(self):
-        from ..blog import story_view
-        self.request.matchdict = {'permalink': 'test_article_permalink'}
-        response = story_view(self.request)
-    
-    def test_story_view_invalid(self):
-        from ..blog import story_view
-        self.request.matchdict = {'permalink': 'not_a_real_article'}
-        self.assertRaises(HTTPNotFound, story_view, self.request)
-    
-    def test_stream_view(self):
-        from ..blog import stream_view
-        response = stream_view(self.request)
-    
-    def test_stream_view_filter_user(self):
-        from ..blog import stream_view
-        self.request.GET['user'] = 'test_user'
-        response = stream_view(self.request)
-    
-    def test_stream_view_filter_tag(self):
-        from ..blog import stream_view
-        self.request.GET['tag'] = 'tag1'
-        response = stream_view(self.request)
-    
-
-class TestSettingsViews(unittest.TestCase):
-    def setUp(self):
-        self.request = DummyRequest()
-        self.config = testing.setUp(
-            request=self.request,
-            settings=SETTINGS
-        )
-        self.config.include('columns.lib.view')
-        self.config.include('columns.auth')
-        self.config.include('columns.blog')
-        self.config.include('columns.setup_admin_routes')
-        self.config.add_static_view(
-            'static', 
-            SETTINGS.get('static_directory')
-        )
-        self.request.registry = self.config.registry
-        self.session = _initTestingDB(self.config)
-    
-    def tearDown(self):
-        self.session.remove()
-        testing.tearDown()
-    
-    def test_settings_view(self):
-        from ..views import settings_view
-        response = settings_view(self.request)
-    
-    def test_settings_edit_view(self):
-        from ..views import settings_edit_view
-        self.request.matchdict = {'module': 'dummy'}
-        _populateSettings({'dummy':{
-            'test_field': 'qwerty',
-        }})
-        response = settings_edit_view(self.request)
-    
-    def test_settings_save(self):
-        from ..views import settings_save
-        self.request.matchdict = {'module': 'dummy'}
-        _populateSettings({'dummy':{
-            'test_field': 'qwerty',
-        }})
-        self.request.method = 'POST'
-        self.request.POST = {
-            'save': '1',
-            'test_field': 'qwertyuiop',
-            'new_field': 'blah blah',
-        }
-        self.assertRaises(HTTPFound, settings_save, self.request)
-    
-
 
 
 ########################################
@@ -1659,7 +1534,7 @@ class TestAuthenticationPolicy(unittest.TestCase):
         testing.tearDown()
     
     def _makePolicy(self):
-        from ..auth import SessionAuthenticationPolicy
+        SessionAuthenticationPolicy = dotted_resolver.maybe_resolve(SETTINGS['models.session_policy'])
         return SessionAuthenticationPolicy()
     
     def test_remember(self):
@@ -1739,9 +1614,7 @@ class TestSessionViews(unittest.TestCase):
         self.request = DummyRequest()
         self.config = testing.setUp(request=self.request, settings=SETTINGS)
         self.session = _initTestingDB(self.config)
-        from .. import setup_admin_routes
         self.config.include('columns.lib.view')
-        self.config.include(setup_admin_routes)
 
     def tearDown(self):
         self.session.remove()
@@ -1755,7 +1628,7 @@ class TestSessionViews(unittest.TestCase):
             'sreg': {}
         }
         response = oid_authentication_callback(None, self.request, success_dict)
-        self.assertEquals(response.status_int, 302)
+        self.assertEquals(response.status_int, 200)
 
     def test_oid_callback_miss(self):
         from ..auth import oid_authentication_callback
@@ -1791,7 +1664,6 @@ class TestAuthorizationPolicy(unittest.TestCase):
         self.request = DummyRequest()
         self.config = testing.setUp(request=self.request, settings=SETTINGS)
         self.config.include('columns.lib.view')
-        self.config.include('columns.setup_admin_routes')
         self.config.include('columns.auth')
         self.config.add_static_view('static', '.:static/')
         self.request.registry = self.config.registry
@@ -1825,12 +1697,6 @@ class TestAuthorizationPolicy(unittest.TestCase):
             }
         }
         return AuthorizationPolicy(POLICY_MAP)
-    
-    
-    def test_logout_view(self):
-        from ..auth import logout_view
-        response = logout_view(self.request)
-        self.assertEquals(response.status_int, 302)
     
     
     def test_permits(self):

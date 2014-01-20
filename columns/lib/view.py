@@ -17,11 +17,9 @@ def includeme(config):
     jinja_env = config.get_jinja2_environment()
     
     #globals
-    import columns.helpers
-    jinja_env.globals['h'] = columns.helpers
-    jinja_env.globals['app_settings'] = app_settings
     jinja_env.globals['request'] = get_current_request
     jinja_env.globals['static_basepath'] = config.get_settings().get('upload_baseurl', '')
+    jinja_env.globals['app_settings'] = config.get_settings().get
     
     # Assign filters
     jinja_env.filters['resource_url'] = config.maybe_dotted(
@@ -61,17 +59,6 @@ def json_renderer_factory(info):
     
     return _render
 
-
-#############################################
-## Template Globals
-#############################################
-def app_settings(key, mod='core'):
-    import sqlahelper
-    from columns.models import Setting
-    Session = sqlahelper.get_session()
-    module = Session.query(Setting).get(mod)
-    setting_dict = getattr(module, 'config', {})
-    return setting_dict.get(key)
 
 #############################################
 ## Custom Filters

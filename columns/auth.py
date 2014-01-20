@@ -1,23 +1,18 @@
 # encoding: utf-8
 from zope.interface import implements
 
-from pyramid.interfaces import IAuthenticationPolicy
 from pyramid.interfaces import IAuthorizationPolicy
-from pyramid.authentication import CallbackAuthenticationPolicy
 from pyramid.httpexceptions import exception_response
 
-#from pyramid.security import Allow
-#from pyramid.security import Deny
 from pyramid.security import Everyone
-#from pyramid.security import Authenticated
-#from pyramid.security import authenticated_userid
 from pyramid.security import remember
 from pyramid.security import forget
 
 import logging
 import sqlahelper
-from sqlalchemy.exc import SQLAlchemyError
-from .models import User
+
+from pyramid.util import DottedNameResolver
+dotted_resolver = DottedNameResolver(None)
 
 LOG = logging.getLogger(__name__)
 
@@ -37,77 +32,6 @@ DEFAULT_PERMISSION = [set([Everyone])]
 def get_permissions():
     return dict([(v, k) for k, v in PERMISSIONS.items()])
 
-class SessionAuthenticationPolicy(CallbackAuthenticationPolicy):
-    implements(IAuthenticationPolicy)
-    def __init__(self, prefix='auth.', debug=False):
-        self.prefix = prefix or ''
-        self.userid_key = prefix + 'userid'
-        self.debug = debug
-    
-    def callback(self, userid, request):
-        DBSession = sqlahelper.get_session()
-        principals = [userid]
-        auth_type = request.session.get('auth.type')
-        #load user into cache
-        if not auth_type:
-            request.session[self.userid_key] = userid
-            user = DBSession.query(User).get(userid)
-            if user is None:
-                return principals
-            request.session['auth.type'] = auth_type = user.type
-        
-        # add in principles according to session stored variables
-        inv_permission = get_permissions()
-        principals.append(inv_permission.get(request.session['auth.type'], DEFAULT_USER_TYPE))
-        LOG.debug('User principals: %r', principals)
-        return principals
-    
-    def remember(self, request, principal, **kw):
-        """ Store a principal in the session."""
-        auth_type = request.session.get('auth.type')
-        #load user into cache
-        LOG.debug('auth_type = %r', auth_type)
-        if not auth_type:
-            user = find_user('id', principal, create=kw.get('create', False))
-            if isinstance(user, User):
-                request.session[self.userid_key] = principal
-                request.session['auth.type'] = user.type
-                request.session['auth.name'] = user.name
-            LOG.debug('session info: %r', request.session)
-        return []
-    
-    def forget(self, request):
-        """ Remove the stored principal from the session."""
-        for key in request.session.keys():
-            if key.startswith(self.prefix):
-                del request.session[key]
-        return []
-    
-    def unauthenticated_userid(self, request):
-        return request.session.get(self.userid_key)
-    
-
-def find_user(attribute, value, create=False):
-    DBSession = sqlahelper.get_session()
-    try:
-        LOG.debug('Looking for user where %s=%r', attribute, value)
-        user = DBSession.query(User).filter(getattr(User, attribute)==value).one()
-    except SQLAlchemyError:
-        DBSession.rollback()
-        if create:
-            # this is a new user
-            user = User()
-            setattr(user, attribute, value)
-            user.type = PERMISSIONS[DEFAULT_USER_TYPE]
-            user = DBSession.merge(user)
-            DBSession.commit()
-            return user
-        else:
-            return None
-    else:
-        LOG.debug('User found: %r', user.name)
-    return user
-
 
 #############################
 ## Authentication Views 
@@ -121,14 +45,14 @@ def oid_authentication_callback(context, request, success_dict):
     }
     """
     LOG.debug("looking for user")
+    find_user = dotted_resolver.maybe_resolve(request.registry.settings['models.find_user'])
     user = find_user('open_id', success_dict['identity_url'])
     if user:
         LOG.info("found user")
         # use standard auth callback to populate session
         #authentication_callback(user.id, request)
         remember(request, user.id)
-        LOG.debug("redirecting to %s", request.route_url('admin'))
-        return exception_response(302, location=request.route_url('admin'))
+        return exception_response(200)
     else:
         LOG.debug("invalid login")
         error_response = "This login is not authorized.\nEmail this to josh@nerdblerp.com: '%s'" % success_dict['identity_url']
@@ -136,9 +60,7 @@ def oid_authentication_callback(context, request, success_dict):
     
 def logout_view(request):
     forget(request)
-    if request.is_xhr:
-        return exception_response(200)
-    return exception_response(302, location=request.route_url('admin'))
+    return exception_response(200)
 
 def whoami_view(request):
     user_type = request.session.get('auth.type')
@@ -251,6 +173,7 @@ def debug_sessions(event):
     event.request.session.pop('_f_', None)
 
 def includeme(config):
+    SessionAuthenticationPolicy = dotted_resolver.maybe_resolve(config.registry.settings['models.session_policy'])
     if config.get_settings().get('enable_auth', True):
         config.set_authorization_policy(AuthorizationPolicy(POLICY_MAP))
         config.set_authentication_policy(SessionAuthenticationPolicy())

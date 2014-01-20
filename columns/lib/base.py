@@ -15,7 +15,6 @@ class InvalidResource(Exception):
     
     def __str__(self):
         return json.dumps(self.form.errors)
-    
 
 class BaseViews(object):
     implements(IResourceView)

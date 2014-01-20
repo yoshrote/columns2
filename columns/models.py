@@ -138,24 +138,6 @@ def initialize_models(config):
     global url_host
     url_host = config['hostname']
 
-def db_session_request(event):
-    session = sqlahelper.get_session()
-    def cleanup(_):
-        try:
-            session.rollback()
-        except: # pragma: no cover
-            pass
-    event.request.add_finished_callback(cleanup)
-    return session
-
-def setup_models(config):
-    engine = engine_from_config(config.registry.settings, 'sqlalchemy.')
-    sqlahelper.add_engine(engine)
-    sqlahelper.get_session().configure(extension=None)
-    Base.metadata.create_all(engine, checkfirst=True)
-    config.add_subscriber(db_session_request, 'pyramid.events.NewRequest')
-
-
 ####################################
 ## Article Functions
 ####################################

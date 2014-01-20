@@ -1,9 +1,20 @@
 import sqlahelper
+import logging
 from sqlalchemy import not_
 from zope.interface import implements
 from pyramid.util import DottedNameResolver
+from pyramid.interfaces import IAuthenticationPolicy
+from pyramid.authentication import CallbackAuthenticationPolicy
 from ..interfaces import ICollectionContext
+from ...auth import DEFAULT_USER_TYPE
+from ...auth import PERMISSIONS
+from ...auth import get_permissions
 dotted_resolver = DottedNameResolver(None)
+from sqlalchemy import engine_from_config
+from sqlalchemy.exc import SQLAlchemyError
+from ...models import User
+
+LOG = logging.getLogger(__name__)
 
 class SQLACollectionContext(object):
     implements(ICollectionContext)
@@ -179,3 +190,92 @@ class SQLACollectionContext(object):
             else:
                 query = query.filter(getattr(self.__model__, key) == value)
         return query
+
+class SessionAuthenticationPolicy(CallbackAuthenticationPolicy):
+    implements(IAuthenticationPolicy)
+    def __init__(self, prefix='auth.', debug=False):
+        self.prefix = prefix or ''
+        self.userid_key = prefix + 'userid'
+        self.debug = debug
+    
+    def callback(self, userid, request):
+        dbsession = sqlahelper.get_session()
+        principals = [userid]
+        auth_type = request.session.get('auth.type')
+        #load user into cache
+        if not auth_type:
+            request.session[self.userid_key] = userid
+            user = dbsession.query(User).get(userid)
+            if user is None:
+                return principals
+            request.session['auth.type'] = auth_type = user.type
+        
+        # add in principles according to session stored variables
+        inv_permission = get_permissions()
+        principals.append(inv_permission.get(request.session['auth.type'], DEFAULT_USER_TYPE))
+        LOG.debug('User principals: %r', principals)
+        return principals
+    
+    def remember(self, request, principal, **kw):
+        """ Store a principal in the session."""
+        auth_type = request.session.get('auth.type')
+        #load user into cache
+        LOG.debug('auth_type = %r', auth_type)
+        if not auth_type:
+            user = find_user('id', principal, create=kw.get('create', False))
+            if isinstance(user, User):
+                request.session[self.userid_key] = principal
+                request.session['auth.type'] = user.type
+                request.session['auth.name'] = user.name
+            LOG.debug('session info: %r', request.session)
+        return []
+    
+    def forget(self, request):
+        """ Remove the stored principal from the session."""
+        for key in request.session.keys():
+            if key.startswith(self.prefix):
+                del request.session[key]
+        return []
+    
+    def unauthenticated_userid(self, request):
+        return request.session.get(self.userid_key)
+    
+
+def setup_models(config):
+    engine = engine_from_config(config.registry.settings, 'sqlalchemy.')
+    Base = dotted_resolver.maybe_resolve(config.registry.settings['models.module']).Base
+    sqlahelper.add_engine(engine)
+    sqlahelper.get_session().configure(extension=None)
+    Base.metadata.create_all(engine, checkfirst=True)
+    config.add_subscriber(db_session_request, 'pyramid.events.NewRequest')
+
+def db_session_request(event):
+    session = sqlahelper.get_session()
+    def cleanup(_):
+        try:
+            session.rollback()
+        except: # pragma: no cover
+            pass
+    event.request.add_finished_callback(cleanup)
+    return session
+
+def find_user(attribute, value, create=False):
+    dbsession = sqlahelper.get_session()
+    try:
+        LOG.debug('Looking for user where %s=%r', attribute, value)
+        user = dbsession.query(User).filter(getattr(User, attribute)==value).one()
+    except SQLAlchemyError:
+        dbsession.rollback()
+        if create:
+            # this is a new user
+            user = User()
+            setattr(user, attribute, value)
+            user.type = PERMISSIONS[DEFAULT_USER_TYPE]
+            user = dbsession.merge(user)
+            dbsession.commit()
+            return user
+        else:
+            return None
+    else:
+        LOG.debug('User found: %r', user.name)
+    return user
