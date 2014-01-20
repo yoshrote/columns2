@@ -9,7 +9,6 @@ from pyramid.security import remember
 from pyramid.security import forget
 
 import logging
-import sqlahelper
 
 from pyramid.util import DottedNameResolver
 dotted_resolver = DottedNameResolver(None)

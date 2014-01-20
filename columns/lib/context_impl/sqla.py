@@ -1,6 +1,8 @@
 import sqlahelper
 import logging
 from sqlalchemy import not_
+from sqlalchemy import engine_from_config
+from sqlalchemy.exc import SQLAlchemyError
 from zope.interface import implements
 from pyramid.util import DottedNameResolver
 from pyramid.interfaces import IAuthenticationPolicy
@@ -9,11 +11,9 @@ from ..interfaces import ICollectionContext
 from ...auth import DEFAULT_USER_TYPE
 from ...auth import PERMISSIONS
 from ...auth import get_permissions
-dotted_resolver = DottedNameResolver(None)
-from sqlalchemy import engine_from_config
-from sqlalchemy.exc import SQLAlchemyError
 from ...models import User
 
+dotted_resolver = DottedNameResolver(None)
 LOG = logging.getLogger(__name__)
 
 class SQLACollectionContext(object):
@@ -239,7 +239,6 @@ class SessionAuthenticationPolicy(CallbackAuthenticationPolicy):
     
     def unauthenticated_userid(self, request):
         return request.session.get(self.userid_key)
-    
 
 def setup_models(config):
     engine = engine_from_config(config.registry.settings, 'sqlalchemy.')
