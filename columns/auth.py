@@ -45,7 +45,7 @@ def oid_authentication_callback(context, request, success_dict):
     """
     LOG.debug("looking for user")
     find_user = dotted_resolver.maybe_resolve(request.registry.settings['models.find_user'])
-    user = find_user('open_id', success_dict['identity_url'])
+    user = find_user('open_id', success_dict['identity_url'], request)
     if user:
         LOG.info("found user")
         # use standard auth callback to populate session

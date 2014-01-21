@@ -12,6 +12,8 @@ from ...auth import DEFAULT_USER_TYPE
 from ...auth import PERMISSIONS
 from ...auth import get_permissions
 from ...models import User
+import os.path
+import os
 
 dotted_resolver = DottedNameResolver(None)
 LOG = logging.getLogger(__name__)
@@ -222,7 +224,7 @@ class SessionAuthenticationPolicy(CallbackAuthenticationPolicy):
         #load user into cache
         LOG.debug('auth_type = %r', auth_type)
         if not auth_type:
-            user = find_user('id', principal, create=kw.get('create', False))
+            user = find_user('id', principal, request)
             if isinstance(user, User):
                 request.session[self.userid_key] = principal
                 request.session['auth.type'] = user.type
@@ -258,23 +260,93 @@ def db_session_request(event):
     event.request.add_finished_callback(cleanup)
     return session
 
-def find_user(attribute, value, create=False):
+def find_user(attribute, value, request):
     dbsession = sqlahelper.get_session()
     try:
         LOG.debug('Looking for user where %s=%r', attribute, value)
         user = dbsession.query(User).filter(getattr(User, attribute)==value).one()
     except SQLAlchemyError:
         dbsession.rollback()
-        if create:
-            # this is a new user
-            user = User()
-            setattr(user, attribute, value)
-            user.type = PERMISSIONS[DEFAULT_USER_TYPE]
-            user = dbsession.merge(user)
-            dbsession.commit()
-            return user
-        else:
-            return None
+        return None
     else:
         LOG.debug('User found: %r', user.name)
     return user
+
+########################################
+## Context Factory Functions
+########################################
+def ArticleContextFactory(request):
+    return ArticleCollectionContext(request)
+
+def PageContextFactory(request):
+    return PageCollectionContext(request)
+
+def UploadContextFactory(request):
+    return UploadCollectionContext(request)
+
+def UserContextFactory(request):
+    return UserCollectionContext(request)
+
+########################################
+## Collection Contexts
+########################################
+class ArticleCollectionContext(SQLACollectionContext):
+    __model__ = 'columns.models:Article'
+    __name__ = 'articles'
+
+class PageCollectionContext(SQLACollectionContext):
+    __model__ = 'columns.models:Page'
+    __name__ = 'pages'
+
+class UploadCollectionContext(SQLACollectionContext):
+    __model__ = 'columns.models:Upload'
+    __name__ = 'uploads'
+    
+    def __delitem__(self, key):
+        id_ = self._decode_key(key)
+        Session = sqlahelper.get_session()
+        resource = Session.query(
+            self.__model__
+        ).get(id_)
+        if resource is None:
+            raise KeyError(key)
+        basepath = self.request.registry.settings.get('upload_basepath')
+        resource_path = os.path.join(basepath, resource.filepath)
+        Session.delete(resource)
+        Session.commit()
+        os.remove(resource_path)
+
+class UserCollectionContext(SQLACollectionContext):
+    __model__ = 'columns.models:User'
+    __name__ = 'users'
+
+def setup_resource_routes(config):
+    config.add_resource(
+        'articles',
+        'columns.views:ArticleViews',
+        'columns.lib.context_impl.sqla:ArticleContextFactory',
+        'columns.lib.context_impl.sqla:ArticleCollectionContext',
+        'columns.models:Article',
+    )
+    config.add_resource(
+        'pages',
+        'columns.views:PageViews',
+        'columns.lib.context_impl.sqla.PageContextFactory',
+        'columns.lib.context_impl.sqla:PageCollectionContext',
+        'columns.models:Page',
+    )
+    config.add_resource(
+        'uploads',
+        'columns.views:UploadViews',
+        'columns.lib.context_impl.sqla.UploadContextFactory',
+        'columns.lib.context_impl.sqla:UploadCollectionContext',
+        'columns.models:Upload',
+    )
+    config.add_resource(
+        'users',
+        'columns.views:UserViews',
+        'columns.lib.context_impl.sqla.UserContextFactory',
+        'columns.lib.context_impl.sqla:UserCollectionContext',
+        'columns.models:User',
+    )
+
